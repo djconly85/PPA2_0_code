@@ -2,7 +2,7 @@
 #--------------------------------
 # Name:PPA_getNPMRDSdata.py
 # Purpose: Get distance-weighted average speed from NPMRDS data for PPA project,
-#          
+#          using Geopandas instead of arcpy.
 #           
 # Author: Darren Conly
 # Last Updated: <date>
