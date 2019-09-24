@@ -145,8 +145,10 @@ with arcpy.da.SearchCursor(project_lines, proj_id_col) as cur:
     for row in cur:
         proj_ids.append(row[0])
 
-proj_ids = ['PLA25637'] #TO-DO: for final tool, make this from project layer, not manual list
-#["CAL20466", "SAC24578"]
+proj_ids = ['CAL20587', 'ELD19417', 'SAC24221'] #TO-DO: for final tool, make this from project layer, not manual list
+#CAL20587: (incorrectly) darwn as off-ramp, but that off-ramp shape should not be getting the freeway mainline data
+#ELD19417: (incorrectly) drawn in midtown, but is on-ramp. should be tagged to on-ramp TMC, but is it?
+#SAC24221: Widen Routier Rd over US50--not on any NPMRDS segments but crosses 2 of them
 
 flds_speed_data = [speedcol_ff, speedcol_am] #'avspd_3p6p','congn_6a9a','congn_3p6p'
 
