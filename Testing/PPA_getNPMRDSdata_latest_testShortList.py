@@ -127,9 +127,9 @@ start_time = time.time()
 workspace = r'P:\NPMRDS data\NPMRDS_GIS\scratch.gdb'
 arcpy.env.workspace = workspace
 
-output_dir = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\srcpy\Testing Scripts\outputs'
+output_dir = r'I:\Projects\Darren\PPA_V2_GIS\Temp\Script Test Outputs'
 
-project_lines = r"P:\NPMRDS data\NPMRDS_GIS\scratch.gdb\TEMP_projects_for_npmrdsConflation"
+project_lines = r"Q:\ProjectLevelPerformanceAssessment\DataLayers_Proof_of_Concept\Batch Tool MTP Eval\BatchPPA_MTP2020ProjEval.gdb\projects_w_ctype01242019"
 proj_id_col = "ID"
 
 speed_data = r"P:\NPMRDS data\NPMRDS_GIS\scratch.gdb\TMCs_2017_CMPData"
@@ -139,16 +139,17 @@ speedcol_ff = "speed_85_offpk"
 fld_tmcdir = "Direction"
 directions_tmc = ["N", "S", "E", "W"] #can modify this depending on what directions you want to consider
 
-#get list of project IDs. 
-proj_ids = []
-with arcpy.da.SearchCursor(project_lines, proj_id_col) as cur:
-    for row in cur:
-        proj_ids.append(row[0])
+##get list of project IDs. 
+#proj_ids = []
+#with arcpy.da.SearchCursor(project_lines, proj_id_col) as cur:
+#    for row in cur:
+#        proj_ids.append(row[0])
 
-proj_ids = ['CAL20587', 'ELD19417', 'SAC24221'] #TO-DO: for final tool, make this from project layer, not manual list
+proj_ids = ['CAL20587', 'ELD19417', 'SAC24221', 'CAL20689'] #TO-DO: for final tool, make this from project layer, not manual list
 #CAL20587: (incorrectly) darwn as off-ramp, but that off-ramp shape should not be getting the freeway mainline data
 #ELD19417: (incorrectly) drawn in midtown, but is on-ramp. should be tagged to on-ramp TMC, but is it?
 #SAC24221: Widen Routier Rd over US50--not on any NPMRDS segments but crosses 2 of them
+#CAL20689: SR51 over American River Bridge - curvy with N/S and E/W sections. Will this neatly break out into N/S segments?
 
 flds_speed_data = [speedcol_ff, speedcol_am] #'avspd_3p6p','congn_6a9a','congn_3p6p'
 
@@ -186,10 +187,10 @@ for project in proj_ids:
     
 df_projdata = pd.DataFrame(out_rows)
 
-print("writing to csv...")
-
-output_csv = os.path.join(output_dir,"projlin_conflation_{}.csv".format(dateSuffix))
-df_projdata.to_csv(output_csv, index = False)
+#print("writing to csv...")
+#
+#output_csv = os.path.join(output_dir,"projlin_conflation_{}.csv".format(dateSuffix))
+#df_projdata.to_csv(output_csv, index = False)
 
 #NEXT STEP = join dataframe to project feature class, then look at map and do reasonableness check
 #also, how to quickly mention and bypass projects that don't intersect TMCs?

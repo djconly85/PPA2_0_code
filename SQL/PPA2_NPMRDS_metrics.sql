@@ -6,6 +6,16 @@ Purpose: Get data for each TMC for PPA 2.0 calcs:
 	Road number,
 	F_System,
 	off-peak 85th percentile speed (8pm-6am, all days),
+	80th percentile TT:
+		Weekdays 6am-10am
+		Weekdays 10am-4pm
+		Weekdays 4pm-8pm
+		Weekends 6am-8pm,
+	50th percentile TT:
+		Weekdays 6am-10am
+		Weekdays 10am-4pm
+		Weekdays 4pm-8pm
+		Weekends 6am-8pm,
 	LOTTRs (80th/50th):
 		Weekdays 6am-10am
 		Weekdays 10am-4pm
@@ -14,6 +24,7 @@ Purpose: Get data for each TMC for PPA 2.0 calcs:
 	Worst/highest LOTTR,
 	Period of worst/highest LOTTR,
 	Avg hours per weekday in congested conditions,
+	Avg speed during worst 4 weekday hours,
 	Avg hours per day with data,
 	1/0 NHS status
 
