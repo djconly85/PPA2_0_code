@@ -141,6 +141,28 @@ WHERE DATENAME(dw, measurement_tstamp) IN (SELECT day_name FROM @weekdays)
 	AND DATEPART(hh, measurement_tstamp) >= @WkdPrdStart 
 	AND DATEPART(hh, measurement_tstamp) < @WkdPrdEnd
 
+--count number of epochs in each LOTTR period
+SELECT
+	tmc.code,
+	SUM(CASE WHEN DATENAME(dw, measurement_tstamp) IN (SELECT day_name FROM @weekdays)
+			AND DATEPART(hh, measurement_tstamp) >= @AMpeakStart
+			AND DATEPART(hh, measurement_tstamp) < @AMpeakEnd
+		THEN 1 ELSE 0 END AS epochs_ampk,
+	SUM(CASE WHEN DATENAME(dw, measurement_tstamp) IN (SELECT day_name FROM @weekdays)
+			AND DATEPART(hh, measurement_tstamp) >= @MiddayStart
+			AND DATEPART(hh, measurement_tstamp) < @MiddayEnd
+		THEN 1 ELSE 0 END AS epochs_midday,
+	SUM(CASE WHEN DATENAME(dw, measurement_tstamp) IN (SELECT day_name FROM @weekdays)
+			AND DATEPART(hh, measurement_tstamp) >= @PMpeakStart
+			AND DATEPART(hh, measurement_tstamp) < @PMpeakEnd
+		THEN 1 ELSE 0 END AS epochs_pmpk,
+	SUM(CASE WHEN DATENAME(dw, measurement_tstamp) IN (SELECT day_name FROM @weekdays)
+			AND DATEPART(hh, measurement_tstamp) >= @WkdPrdStart
+			AND DATEPART(hh, measurement_tstamp) < @WkdPrdEnd
+		THEN 1 ELSE 0 END AS epochs_weekend
+INTO #epochs_x_relprd
+FROM npmrds_2018_alltmc_paxtruck_comb
+
 */
 --===========CONGESTION METRICS==================================
 
@@ -185,6 +207,7 @@ SELECT
 	COUNT(*) AS total_epochs_worst4hrs,
 	ff.speed_85p_night,
 	COUNT(*) / SUM(1.0/tt.speed) AS havg_spd_worst4hrs
+INTO #most_congd_hrs
 FROM npmrds_2018_alltmc_paxtruck_comb tt
 	JOIN #offpk_85th_spd ff
 		ON tt.tmc_code = ff.tmc_code
@@ -193,10 +216,24 @@ FROM npmrds_2018_alltmc_paxtruck_comb tt
 		AND DATEPART(hh, tt.measurement_tstamp) = avs.hour_of_day
 WHERE DATENAME(dw, measurement_tstamp) IN (SELECT day_name FROM @weekdays) 
 	AND avs.hour_cong_rank < 5
-	AND tt.tmc_code = '105+04687'
+	--AND tt.tmc_code = '105+04687'
 GROUP BY 
 	tt.tmc_code,
 	ff.speed_85p_night
+
+--return most congested hour of the day
+SELECT DISTINCT tt.tmc_code,
+	COUNT(tt.measurement_tstamp) AS epochs_slowest_hr,
+	avs.hour_of_day AS slowest_hr,
+	avs.havg_spd_weekdy AS slowest_hr_speed
+FROM npmrds_2018_alltmc_paxtruck_comb tt 
+	JOIN #avspd_x_tmc_hour avs
+		ON tt.tmc_code = avs.tmc_code
+		AND DATEPART(hh, tt.measurement_tstamp) = avs.hour_of_day
+		--AND tt.tmc_code = '105+04687'
+WHERE avs.hour_cong_rank = 1
+GROUP BY tt.tmc_code, avs.hour_of_day, avs.havg_spd_weekdy 
+--=========COMBINE ALL TOGETHER FOR FINAL TABLE==================================
 
 --rank each hour on each TMC based on congestion ration (1 = smallest congestion ratio, or worst congestion)
 --SELECT
