@@ -72,7 +72,7 @@ DECLARE @WkdPrdStart INT SET @WkdPrdStart = 6 --greater than or equal to this ti
 DECLARE @WkdPrdEnd INT SET @WkdPrdEnd = 20 --less than this time
 
 --===========TRAVEL TIME PERCENTILES==============================
-/*
+
 --50th and 80th percentile TTs for AM peak
 SELECT
 	DISTINCT tmc_code,
@@ -166,7 +166,7 @@ GROUP BY tmc_code
 
 
 --===========CONGESTION METRICS==================================
-*/
+
 --Get free-flow speed, based on 85th percentile epoch speed during all epochs on all days of the year from 8pm-6am
 SELECT
 	DISTINCT tmc_code,
@@ -179,6 +179,14 @@ FROM npmrds_2018_alltmc_paxtruck_comb
 WHERE (DATEPART(hh,measurement_tstamp) >= @FFprdStart
 		OR DATEPART(hh,measurement_tstamp) < @FFprdEnd)
 
+SELECT
+	tmc_code,
+	COUNT(*) AS epochs_night
+INTO #offpk_85th_epochs
+FROM npmrds_2018_alltmc_paxtruck_comb
+WHERE DATEPART(hh,measurement_tstamp) >= 20--@FFprdStart
+		OR DATEPART(hh,measurement_tstamp) < 6--@FFprdEnd
+GROUP BY tmc_code
 
 
 --get speeds by hour of day, long table
@@ -259,35 +267,35 @@ SELECT * FROM (
 		tmc.f_system,
 		tmc.nhs,
 		tmc.miles,
-		CASE WHEN ttr_am.tt_p80_ampk IS NULL THEN -1 ELSE ttr_am.tt_p80_ampk END AS tt_p80_ampk,
-		CASE WHEN ttr_am.tt_p50_ampk IS NULL THEN -1 ELSE ttr_am.tt_p50_ampk END AS tt_p50_ampk,
-		CASE WHEN ttr_md.tt_p80_midday IS NULL THEN -1 ELSE ttr_md.tt_p80_midday END AS tt_p80_midday,
-		CASE WHEN ttr_md.tt_p50_midday IS NULL THEN -1 ELSE ttr_md.tt_p50_midday END AS tt_p50_midday,
-		CASE WHEN ttr_pm.tt_p80_pmpk IS NULL THEN -1 ELSE ttr_pm.tt_p80_pmpk END AS tt_p80_pmpk,
-		CASE WHEN ttr_pm.tt_p50_pmpk IS NULL THEN -1 ELSE ttr_pm.tt_p50_pmpk END AS tt_p50_pmpk,
-		CASE WHEN ttr_wknd.tt_p80_weekend IS NULL THEN -1 ELSE ttr_wknd.tt_p80_weekend END AS tt_p80_weekend,
-		CASE WHEN ttr_wknd.tt_p50_weekend IS NULL THEN -1 ELSE ttr_wknd.tt_p50_weekend END AS tt_p50_weekend,
-		CASE WHEN ttr_am.tt_p80_ampk / ttr_am.tt_p50_ampk IS NULL THEN -1 
+		CASE WHEN ttr_am.tt_p80_ampk IS NULL THEN -1.0 ELSE ttr_am.tt_p80_ampk END AS tt_p80_ampk,
+		CASE WHEN ttr_am.tt_p50_ampk IS NULL THEN -1.0 ELSE ttr_am.tt_p50_ampk END AS tt_p50_ampk,
+		CASE WHEN ttr_md.tt_p80_midday IS NULL THEN -1.0 ELSE ttr_md.tt_p80_midday END AS tt_p80_midday,
+		CASE WHEN ttr_md.tt_p50_midday IS NULL THEN -1.0 ELSE ttr_md.tt_p50_midday END AS tt_p50_midday,
+		CASE WHEN ttr_pm.tt_p80_pmpk IS NULL THEN -1.0 ELSE ttr_pm.tt_p80_pmpk END AS tt_p80_pmpk,
+		CASE WHEN ttr_pm.tt_p50_pmpk IS NULL THEN -1.0 ELSE ttr_pm.tt_p50_pmpk END AS tt_p50_pmpk,
+		CASE WHEN ttr_wknd.tt_p80_weekend IS NULL THEN -1.0 ELSE ttr_wknd.tt_p80_weekend END AS tt_p80_weekend,
+		CASE WHEN ttr_wknd.tt_p50_weekend IS NULL THEN -1.0 ELSE ttr_wknd.tt_p50_weekend END AS tt_p50_weekend,
+		CASE WHEN ttr_am.tt_p80_ampk / ttr_am.tt_p50_ampk IS NULL THEN -1.0 
 			ELSE ttr_am.tt_p80_ampk / ttr_am.tt_p50_ampk 
 			END AS lottr_ampk,
-		CASE WHEN ttr_md.tt_p80_midday / ttr_md.tt_p50_midday IS NULL THEN -1 
+		CASE WHEN ttr_md.tt_p80_midday / ttr_md.tt_p50_midday IS NULL THEN -1.0 
 			ELSE ttr_md.tt_p80_midday / ttr_md.tt_p50_midday
 			END AS lottr_midday,
-		CASE WHEN ttr_pm.tt_p80_pmpk / ttr_pm.tt_p50_pmpk IS NULL THEN -1 
+		CASE WHEN ttr_pm.tt_p80_pmpk / ttr_pm.tt_p50_pmpk IS NULL THEN -1.0
 			ELSE ttr_pm.tt_p80_pmpk / ttr_pm.tt_p50_pmpk 
 			END AS lottr_pmpk,
-		CASE WHEN ttr_wknd.tt_p80_weekend / ttr_wknd.tt_p50_weekend IS NULL THEN -1 
+		CASE WHEN ttr_wknd.tt_p80_weekend / ttr_wknd.tt_p50_weekend IS NULL THEN -1.0 
 			ELSE ttr_wknd.tt_p80_weekend / ttr_wknd.tt_p50_weekend 
 			END AS lottr_wknd,
-		CASE WHEN ffs.speed_85p_night IS NULL THEN -1 ELSE ffs.speed_85p_night END AS speed_85p_night,
-		CASE WHEN cong4.havg_spd_worst4hrs IS NULL THEN -1 ELSE cong4.havg_spd_worst4hrs END AS havg_spd_worst4hrs,
-		CASE WHEN cong4.havg_spd_worst4hrs / ffs.speed_85p_night IS NULL THEN -1 
-			WHEN cong4.havg_spd_worst4hrs / ffs.speed_85p_night > 1 THEN 1 --sometimes the overnight speed won't be the fastest speed if there are insufficient data
+		CASE WHEN ffs.speed_85p_night IS NULL THEN -1.0 ELSE ffs.speed_85p_night END AS speed_85p_night,
+		CASE WHEN cong4.havg_spd_worst4hrs IS NULL THEN -1.0 ELSE cong4.havg_spd_worst4hrs END AS havg_spd_worst4hrs,
+		CASE WHEN cong4.havg_spd_worst4hrs / ffs.speed_85p_night IS NULL THEN -1.0 
+			WHEN cong4.havg_spd_worst4hrs / ffs.speed_85p_night > 1 THEN 1.0 --sometimes the overnight speed won't be the fastest speed if there are insufficient data
 			ELSE cong4.havg_spd_worst4hrs / ffs.speed_85p_night
 			END AS congratio_worst4hrs,
 		CASE WHEN slowest1.slowest_hr IS NULL THEN -1 ELSE slowest1.slowest_hr END AS slowest_hr,
 		CASE WHEN slowest1.slowest_hr_speed IS NULL THEN -1 ELSE slowest1.slowest_hr_speed END AS slowest_hr_speed,
-		CASE WHEN slowest1.slowest_hr_speed / ffs.speed_85p_night IS NULL THEN -1 
+		CASE WHEN slowest1.slowest_hr_speed / ffs.speed_85p_night IS NULL THEN -1.0 
 			ELSE slowest1.slowest_hr_speed / ffs.speed_85p_night
 			END AS congratio_worsthr,
 		CASE WHEN epx.epochs_ampk IS NULL THEN -1 ELSE epx.epochs_ampk END AS epochs_ampk,
@@ -296,6 +304,7 @@ SELECT * FROM (
 		CASE WHEN epx.epochs_weekend IS NULL THEN -1 ELSE epx.epochs_weekend END AS epochs_weekend,
 		CASE WHEN cong4.epochs_worst4hrs IS NULL THEN -1 ELSE cong4.epochs_worst4hrs END AS epochs_worst4hrs,
 		CASE WHEN slowest1.epochs_slowest_hr IS NULL THEN -1 ELSE slowest1.epochs_slowest_hr END AS epochs_slowest_hr,
+		CASE WHEN epon.epochs_night IS NULL THEN -1 ELSE epon.epochs_night END AS epochs_night,
 		ROW_NUMBER() OVER (PARTITION BY tmc.tmc ORDER BY slowest1.slowest_hr_speed) AS tmc_appearance_n
 	FROM npmrds_2018_all_tmcs_txt tmc
 		LEFT JOIN #offpk_85th_spd ffs
@@ -314,6 +323,8 @@ SELECT * FROM (
 			ON tmc.tmc = slowest1.tmc_code
 		LEFT JOIN #epochs_x_relprd epx
 			ON tmc.tmc = epx.tmc_code
+		LEFT JOIN #offpk_85th_epochs epon
+			ON tmc.tmc = epon.tmc_code
 	) subqry1
 WHERE tmc_appearance_n = 1
 
