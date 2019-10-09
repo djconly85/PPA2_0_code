@@ -180,7 +180,7 @@ WHERE (DATEPART(hh,measurement_tstamp) >= @FFprdStart
 		OR DATEPART(hh,measurement_tstamp) < @FFprdEnd)
 
 
-/*
+
 --get speeds by hour of day, long table
 SELECT
 	tt.tmc_code,
@@ -203,7 +203,7 @@ GROUP BY
 	tt.tmc_code,
 	DATEPART(hh,measurement_tstamp),
 	ff.speed_85p_night
-*/
+HAVING COUNT(tt.measurement_tstamp) >= 100 --eliminate hours where there's little to no data
 
 
 --get harmonic average speed from epochs that are in the worst 4 weekday hours
@@ -219,14 +219,14 @@ FROM npmrds_2018_alltmc_paxtruck_comb tt
 	JOIN #avspd_x_tmc_hour avs
 		ON tt.tmc_code = avs.tmc_code
 		AND DATEPART(hh, tt.measurement_tstamp) = avs.hour_of_day
-WHERE DATENAME(dw, measurement_tstamp) IN (SELECT day_name FROM @weekdays) 
+WHERE DATENAME(dw, tt.measurement_tstamp) IN (SELECT day_name FROM @weekdays) 
 	AND avs.hour_cong_rank < 5
 	--AND tt.tmc_code = '105+04687'
 GROUP BY 
 	tt.tmc_code,
 	ff.speed_85p_night
 
-/*
+
 --return most congested hour of the day
 SELECT DISTINCT tt.tmc_code,
 	COUNT(tt.measurement_tstamp) AS epochs_slowest_hr,
@@ -237,11 +237,18 @@ FROM npmrds_2018_alltmc_paxtruck_comb tt
 	JOIN #avspd_x_tmc_hour avs
 		ON tt.tmc_code = avs.tmc_code
 		AND DATEPART(hh, tt.measurement_tstamp) = avs.hour_of_day
-		--AND tt.tmc_code = '105+04687'
 WHERE avs.hour_cong_rank = 1
+	AND DATENAME(dw, tt.measurement_tstamp) IN (SELECT day_name FROM @weekdays) 
 GROUP BY tt.tmc_code, avs.hour_of_day, avs.havg_spd_weekdy 
+
+
+SELECT * 
+FROM #avspd_x_tmc_hour 
+WHERE tmc_code = '105+16142'
+ORDER BY hour_of_day
+
 --=========COMBINE ALL TOGETHER FOR FINAL TABLE==================================
-*/
+
 
 --Set up as subquery to eliminate duplicate rows (some TMCs got duplicated bcause there were 2 or more hours with congestion rank of 1)
 SELECT * FROM (
@@ -252,7 +259,6 @@ SELECT * FROM (
 		tmc.f_system,
 		tmc.nhs,
 		tmc.miles,
-		CASE WHEN ffs.speed_85p_night IS NULL THEN -1 ELSE ffs.speed_85p_night END AS speed_85p_night,
 		CASE WHEN ttr_am.tt_p80_ampk IS NULL THEN -1 ELSE ttr_am.tt_p80_ampk END AS tt_p80_ampk,
 		CASE WHEN ttr_am.tt_p50_ampk IS NULL THEN -1 ELSE ttr_am.tt_p50_ampk END AS tt_p50_ampk,
 		CASE WHEN ttr_md.tt_p80_midday IS NULL THEN -1 ELSE ttr_md.tt_p80_midday END AS tt_p80_midday,
@@ -273,8 +279,10 @@ SELECT * FROM (
 		CASE WHEN ttr_wknd.tt_p80_weekend / ttr_wknd.tt_p50_weekend IS NULL THEN -1 
 			ELSE ttr_wknd.tt_p80_weekend / ttr_wknd.tt_p50_weekend 
 			END AS lottr_wknd,
+		CASE WHEN ffs.speed_85p_night IS NULL THEN -1 ELSE ffs.speed_85p_night END AS speed_85p_night,
 		CASE WHEN cong4.havg_spd_worst4hrs IS NULL THEN -1 ELSE cong4.havg_spd_worst4hrs END AS havg_spd_worst4hrs,
 		CASE WHEN cong4.havg_spd_worst4hrs / ffs.speed_85p_night IS NULL THEN -1 
+			WHEN cong4.havg_spd_worst4hrs / ffs.speed_85p_night > 1 THEN 1 --sometimes the overnight speed won't be the fastest speed if there are insufficient data
 			ELSE cong4.havg_spd_worst4hrs / ffs.speed_85p_night
 			END AS congratio_worst4hrs,
 		CASE WHEN slowest1.slowest_hr IS NULL THEN -1 ELSE slowest1.slowest_hr END AS slowest_hr,
@@ -309,7 +317,6 @@ SELECT * FROM (
 	) subqry1
 WHERE tmc_appearance_n = 1
 
-select * from #avspd_x_tmc_hour where tmc_code = '105N16079'
 
 --DROP TABLE #tt_pctl_ampk
 --DROP TABLE #tt_pctl_midday
@@ -318,4 +325,45 @@ select * from #avspd_x_tmc_hour where tmc_code = '105N16079'
 --DROP TABLE #offpk_85th_spd
 --DROP TABLE #avspd_x_tmc_hour
 --DROP TABLE #most_congd_hrs
+--DROP TABLE #slowest_hr
+
+--SELECT DISTINCT tt.tmc_code,
+--	COUNT(tt.measurement_tstamp) AS epochs_slowest_hr,
+--	avs.hour_of_day AS slowest_hr,
+--	avs.havg_spd_weekdy AS slowest_hr_speed
+--FROM npmrds_2018_alltmc_paxtruck_comb tt 
+--	JOIN #avspd_x_tmc_hour avs
+--		ON tt.tmc_code = avs.tmc_code
+--		AND DATEPART(hh, tt.measurement_tstamp) = avs.hour_of_day
+--		--AND tt.tmc_code = '105+04687'
+--WHERE avs.hour_cong_rank = 1
+--GROUP BY tt.tmc_code, avs.hour_of_day, avs.havg_spd_weekdy 
+
+--SELECT DISTINCT tt.tmc_code,
+--	COUNT(tt.measurement_tstamp) AS epochs_slowest_hr,
+--	avs.hour_of_day AS slowest_hr,
+--	avs.havg_spd_weekdy AS slowest_hr_speed
+--FROM npmrds_2018_alltmc_paxtruck_comb tt 
+--	JOIN #avspd_x_tmc_hour avs
+--		ON tt.tmc_code = avs.tmc_code
+--		AND DATEPART(hh, tt.measurement_tstamp) = avs.hour_of_day
+--WHERE avs.hour_cong_rank = 1
+--	AND tt.tmc_code = '105+16235'
+--	AND DATENAME(dw, tt.measurement_tstamp) NOT IN ('Saturday', 'Sunday')
+--GROUP BY tt.tmc_code, avs.hour_of_day, avs.havg_spd_weekdy 
+
+--SELECT DISTINCT tt.tmc_code,
+--	tt.measurement_tstamp,
+--	DATENAME(dw, tt.measurement_tstamp) AS dow,
+--	--COUNT(tt.measurement_tstamp) AS epochs_slowest_hr,
+--	avs.hour_of_day AS slowest_hr,
+--	avs.havg_spd_weekdy AS slowest_hr_speed
+--FROM npmrds_2018_alltmc_paxtruck_comb tt 
+--	JOIN #avspd_x_tmc_hour avs
+--		ON tt.tmc_code = avs.tmc_code
+--		AND DATEPART(hh, tt.measurement_tstamp) = avs.hour_of_day
+--WHERE avs.hour_cong_rank = 1
+--	AND tt.tmc_code = '105+16235'
+--	AND DATENAME(dw, tt.measurement_tstamp) IN (SELECT day_name FROM @weekdays) 
+----GROUP BY tt.tmc_code, avs.hour_of_day, avs.havg_spd_weekdy 
 
