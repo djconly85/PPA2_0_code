@@ -20,22 +20,21 @@ import arcpy
 import re
 import os
 
-in_csv_folder = r'Q:\ProjectLevelPerformanceAssessment\DataLayers_Proof_of_Concept\Spreadsheet\Collision Data\RawCollisionData'
+in_csv_folder = r'I:\Projects\Darren\PPA_V2_GIS\CSV\collision data'
 
 #output as CSV
-make_csv = False
-out_csv_folder = r'Q:\ProjectLevelPerformanceAssessment\DataLayers_Proof_of_Concept\Spreadsheet\Collision Data\CombinedCollisionData'
-output_csv = 'SACOG_region_collisions' #don't add file extension
+make_csv = True
+out_csv_folder = r'I:\Projects\Darren\PPA_V2_GIS\CSV\collision data'
 
 #output to FGDB
-make_fc = True #there's an issue with this, see the make_fc function for details
-arcpy.env.workspace = r"Q:\ProjectLevelPerformanceAssessment\DataLayers_Proof_of_Concept\PPA_layers.gdb"
+make_fc = False #there's an issue with this, see the make_fc function for details
+arcpy.env.workspace = r"I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb"
 temp_colln_table = "in_memory/temp_collision_table"
 colln_xylayer = "colln_xylayer"
-collision_fc = "collisions2013_2017"
+collision_fc = "collisions2014_2018"
 
-sr_tims = arcpy.SpatialReference(54004)  #54004 = WGS 1984
-sr_sacog = arcpy.SpatialReference(102642) #102642 = SACOG NAD 83 CA State Plane Zone 2
+sr_tims = arcpy.SpatialReference(4326)  #4326 = WGS 1984
+sr_sacog = arcpy.SpatialReference(2226) #2226 = SACOG NAD 83 CA State Plane Zone 2
 
 #=======================COLUMN INDICATORS============
 case_id = 'CASE_ID'
@@ -117,6 +116,7 @@ def validation_stats(in_df):
 def make_csv(in_df):
     print('outputting to combined CSV...')
     
+    output_csv = 'SACOG_collisions' #don't add file extension
     start_year = str(in_df[colln_year].min())  
     end_year = str(in_df[colln_year].max())
     
@@ -135,19 +135,19 @@ def make_fc(in_df):
     
     arcpy.CopyFeatures_management(colln_xylayer, collision_fc)
     
-def do_work(in_csv_folder, make_csv = True):
+def do_work(in_csv_folder, make_csv = True, make_fc = True):
     comb_df = combine_tables(in_csv_folder)
     
     if make_csv:
         make_csv(comb_df)
     
-    if make_fc:    
-        make_fc(comb_df) #this is having an issue converting from df > nparray > gis table
+#    if make_fc:    
+#        make_fc(comb_df) #this is having an issue converting from df > nparray > gis table
     
     validation_stats(comb_df)
     
 if __name__ == '__main__':
-    do_work(in_csv_folder, make_csv)
+    do_work(in_csv_folder, make_csv, make_fc)
     
     
 #    out_table = combine_tables(in_csv_folder)

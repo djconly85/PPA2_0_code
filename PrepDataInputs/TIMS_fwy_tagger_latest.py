@@ -18,21 +18,19 @@ python Q:\ProjectLevelPerformanceAssessment\DataLayers_Proof_of_Concept\Python\T
 '''
 
 import arcpy
-import datetime
-import csv
 arcpy.env.overwriteOutput = True
 
 #===============USER INPUTS=============================
 
-workSpace = r'Q:\ProjectLevelPerformanceAssessment\DataLayers_Proof_of_Concept\PPA_layers.gdb'
-arcpy.env.workspace = workSpace
+arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
-tims_input = "Collisions2013to2017"
+tims_input = "SACOG_collisions2014_2018_XYTableToPoint"
 tims_hwy_ind = "STATE_HWY_IND"
 
-centerline = "Region_Centerline2017fwytag2"
+centerline = "RegionalCenterline_2019"
+centerline_fwy_ind = "FWY_YN"
 
-tims_gdb_output = "Collisions2013to2017fwytag"
+tims_gdb_output = "Collisions2014to2018fwytag"
 
 #=====================LOAD INPUT LAYERS====================
 #bring in inputs
@@ -43,7 +41,7 @@ arcpy.MakeFeatureLayer_management(tims_input,"tims_lyr")
 
 print('filtering and adding columns to tims data...')
 #get centerline features that freeways (tag based on 2017 CMP freeway definitions)
-sql_centerline = "fwy_yn = 1"
+sql_centerline = "{} = 1".format(centerline_fwy_ind)
 arcpy.SelectLayerByAttribute_management("centerline_lyr", 
 											"NEW_SELECTION", 
 											sql_centerline)
@@ -65,7 +63,7 @@ arcpy.SelectLayerByLocation_management("tims_lyr",
 										"WITHIN_A_DISTANCE",
 										"centerline_lyr",
 										100,
-										"NEW_SELECTION")
+										"SUBSET_SELECTION")
 
 										
 										
@@ -83,6 +81,6 @@ arcpy.SelectLayerByAttribute_management("tims_lyr", "CLEAR_SELECTION")
 
 #export to gdb feature--in future, you may be able to filter out bad geocodes here!
 print('exporting to ' + tims_gdb_output + ' as gdb object...')
-arcpy.FeatureClassToFeatureClass_conversion("tims_lyr",workSpace,tims_gdb_output)
+arcpy.FeatureClassToFeatureClass_conversion("tims_lyr", arcpy.env.workspace, tims_gdb_output)
 
 print('done!')
