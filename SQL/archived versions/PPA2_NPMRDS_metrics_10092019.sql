@@ -166,44 +166,18 @@ GROUP BY tmc_code
 
 
 --===========CONGESTION METRICS==================================
---get free-flow speed, based on 8p-6a speed
+
+--Get free-flow speed, based on 85th percentile epoch speed during all epochs on all days of the year from 8pm-6am
 SELECT
-	DISTINCT tmc.tmc,
-	tmc.f_system,
-	CASE WHEN f_system IN (1,2) 
-		THEN PERCENTILE_CONT(0.85)
-			WITHIN GROUP (ORDER BY speed)
-			OVER (PARTITION BY tmc_code) 
-		ELSE PERCENTILE_CONT(0.7)
-			WITHIN GROUP (ORDER BY speed)
-			OVER (PARTITION BY tmc_code) 
-		END AS ff_speed_art70thp, --85th percentile speed for freeways; 70th percentile for arterials
-	CASE WHEN f_system IN (1,2) 
-		THEN PERCENTILE_CONT(0.85)
-			WITHIN GROUP (ORDER BY speed)
-			OVER (PARTITION BY tmc_code) 
-		ELSE PERCENTILE_CONT(0.6) 
-			WITHIN GROUP (ORDER BY speed)
-			OVER (PARTITION BY tmc_code) 
-		END AS ff_speed_art60thp --85th percentile speed for freeways; 60th percentile for arterials
-INTO #ff_spd_tbl
-FROM npmrds_2018_all_tmcs_txt tmc 
-	LEFT JOIN npmrds_2018_alltmc_paxtruck_comb tt
-		ON tmc.tmc = tt.tmc_code
+	DISTINCT tmc_code,
+	PERCENTILE_CONT(0.85)
+		WITHIN GROUP (ORDER BY speed)
+		OVER (PARTITION BY tmc_code) 
+		AS speed_85p_night
+INTO #offpk_85th_spd
+FROM npmrds_2018_alltmc_paxtruck_comb
 WHERE (DATEPART(hh,measurement_tstamp) >= @FFprdStart
 		OR DATEPART(hh,measurement_tstamp) < @FFprdEnd)
-
---Get free-flow speed, old version, based on 85th percentile epoch speed during all epochs on all days of the year from 8pm-6am
---SELECT
---	DISTINCT tmc_code,
---	PERCENTILE_CONT(0.85)
---		WITHIN GROUP (ORDER BY speed)
---		OVER (PARTITION BY tmc_code) 
---		AS ff_speed
---INTO #ff_spd_tbl
---FROM npmrds_2018_alltmc_paxtruck_comb
---WHERE (DATEPART(hh,measurement_tstamp) >= @FFprdStart
---		OR DATEPART(hh,measurement_tstamp) < @FFprdEnd)
 
 SELECT
 	tmc_code,
@@ -220,23 +194,23 @@ SELECT
 	tt.tmc_code,
 	DATEPART(hh,tt.measurement_tstamp) AS hour_of_day,
 	COUNT(*) AS total_epochs_hr,
-	ff.ff_speed_art70thp,
+	ff.speed_85p_night,
 	COUNT(*) / SUM(1.0/tt.speed) AS havg_spd_weekdy,
 	AVG(tt.travel_time_seconds) AS avg_tt_sec_weekdy,
-	(COUNT(*) / SUM(1.0/tt.speed)) / ff.ff_speed_art70thp AS cong_ratio_hr_weekdy,
+	(COUNT(*) / SUM(1.0/tt.speed)) / ff.speed_85p_night AS cong_ratio_hr_weekdy,
 	RANK() OVER (
 		PARTITION BY tt.tmc_code 
-		ORDER BY (COUNT(*) / SUM(1.0/tt.speed)) / ff.ff_speed ASC
+		ORDER BY (COUNT(*) / SUM(1.0/tt.speed)) / ff.speed_85p_night ASC
 		) AS hour_cong_rank
 INTO #avspd_x_tmc_hour
 FROM npmrds_2018_alltmc_paxtruck_comb tt
-	JOIN #ff_spd_tbl ff
-		ON tt.tmc_code = ff.tmc
+	JOIN #offpk_85th_spd ff
+		ON tt.tmc_code = ff.tmc_code
 WHERE DATENAME(dw, measurement_tstamp) IN (SELECT day_name FROM @weekdays) 
 GROUP BY 
 	tt.tmc_code,
 	DATEPART(hh,measurement_tstamp),
-	ff.ff_speed_art70thp
+	ff.speed_85p_night
 HAVING COUNT(tt.measurement_tstamp) >= 100 --eliminate hours where there's little to no data
 
 
@@ -244,12 +218,12 @@ HAVING COUNT(tt.measurement_tstamp) >= 100 --eliminate hours where there's littl
 SELECT
 	tt.tmc_code,
 	COUNT(*) AS epochs_worst4hrs,
-	ff.ff_speed_art70thp,
+	ff.speed_85p_night,
 	COUNT(*) / SUM(1.0/tt.speed) AS havg_spd_worst4hrs
 INTO #most_congd_hrs
 FROM npmrds_2018_alltmc_paxtruck_comb tt
-	JOIN #ff_spd_tbl ff
-		ON tt.tmc_code = ff.tmc
+	JOIN #offpk_85th_spd ff
+		ON tt.tmc_code = ff.tmc_code
 	JOIN #avspd_x_tmc_hour avs
 		ON tt.tmc_code = avs.tmc_code
 		AND DATEPART(hh, tt.measurement_tstamp) = avs.hour_of_day
@@ -258,7 +232,7 @@ WHERE DATENAME(dw, tt.measurement_tstamp) IN (SELECT day_name FROM @weekdays)
 	--AND tt.tmc_code = '105+04687'
 GROUP BY 
 	tt.tmc_code,
-	ff.ff_speed_art70thp
+	ff.speed_85p_night
 
 
 --return most congested hour of the day
@@ -275,6 +249,11 @@ WHERE avs.hour_cong_rank = 1
 	AND DATENAME(dw, tt.measurement_tstamp) IN (SELECT day_name FROM @weekdays) 
 GROUP BY tt.tmc_code, avs.hour_of_day, avs.havg_spd_weekdy 
 
+
+SELECT * 
+FROM #avspd_x_tmc_hour 
+WHERE tmc_code = '105+16142'
+ORDER BY hour_of_day
 
 --=========COMBINE ALL TOGETHER FOR FINAL TABLE==================================
 
@@ -308,17 +287,16 @@ SELECT * FROM (
 		CASE WHEN ttr_wknd.tt_p80_weekend / ttr_wknd.tt_p50_weekend IS NULL THEN -1.0 
 			ELSE ttr_wknd.tt_p80_weekend / ttr_wknd.tt_p50_weekend 
 			END AS lottr_wknd,
-		CASE WHEN ffs.ff_speed_art70thp IS NULL THEN -1.0 ELSE ffs.ff_speed_art70thp END AS ff_speed_art70thp,
-		CASE WHEN ffs.ff_speed_art60thp IS NULL THEN -1.0 ELSE ffs.ff_speed_art60thp END AS ff_speed_art60thp,
+		CASE WHEN ffs.speed_85p_night IS NULL THEN -1.0 ELSE ffs.speed_85p_night END AS speed_85p_night,
 		CASE WHEN cong4.havg_spd_worst4hrs IS NULL THEN -1.0 ELSE cong4.havg_spd_worst4hrs END AS havg_spd_worst4hrs,
-		CASE WHEN cong4.havg_spd_worst4hrs / ffs.ff_speed_art70thp IS NULL THEN -1.0 
-			WHEN cong4.havg_spd_worst4hrs / ffs.ff_speed_art70thp > 1 THEN 1.0 --sometimes the overnight speed won't be the fastest speed if there are insufficient data
-			ELSE cong4.havg_spd_worst4hrs / ffs.ff_speed_art70thp
+		CASE WHEN cong4.havg_spd_worst4hrs / ffs.speed_85p_night IS NULL THEN -1.0 
+			WHEN cong4.havg_spd_worst4hrs / ffs.speed_85p_night > 1 THEN 1.0 --sometimes the overnight speed won't be the fastest speed if there are insufficient data
+			ELSE cong4.havg_spd_worst4hrs / ffs.speed_85p_night
 			END AS congratio_worst4hrs,
 		CASE WHEN slowest1.slowest_hr IS NULL THEN -1 ELSE slowest1.slowest_hr END AS slowest_hr,
 		CASE WHEN slowest1.slowest_hr_speed IS NULL THEN -1 ELSE slowest1.slowest_hr_speed END AS slowest_hr_speed,
-		CASE WHEN slowest1.slowest_hr_speed / ffs.ff_speed_art70thp IS NULL THEN -1.0 
-			ELSE slowest1.slowest_hr_speed / ffs.ff_speed_art70thp
+		CASE WHEN slowest1.slowest_hr_speed / ffs.speed_85p_night IS NULL THEN -1.0 
+			ELSE slowest1.slowest_hr_speed / ffs.speed_85p_night
 			END AS congratio_worsthr,
 		CASE WHEN epx.epochs_ampk IS NULL THEN -1 ELSE epx.epochs_ampk END AS epochs_ampk,
 		CASE WHEN epx.epochs_midday IS NULL THEN -1 ELSE epx.epochs_midday END AS epochs_midday,
@@ -329,8 +307,8 @@ SELECT * FROM (
 		CASE WHEN epon.epochs_night IS NULL THEN -1 ELSE epon.epochs_night END AS epochs_night,
 		ROW_NUMBER() OVER (PARTITION BY tmc.tmc ORDER BY slowest1.slowest_hr_speed) AS tmc_appearance_n
 	FROM npmrds_2018_all_tmcs_txt tmc
-		LEFT JOIN #ff_spd_tbl ffs
-			ON tmc.tmc = ffs.tmc
+		LEFT JOIN #offpk_85th_spd ffs
+			ON tmc.tmc = ffs.tmc_code
 		LEFT JOIN #tt_pctl_ampk ttr_am
 			ON tmc.tmc = ttr_am.tmc_code
 		LEFT JOIN #tt_pctl_midday ttr_md
@@ -355,7 +333,7 @@ WHERE tmc_appearance_n = 1
 --DROP TABLE #tt_pctl_midday
 --DROP TABLE #tt_pctl_pmpk
 --DROP TABLE #tt_pctl_weekend
---DROP TABLE #ff_spd_tbl
+--DROP TABLE #offpk_85th_spd
 --DROP TABLE #avspd_x_tmc_hour
 --DROP TABLE #most_congd_hrs
 --DROP TABLE #slowest_hr

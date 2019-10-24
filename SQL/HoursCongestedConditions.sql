@@ -22,7 +22,7 @@ SELECT
 		OVER (PARTITION BY tmc_code) 
 		AS speed_85_offpk
 INTO #ff_speed
-FROM npmrds_2018_paxveh
+FROM npmrds_2018_alltmc_paxveh
 WHERE (DATEPART(hh,measurement_tstamp) >=20
 		OR DATEPART(hh,measurement_tstamp) < 6)
 ;
@@ -34,7 +34,7 @@ SELECT
 	SUM(CASE WHEN speed / p.speed_85_offpk <= 0.6 
 			THEN 0.25 ELSE 0 END) AS congested_hours, --using manually-determined reference speed since it's missing from some TMCs for no apparent reason
 	COUNT(*)*0.25 AS total_hours
-FROM npmrds_2018_paxveh tt
+FROM npmrds_2018_alltmc_paxveh tt
 	LEFT JOIN #ff_speed p
 		ON tt.tmc_code = p.tmc_code
 WHERE DATEPART(dw, tt.measurement_tstamp) IN (2,3,4,5,6) --weekdays only
