@@ -54,14 +54,18 @@ SELECT
 	tmc.tmc,
 	tmc.road,
 	tmc.direction,
+	CASE WHEN ffs.ff_speed_85th60th IS NULL THEN -1 ELSE ffs.ff_speed_85th60th END AS ff_speed_85th60th,
 	CASE WHEN AVG(c.congested_hours) IS NULL THEN -1 ELSE AVG(c.congested_hours) END AS avg_daily_conghrs,
 	CASE WHEN MIN(c.total_hours) IS NULL THEN -1 ELSE MIN(c.total_hours) END AS min_day_hrs_w_data,
 	CASE WHEN AVG(c.total_hours) IS NULL THEN -1 ELSE AVG(c.total_hours) END AS avg_daily_hrs_w_data
 FROM npmrds_2018_all_tmcs_txt tmc 
 	LEFT JOIN all_days_cong c
-	ON tmc.tmc = c.tmc_code
-GROUP BY tmc,
-		road,
-		direction
+		ON tmc.tmc = c.tmc_code
+	LEFT JOIN #ff_speed ffs
+		ON tmc.tmc = ffs.tmc_code
+GROUP BY tmc.tmc,
+		tmc.road,
+		tmc.direction,
+		CASE WHEN ffs.ff_speed_85th60th IS NULL THEN -1 ELSE ffs.ff_speed_85th60th END
 
 --drop table #ff_speed
