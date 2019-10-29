@@ -39,10 +39,12 @@ def conflate_tmc2projline(fl_project, fld_proj_name, proj_name, dirxn_list, tmc_
     print("getting data for {}...".format(proj_name))
     arcpy.AddMessage("getting data for {}...".format(proj_name))
     
-    fld_shp_len = "SHAPE@LENGTH"
-    fld_totprojlen = "proj_length_ft"
      
     out_row_dict = {"ID":proj_name}
+    
+    #get length of project
+    fld_shp_len = "SHAPE@LENGTH"
+    fld_totprojlen = "proj_length_ft"
     
     with arcpy.da.SearchCursor(fl_project, fld_shp_len) as cur:
         for row in cur:
@@ -50,7 +52,6 @@ def conflate_tmc2projline(fl_project, fld_proj_name, proj_name, dirxn_list, tmc_
     
     for direcn in dirxn_list:
         #https://support.esri.com/en/technical-article/000012699
-        
         
         #temporary files
         temp_intersctpts = "temp_intersectpoints"
@@ -163,11 +164,12 @@ if __name__ == '__main__':
     workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
     arcpy.env.workspace = workspace
     
-    output_dir = r'I:\Projects\Darren\PPA_V2_GIS\Temp\Script Test Outputs'
     
-    project_line = "NPMRDS_confl_testseg_seconn"  #arcpy.GetParameterAsText(0) #
-    proj_name =  "TestProj" #arcpy.GetParameterAsText(1) #
-    proj_type = "Freeway"
+    
+    project_line = arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
+    proj_name = arcpy.GetParameterAsText(1) #"TestProj"
+    proj_type = arcpy.GetParameterAsText(2) #"Freeway"
+    output_dir = arcpy.GetParameterAsText(3) #r'I:\Projects\Darren\PPA_V2_GIS\Temp\Script Test Outputs'
     
     #NPMRDS data parameters -- consider putting all of these into a separate "config" python script
     speed_data = r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\npmrds_metrics_v6"
@@ -176,6 +178,8 @@ if __name__ == '__main__':
     reliab_ampk = "lottr_ampk"
     
     fld_tmcdir = "direction_signd"
+    fld_roadtype = "f_system" #indicates if road is freeway or not, so that data from freeways doesn't affect data on surface streets, and vice-versa
+    roadtypes_fwy = (1,2) #road type values corresponding to freeways
     
     #might want to make dict to enable working with multiple direction formats (e.g., {"N":"NORTHBOUND", "S":"SOUTHBOUND"...} etc.)
     directions_tmc = ["NORTHBOUND", "SOUTHBOUND", "EASTBOUND", "WESTBOUND"] #can modify this depending on what directions you want to consider
@@ -184,19 +188,18 @@ if __name__ == '__main__':
     flds_speed_data = [ff_speed, congest_speed, reliab_ampk] #'avspd_3p6p','congn_6a9a','congn_3p6p'
     
     #create temporar buffer layer, flat-tipped, around TMCs; will be used to split project lines
-    temp_tmcbuff = "TEMP_tmcbuff_4projsplit2"
+    temp_tmcbuff = "TEMP_tmcbuff_4projsplit"
     buff_dist_ft = 90 #buffer distance, in feet, around the TMCs
     
     #select TMCs that intersect project lines
     fl_project = "fl_project"
-    fld_proj_len = "proj_len"
+    #fld_proj_len = "proj_len"
     fld_proj_name = "proj_name"
     
     fl_speed_data = "fl_speed_data"
     fl_tmc_buff = "fl_tmc_buff"
     
     #add fields for project length and name
-    arcpy.AddField_management(project_line,fld_proj_len,"FLOAT")
     arcpy.AddField_management(project_line,fld_proj_name,"TEXT")
     
     #make feature layers of NPMRDS and project line
@@ -207,11 +210,17 @@ if __name__ == '__main__':
     calc_add_len = "!shape.length@feet!"
     calc_set_proj_name = "'{}'".format(proj_name)
     
-    arcpy.CalculateField_management(project_line, fld_proj_len, calc_add_len, "PYTHON")
     arcpy.CalculateField_management(project_line, fld_proj_name, calc_set_proj_name, "PYTHON")
     
     #make flat-ended buffers around TMCs that intersect project
     arcpy.SelectLayerByLocation_management(fl_speed_data, "WITHIN_A_DISTANCE", fl_project, 300, "NEW_SELECTION")
+    if proj_type == 'Freeway':
+        sql = "{} IN {}".format(fld_roadtype, roadtypes_fwy)
+        arcpy.SelectLayerByAttribute_management(fl_speed_data, "SUBSET_SELECTION", sql)
+    else:
+        sql = "{} NOT IN {}".format(fld_roadtype, roadtypes_fwy)
+        arcpy.SelectLayerByAttribute_management(fl_speed_data, "SUBSET_SELECTION", sql)
+    
     arcpy.Buffer_analysis(fl_speed_data, temp_tmcbuff, buff_dist_ft, "FULL", "FLAT")
     arcpy.MakeFeatureLayer_management(temp_tmcbuff, fl_tmc_buff)
     
