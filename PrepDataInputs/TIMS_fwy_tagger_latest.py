@@ -80,7 +80,7 @@ arcpy.SelectLayerByAttribute_management("tims_lyr", "CLEAR_SELECTION")
 #rough way to eliminate bad chp geocodes
 
 #export to gdb feature--in future, you may be able to filter out bad geocodes here!
-print('exporting to ' + tims_gdb_output + ' as gdb object...')
+print('exporting to {} as gdb object...'.format(tims_gdb_output))
 arcpy.FeatureClassToFeatureClass_conversion("tims_lyr", arcpy.env.workspace, tims_gdb_output)
 
 print('done!')
