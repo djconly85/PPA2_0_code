@@ -17,6 +17,7 @@ import time
 import pandas as pd
 import swifter
 import arcpy
+
 # from arcgis.features import GeoAccessor, GeoSeriesAccessor
 
 
@@ -55,10 +56,7 @@ def get_wtd_idx(x, facs, params_df):
     return output
         
 
-def calc_mix_index(in_df, params_csv, hh_col, lu_factor_cols, mix_idx_col):
-    
-    params_df = pd.read_csv(params_csv, index_col = 'lu_fac')
-    
+def calc_mix_index(in_df, params_df, hh_col, lu_factor_cols, mix_idx_col):
     lu_facs = params_df.index
     
     for fac in lu_facs:
@@ -86,18 +84,26 @@ def calc_mix_index(in_df, params_csv, hh_col, lu_factor_cols, mix_idx_col):
     return in_df
 
 
-def do_work(in_fl, out_csv, params_csv, input_cols, landuse_cols, col_hh, park_calc_dict):
-    mix_idx_col = 'mix_index_1mi'
+def do_work(fl_parcel, fl_project, buff_dist_ft):
+    import mix_index_params as p
 
-    summ_df = make_summary_df(in_fl, input_cols, landuse_cols, col_hh, park_calc_dict)
+    in_cols = [p.col_parcelid, p.col_hh, p.col_k12_enr, p.col_emptot, p.col_empfood,
+               p.col_empret, p.col_empsvc, p.col_area_ac, p.col_lutype]
 
-    out_df = calc_mix_index(summ_df, params_csv, col_hh, landuse_cols, mix_idx_col)
+    lu_fac_cols = [p.col_k12_enr, p.col_emptot, p.col_empfood, p.col_empret, p.col_empsvc, p.col_parkac]
+    # make parcel feature layer
+
+    arcpy.SelectLayerByLocation_management(fl_parcel, "WITHIN_A_DISTANCE", fl_project, buff_dist_ft, "NEW_SELECTION")
+
+    summ_df = make_summary_df(fl_parcel, in_cols, lu_fac_cols, p.col_hh, p.park_calc_dict)
+
+    out_df = calc_mix_index(summ_df, p.params_df, p.col_hh, lu_fac_cols, p.mix_idx_col)
 
     # if you want to make CSV.
     #out_df[[col_hh, mix_idx_col]].to_csv(out_csv, index = False)
     #print("Done! Output CSV: {}".format(out_csv))
 
-    out_val = out_df[mix_idx_col][0]
+    out_val = out_df[p.mix_idx_col][0]
     return {'mix_index_proj': out_val}
 
 # ===============================SCRIPT=================================================
@@ -108,55 +114,18 @@ if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
     
     # input fc of parcel data--must be points!
-    in_pcl_pt_fc = "parcel_data_2016_11052019_pts"
+    in_pcl_pt_fc = "parcel_data_2016_11062019_pts"
+    fl_parcel = "fl_parcel"
+    arcpy.MakeFeatureLayer_management(in_pcl_pt_fc, fl_parcel)
 
     # input line project for basing spatial selection
     project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg_seconn'
+    fl_project = "fl_project"
+    arcpy.MakeFeatureLayer_management(project_fc, fl_project)
 
-    buff_dist_ft = 5280 # distance in feet--MIGHT NEED TO BE ADJUSTED FOR WGS 84--SEE OLD TOOL FOR HOW THIS WAS RESOLVED
-    
-    # weighting values {land use:[optimal ratio per household, weight given to that ratio]}
-    mix_idx_params_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\Testing\mix_idx_params.csv"
-    
-    # output csv for testing
-    output_id = int(round(time.time(), 0))
-    out_csv = r'C:\Users\dconly\PPA_TEMPFILES\test_mixindex_out{}.csv'.format(output_id)
+    buff_dist_ft = 5280  # distance in feet--MIGHT NEED TO BE ADJUSTED FOR WGS 84--SEE OLD TOOL FOR HOW THIS WAS RESOLVED
 
-    # input columns--MUST MATCH COLNAMES IN mix_idx_params_csv
-    col_parcelid = 'PARCELID'
-    col_hh = 'HH_hh'
-    # col_stugrd = 'stugrd_2'
-    # col_stuhgh = 'stuhgh_2'
-    col_emptot = 'EMPTOT'
-    col_empfood = 'EMPFOOD'
-    col_empret = 'EMPRET'
-    col_empsvc = 'EMPSVC'
-    col_k12_enr = 'ENR_K12'
-
-    # park acreage info
-    col_area_ac = 'GISAc'
-    col_lutype = 'LUTYPE'
-    lutype_parks = 'Park and/or Open Space'
-    col_parkac = 'PARK_AC' # will be calc'd as GISAc if LUTYPE = park/open space LUTYPE
-
-    # =====================================================================
-
-    fl_parcel = "fl_parcel"
-
-    arcpy.MakeFeatureLayer_management(in_pcl_pt_fc, fl_parcel)
-    arcpy.SelectLayerByLocation_management(fl_parcel, "WITHIN_A_DISTANCE", project_fc, buff_dist_ft, "NEW_SELECTION")
-
-    in_cols = [col_parcelid, col_hh, col_k12_enr, col_emptot, col_empfood,
-               col_empret, col_empsvc, col_area_ac, col_lutype]
-
-    lu_fac_cols = [col_k12_enr, col_emptot, col_empfood, col_empret, col_empsvc, col_parkac]
-
-    park_calc_dict = {'area_field': col_area_ac,
-                      'lutype_field': col_lutype,
-                      'park_lutype': lutype_parks,
-                      'park_acres_field': col_parkac}
-
-    out_dict = do_work(fl_parcel, out_csv, mix_idx_params_csv, in_cols, lu_fac_cols, col_hh, park_calc_dict)
+    out_dict = do_work(fl_parcel, fl_project, buff_dist_ft)
 
     print(out_dict)
     

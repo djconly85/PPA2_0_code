@@ -33,51 +33,47 @@ dateSuffix = str(dt.date.today().strftime('%m%d%Y'))
 #====================FUNCTIONS==========================================
 
 
-def conflate_tmc2projline(fl_project, fld_proj_name, proj_name, dirxn_list, tmc_dir_field, 
-                          fl_tmcs_buffd, speed_data_fields, out_rows):
+def conflate_tmc2projline(fl_proj, fld_proj_name, proj_name, dirxn_list, tmc_dir_field, 
+                          fl_tmcs_buffd, speed_data_fields):
 
     arcpy.AddMessage("getting data for {}...".format(proj_name))
-    
-    fld_shp_len = "SHAPE@LENGTH"
-    fld_totprojlen = "proj_length_ft"
-     
+
     out_row_dict = {"ID":proj_name}
     
-    with arcpy.da.SearchCursor(fl_project, fld_shp_len) as cur:
+    #get length of project
+    fld_shp_len = "SHAPE@LENGTH"
+    fld_totprojlen = "proj_length_ft"
+    
+    with arcpy.da.SearchCursor(fl_proj, fld_shp_len) as cur:
         for row in cur:
             out_row_dict[fld_totprojlen] = row[0]
     
     for direcn in dirxn_list:
-        #https://support.esri.com/en/technical-article/000012699
+        # https://support.esri.com/en/technical-article/000012699
         
-        
-        #temporary files
+        # temporary files
         temp_intersctpts = "temp_intersectpoints"
-        temp_intrsctpt_singlpt = "temp_intrsctpt_singlpt" #converted from multipoint to single point (1 point per feature)
-        temp_splitprojlines = "temp_splitprojlines" #fc of project line split up to match TMC buffer extents
-        temp_splitproj_w_tmcdata = "temp_splitproj_w_tmcdata" #fc of split project lines with TMC data on them
+        temp_intrsctpt_singlpt = "temp_intrsctpt_singlpt" # converted from multipoint to single point (1 pt per feature)
+        temp_splitprojlines = "temp_splitprojlines" # fc of project line split up to match TMC buffer extents
+        temp_splitproj_w_tmcdata = "temp_splitproj_w_tmcdata" # fc of split project lines with TMC data on them
         
         fl_splitprojlines = "fl_splitprojlines"
         fl_splitproj_w_tmcdata = "fl_splitproj_w_tmcdata"
         
-        #get TMCs whose buffers intersect the project line
-        arcpy.SelectLayerByLocation_management(fl_tmcs_buffd, "INTERSECT", fl_project)
+        # get TMCs whose buffers intersect the project line
+        arcpy.SelectLayerByLocation_management(fl_tmcs_buffd, "INTERSECT", fl_proj)
         
-        #select TMCs that intersect the project and are in indicated direction
+        # select TMCs that intersect the project and are in indicated direction
         sql_sel_tmcxdir = "{} = '{}'".format(tmc_dir_field, direcn)
         arcpy.SelectLayerByAttribute_management(fl_tmcs_buffd, "SUBSET_SELECTION", sql_sel_tmcxdir)
         
-        #for reasonableness checking--correct TMCs getting selected?
-        #tmc_cnt = arcpy.GetCount_management(fl_tmcs_buffd)
-        #print("{} {}B TMCs selected".format(tmc_cnt, direcn))
-        
         #split the project line at the boundaries of the TMC buffer, creating points where project line intersects TMC buffer boundaries
-        arcpy.Intersect_analysis([fl_project, fl_tmcs_buffd],temp_intersctpts,"","","POINT")
+        arcpy.Intersect_analysis([fl_proj, fl_tmcs_buffd],temp_intersctpts,"","","POINT")
         arcpy.MultipartToSinglepart_management (temp_intersctpts, temp_intrsctpt_singlpt)
         
         #split project line into pieces at points where it intersects buffer, with 10ft tolerance
         #(not sure why 10ft tolerance needed but it is, zero tolerance results in some not splitting)
-        arcpy.SplitLineAtPoint_management(fl_project, temp_intrsctpt_singlpt,
+        arcpy.SplitLineAtPoint_management(fl_proj, temp_intrsctpt_singlpt,
                                           temp_splitprojlines, "10 Feet")
         arcpy.MakeFeatureLayer_management(temp_splitprojlines, fl_splitprojlines)
         
@@ -105,7 +101,7 @@ def conflate_tmc2projline(fl_project, fld_proj_name, proj_name, dirxn_list, tmc_
         #for PHED or hours of delay, will want to get dist-weighted SUM; for speed/reliability, want dist-weighted AVG
         #ideally this would be a dict of {<field>:<aggregation method>}
         for field in speed_data_fields:
-            try: # wgtd avg = sum(piece's data * piece's len)/(sum of all piece lengths)
+            try: #wgtd avg = sum(piece's data * piece's len)/(sum of all piece lengths)
                 avg_data_val = (df_spddata[field]*df_spddata[fld_shp_len]).sum() \
                                 / df_spddata[fld_shp_len].sum()
                 
@@ -114,16 +110,18 @@ def conflate_tmc2projline(fl_project, fld_proj_name, proj_name, dirxn_list, tmc_
             except ZeroDivisionError:
                 out_row_dict[fielddir] = df_spddata[field].mean() #if no length, just return mean speed? Maybe instead just return 'no data avaialble'? Or -1 to keep as int?
                 continue
-    out_rows.append(out_row_dict)
+    print(out_row_dict)
+    return pd.DataFrame([out_row_dict])[0]
     
     #cleanup
     fcs_to_delete = [temp_intersctpts, temp_intrsctpt_singlpt, temp_splitprojlines, temp_splitproj_w_tmcdata]
     for fc in fcs_to_delete:
         arcpy.Delete_management(fc)
+
+    return out_df
     
     
 def simplify_outputs(in_df, proj_len_col, proj_id_col):
-    
     dirlen_suffix = '_calc_len'
     
     proj_len = in_df[proj_len_col][0]
@@ -141,8 +139,7 @@ def simplify_outputs(in_df, proj_len_col, proj_id_col):
         max_len_col = df_lencols.idxmax(axis = 1)[0] #return column name of direction with greatest overlap
         df_lencols2 = df_lencols.drop(max_len_col, axis = 1)
         secndmax_col = df_lencols2.idxmax(axis = 1)[0] #return col name of direction with second-most overlap (should be reverse of direction with most overlap)
-    
-    #pdb.set_trace()
+
     maxdir = max_len_col[:max_len_col.find(dirlen_suffix)] #direction name without '_calc_len' suffix
     secdir = secndmax_col[:secndmax_col.find(dirlen_suffix)]
     
@@ -153,92 +150,75 @@ def simplify_outputs(in_df, proj_len_col, proj_id_col):
     
     outcols = [proj_id_col] + outcols_max + outcols_sec
     
-    return in_df[outcols]
-        
-#=====================RUN SCRIPT===========================
+    return in_df[outcols].to_dict('records')
+
+
+def get_npmrds_data(fl_projline, str_project_name, str_project_type):
+    import npmrds_params as p
+    arcpy.OverwriteOutput = True
+
+    flds_speed_data = [p.col_ff_speed, p.col_congest_speed, p.col_reliab_ampk, p.col_reliab_md, p.col_reliab_pmpk,
+                       p.col_reliab_wknd]  # 'avspd_3p6p','congn_6a9a','congn_3p6p'
+
+    # add fields for project name
+    fld_proj_name = "proj_name"
+    arcpy.AddField_management(fl_projline, fld_proj_name, "TEXT")
+
+    calc_set_proj_name = "'{}'".format(str_project_name)
+    arcpy.CalculateField_management(project_line, fld_proj_name, calc_set_proj_name, "PYTHON")
+
+    # make feature layer from speed data feature class
+    fl_speed_data = "fl_speed_data"
+    arcpy.MakeFeatureLayer_management(p.fc_speed_data, fl_speed_data)
+
+    # make flat-ended buffers around TMCs that intersect project
+    arcpy.SelectLayerByLocation_management(fl_speed_data, "WITHIN_A_DISTANCE", fl_projline, p.tmc_select_srchdist, "NEW_SELECTION")
+    if str_project_type == 'Freeway':
+        sql = "{} IN {}".format(p.col_roadtype, p.roadtypes_fwy)
+        arcpy.SelectLayerByAttribute_management(fl_speed_data, "SUBSET_SELECTION", sql)
+    else:
+        sql = "{} NOT IN {}".format(p.col_roadtype, p.roadtypes_fwy)
+        arcpy.SelectLayerByAttribute_management(fl_speed_data, "SUBSET_SELECTION", sql)
+
+    # create temporar buffer layer, flat-tipped, around TMCs; will be used to split project lines
+    temp_tmcbuff = "TEMP_tmcbuff_4projsplit"
+    fl_tmc_buff = "fl_tmc_buff"
+    arcpy.Buffer_analysis(fl_speed_data, temp_tmcbuff, p.tmc_buff_dist_ft, "FULL", "FLAT")
+    arcpy.MakeFeatureLayer_management(temp_tmcbuff, fl_tmc_buff)
+
+    # get "full" table with data for all directions
+    projdata_df = conflate_tmc2projline(fl_projline, fld_proj_name, str_project_name, p.directions_tmc, p.col_tmcdir,
+                                        fl_tmc_buff, flds_speed_data)
+
+    # trim down table to only include outputs for directions that are "on the segment",
+    # i.e., that have most overlap with segment
+    out_df = simplify_outputs(projdata_df, 'proj_length_ft', 'ID')
+
+    print(out_df)
+    return out_df
+
+
+# =====================RUN SCRIPT===========================
 if __name__ == '__main__':
     start_time = time.time()
     
     workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
     arcpy.env.workspace = workspace
-    
-    output_dir = r'I:\Projects\Darren\PPA_V2_GIS\Temp\Script Test Outputs'
-    
-    project_line = "NPMRDS_confl_testseg_seconn"  #arcpy.GetParameterAsText(0) #
-    proj_name =  "TestProj" #arcpy.GetParameterAsText(1) #
-    proj_type = "Freeway"
-    
-    #NPMRDS data parameters -- consider putting all of these into a separate "config" python script
-    speed_data = r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\npmrds_metrics_v6"
-    ff_speed = "ff_speed"
-    congest_speed = "havg_spd_worst4hrs"
-    reliab_ampk = "lottr_ampk"
-    
-    fld_tmcdir = "direction_signd"
-    
-    #might want to make dict to enable working with multiple direction formats (e.g., {"N":"NORTHBOUND", "S":"SOUTHBOUND"...} etc.)
-    directions_tmc = ["NORTHBOUND", "SOUTHBOUND", "EASTBOUND", "WESTBOUND"] #can modify this depending on what directions you want to consider
-    
-    #------------------no more user input below here, at least normally---------------
-    flds_speed_data = [ff_speed, congest_speed, reliab_ampk] #'avspd_3p6p','congn_6a9a','congn_3p6p'
-    
-    #create temporar buffer layer, flat-tipped, around TMCs; will be used to split project lines
-    temp_tmcbuff = "TEMP_tmcbuff_4projsplit2"
-    buff_dist_ft = 90 #buffer distance, in feet, around the TMCs
-    
-    #select TMCs that intersect project lines
+
+    project_line = "NPMRDS_confl_testseg_seconn" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
+    proj_name = "TestProj" # arcpy.GetParameterAsText(1) #"TestProj"
+    proj_type = "Arterial" # arcpy.GetParameterAsText(2) #"Freeway"
+
+    # make feature layers of NPMRDS and project line
     fl_project = "fl_project"
-    fld_proj_len = "proj_len"
-    fld_proj_name = "proj_name"
-    
-    fl_speed_data = "fl_speed_data"
-    fl_tmc_buff = "fl_tmc_buff"
-    
-    #add fields for project length and name
-    arcpy.AddField_management(project_line,fld_proj_len,"FLOAT")
-    arcpy.AddField_management(project_line,fld_proj_name,"TEXT")
-    
-    #make feature layers of NPMRDS and project line
     arcpy.MakeFeatureLayer_management(project_line, fl_project)
-    arcpy.MakeFeatureLayer_management(speed_data, fl_speed_data)
-    
-    #populate the length and name fields
-    calc_add_len = "!shape.length@feet!"
-    calc_set_proj_name = "'{}'".format(proj_name)
-    
-    arcpy.CalculateField_management(project_line, fld_proj_len, calc_add_len, "PYTHON")
-    arcpy.CalculateField_management(project_line, fld_proj_name, calc_set_proj_name, "PYTHON")
-    
-    #make flat-ended buffers around TMCs that intersect project
-    arcpy.SelectLayerByLocation_management(fl_speed_data, "WITHIN_A_DISTANCE", fl_project, 300, "NEW_SELECTION")
-    arcpy.Buffer_analysis(fl_speed_data, temp_tmcbuff, buff_dist_ft, "FULL", "FLAT")
-    arcpy.MakeFeatureLayer_management(temp_tmcbuff, fl_tmc_buff)
-    
-    out_rows = []
-    
-    #in theory this should only be one project line, but want to keep flexible in case
-    #we want batch version in future.
-    conflate_tmc2projline(fl_project, fld_proj_name, proj_name, directions_tmc, fld_tmcdir, 
-                                  fl_tmc_buff, flds_speed_data, out_rows)
-        
-    df_projdata = pd.DataFrame(out_rows)
-    
-    out_df = simplify_outputs(df_projdata, 'proj_length_ft','ID')
-    #out_df.iloc[0].to_dict() will write to dict in {field:value} format--might be good for ESRI CSV
-    
-    output_tstamp = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
-    output_csv = os.path.join(output_dir,"projlin_conflation_{}.csv".format(output_tstamp))
-    arcpy.AddMessage("writing to {}...".format(output_csv))
-    
-    out_df.to_csv(output_csv, index = False)
-    
-    #NEXT STEP = join dataframe to project feature class, then look at map and do reasonableness check
-    #also, how to quickly mention and bypass projects that don't intersect TMCs?
-    #also, define a logical column order for the DF before doing join
-    elapsed_time = round((time.time() - start_time)/60,1)
+
+    get_npmrds_data(fl_project, proj_name, proj_type)
+
+    elapsed_time = round((time.time() - start_time)/60, 1)
     print("Success! Time elapsed: {} minutes".format(elapsed_time))    
     
-        
+
         
     
 

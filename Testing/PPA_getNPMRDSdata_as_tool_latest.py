@@ -156,6 +156,8 @@ def simplify_outputs(in_df, proj_len_col, proj_id_col):
     outcols = [proj_id_col] + outcols_max + outcols_sec
     
     return in_df[outcols]
+
+def get_npmrds_data():
         
 #=====================RUN SCRIPT===========================
 if __name__ == '__main__':
