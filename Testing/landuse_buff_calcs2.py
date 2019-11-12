@@ -39,9 +39,9 @@ def point_sum(fl_pclpt, val_fields, buff_dist, select_lyr, case_field=None, case
         out_df = pd.DataFrame(parcel_df[val_fields].sum(axis=0)).T
 
     out_dict = out_df.to_dict('records')[0]
-    print(out_df)
     print(out_dict)
     return out_dict
+
 
 
 
@@ -64,11 +64,11 @@ if __name__ == '__main__':
     buff_dist_ft = 2640  # distance in feet--MIGHT NEED TO BE ADJUSTED FOR WGS84--SEE OLD TOOL FOR HOW THIS WAS RESOLVED
 
     # get jobs, dwelling units, trips by mode within 0.5mi
-    #point_sum(fl_parcel, value_fields, 2640, fl_project)
+    # point_sum(fl_parcel, value_fields, 2640, fl_project)
 
     # dwelling units by housing type within 1mi
-    #point_sum(fl_parcel, ['DU_TOT'], 5280, fl_project, 'TYPCODE_DESC', ['Other'])
+    # point_sum(fl_parcel, ['DU_TOT'], 5280, fl_project, case_field='TYPCODE_DESC', case_excs_list=['Other'])
 
     # EJ population
-    point_sum(fl_parcel, ['POP_TOT'], 5280, fl_project, 'EJ_2018')
+    point_sum(fl_parcel, ['POP_TOT'], 5280, fl_project, case_field='EJ_2018')
 

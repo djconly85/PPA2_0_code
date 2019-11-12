@@ -23,14 +23,22 @@ import arcpy
 
 # =============FUNCTIONS=============================================
 
-def make_summary_df(in_fl, input_cols,  landuse_cols, col_hh, park_calc_dict):
-    out_rows = []
-    with arcpy.da.SearchCursor(in_fl, input_cols) as cur:
+def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
+    data_rows = []
+    with arcpy.da.SearchCursor(in_esri_obj, esri_obj_fields) as cur:
         for row in cur:
             out_row = list(row)
-            out_rows.append(out_row)
+            data_rows.append(out_row)
 
-    parcel_df = pd.DataFrame(out_rows, columns = input_cols)
+    out_df = pd.DataFrame(data_rows, index=index_field, columns=esri_obj_fields)
+    return out_df
+
+
+def make_summary_df(in_fl, input_cols,  landuse_cols, col_hh, park_calc_dict):
+
+    # load into dataframe
+    parcel_df = esri_object_to_df(in_fl, input_cols)
+
     col_parkac = park_calc_dict['park_acres_field']
     col_lutype = park_calc_dict['lutype_field']
     lutype_parks = park_calc_dict['park_lutype']

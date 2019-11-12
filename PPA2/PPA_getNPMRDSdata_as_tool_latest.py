@@ -33,12 +33,12 @@ dateSuffix = str(dt.date.today().strftime('%m%d%Y'))
 #====================FUNCTIONS==========================================
 
 
-def conflate_tmc2projline(fl_proj, fld_proj_name, proj_name, dirxn_list, tmc_dir_field, 
+def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
                           fl_tmcs_buffd, speed_data_fields):
 
-    arcpy.AddMessage("getting data for {}...".format(proj_name))
+    arcpy.AddMessage("Calculating congestion and reliability metrics...")
 
-    out_row_dict = {"ID":proj_name}
+    out_row_dict = {}
     
     #get length of project
     fld_shp_len = "SHAPE@LENGTH"
@@ -89,7 +89,7 @@ def conflate_tmc2projline(fl_proj, fld_proj_name, proj_name, dirxn_list, tmc_dir
         arcpy.SelectLayerByAttribute_management(fl_splitproj_w_tmcdata, "NEW_SELECTION", sql_notnull)
         
         #convert the selected records into a numpy array then a pandas dataframe
-        flds_df = [fld_proj_name, fld_shp_len] + speed_data_fields                     
+        flds_df = [fld_shp_len] + speed_data_fields
         npa_spddata = arcpy.da.FeatureClassToNumPyArray(fl_splitproj_w_tmcdata, flds_df)
         df_spddata = pd.DataFrame(npa_spddata)
         df_spddata = df_spddata.loc[pd.notnull(df_spddata[speed_data_fields[0]])] #remove project pieces with no speed data so their distance isn't included in weighting        
@@ -110,8 +110,7 @@ def conflate_tmc2projline(fl_proj, fld_proj_name, proj_name, dirxn_list, tmc_dir
             except ZeroDivisionError:
                 out_row_dict[fielddir] = df_spddata[field].mean() #if no length, just return mean speed? Maybe instead just return 'no data avaialble'? Or -1 to keep as int?
                 continue
-    print(out_row_dict)
-    return pd.DataFrame([out_row_dict])[0]
+    return pd.DataFrame([out_row_dict])
     
     #cleanup
     fcs_to_delete = [temp_intersctpts, temp_intrsctpt_singlpt, temp_splitprojlines, temp_splitproj_w_tmcdata]
@@ -121,7 +120,7 @@ def conflate_tmc2projline(fl_proj, fld_proj_name, proj_name, dirxn_list, tmc_dir
     return out_df
     
     
-def simplify_outputs(in_df, proj_len_col, proj_id_col):
+def simplify_outputs(in_df, proj_len_col):
     dirlen_suffix = '_calc_len'
     
     proj_len = in_df[proj_len_col][0]
@@ -148,12 +147,12 @@ def simplify_outputs(in_df, proj_len_col, proj_id_col):
     outcols_max = [c for c in in_df.columns if re.match(maxdir, c)]
     outcols_sec = [c for c in in_df.columns if re.match(secdir, c)]
     
-    outcols = [proj_id_col] + outcols_max + outcols_sec
+    outcols = outcols_max + outcols_sec
     
     return in_df[outcols].to_dict('records')
 
 
-def get_npmrds_data(fl_projline, str_project_name, str_project_type):
+def get_npmrds_data(fl_projline, str_project_type):
     import npmrds_params as p
     arcpy.OverwriteOutput = True
 
@@ -161,11 +160,11 @@ def get_npmrds_data(fl_projline, str_project_name, str_project_type):
                        p.col_reliab_wknd]  # 'avspd_3p6p','congn_6a9a','congn_3p6p'
 
     # add fields for project name
-    fld_proj_name = "proj_name"
-    arcpy.AddField_management(fl_projline, fld_proj_name, "TEXT")
-
-    calc_set_proj_name = "'{}'".format(str_project_name)
-    arcpy.CalculateField_management(project_line, fld_proj_name, calc_set_proj_name, "PYTHON")
+    # fld_proj_name = "proj_name"
+    # arcpy.AddField_management(fl_projline, fld_proj_name, "TEXT")
+    #
+    # calc_set_proj_name = "'{}'".format(str_project_name)
+    # arcpy.CalculateField_management(project_line, fld_proj_name, calc_set_proj_name, "PYTHON")
 
     # make feature layer from speed data feature class
     fl_speed_data = "fl_speed_data"
@@ -187,15 +186,15 @@ def get_npmrds_data(fl_projline, str_project_name, str_project_type):
     arcpy.MakeFeatureLayer_management(temp_tmcbuff, fl_tmc_buff)
 
     # get "full" table with data for all directions
-    projdata_df = conflate_tmc2projline(fl_projline, fld_proj_name, str_project_name, p.directions_tmc, p.col_tmcdir,
+    projdata_df = conflate_tmc2projline(fl_projline, p.directions_tmc, p.col_tmcdir,
                                         fl_tmc_buff, flds_speed_data)
 
     # trim down table to only include outputs for directions that are "on the segment",
     # i.e., that have most overlap with segment
-    out_df = simplify_outputs(projdata_df, 'proj_length_ft', 'ID')
+    out_dict = simplify_outputs(projdata_df, 'proj_length_ft')[0]
 
-    print(out_df)
-    return out_df
+    print(out_dict)
+    return out_dict
 
 
 # =====================RUN SCRIPT===========================
@@ -206,14 +205,13 @@ if __name__ == '__main__':
     arcpy.env.workspace = workspace
 
     project_line = "NPMRDS_confl_testseg_seconn" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
-    proj_name = "TestProj" # arcpy.GetParameterAsText(1) #"TestProj"
     proj_type = "Arterial" # arcpy.GetParameterAsText(2) #"Freeway"
 
     # make feature layers of NPMRDS and project line
     fl_project = "fl_project"
     arcpy.MakeFeatureLayer_management(project_line, fl_project)
 
-    get_npmrds_data(fl_project, proj_name, proj_type)
+    get_npmrds_data(fl_project, proj_type)
 
     elapsed_time = round((time.time() - start_time)/60, 1)
     print("Success! Time elapsed: {} minutes".format(elapsed_time))    
