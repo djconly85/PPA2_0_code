@@ -13,12 +13,8 @@
 
 Sample projects used: CAL20466, SAC25062
 '''
-import os
-import re
 import datetime as dt
 import time
-
-import pdb
 
 import arcpy
 #from arcgis.features import SpatialDataFrame
@@ -33,9 +29,8 @@ dateSuffix = str(dt.date.today().strftime('%m%d%Y'))
 #====================FUNCTIONS==========================================
 
 
-def conflate_link2projline(fl_proj, fl_links_buffd):
-
-    arcpy.AddMessage("Checking if project is on freight facility...")
+def conflate_link2projline(fl_proj, fl_links_buffd, links_desc):
+    print('starting conflation function for {}...'.format(links_desc))
 
     # get length of project
     fld_shp_len = "SHAPE@LENGTH"
@@ -85,8 +80,10 @@ def conflate_link2projline(fl_proj, fl_links_buffd):
                 continue
 
     overlap_pct = link_overlap_dist / project_len
-    out_dict = {'project_length':project_len, 'overlap with STAA':link_overlap_dist,
-                'pct_proj_STAAroute':overlap_pct}
+    
+    links_desc = links_desc.replace(" ","_")
+    out_dict = {'project_length': project_len, 'overlap with {}'.format(links_desc): link_overlap_dist,
+                'pct_proj_{}'.format(links_desc): overlap_pct}
 
     # cleanup
     fcs_to_delete = [temp_intersctpts, temp_intrsctpt_singlpt, temp_splitprojlines, temp_splitproj_w_linkdata]
@@ -96,7 +93,7 @@ def conflate_link2projline(fl_proj, fl_links_buffd):
     return out_dict
 
 
-def get_line_overlap(fl_projline, fc_network_lines):
+def get_line_overlap(fl_projline, fc_network_lines, links_desc):
 
     arcpy.OverwriteOutput = True
     SEARCH_DIST_FT = 100
@@ -116,9 +113,8 @@ def get_line_overlap(fl_projline, fc_network_lines):
     arcpy.MakeFeatureLayer_management(temp_linkbuff, fl_link_buff)
 
     # get dict of data
-    projdata_dict = conflate_link2projline(fl_projline, fl_link_buff)
+    projdata_dict = conflate_link2projline(fl_projline, fl_link_buff, links_desc)
 
-    print(projdata_dict)
     return projdata_dict
 
 
@@ -128,7 +124,10 @@ if __name__ == '__main__':
 
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
     arcpy.OverwriteOutput = True
-    link_fc = 'STAATruckRoutes'
+    link_fc = 'BikeRte_C1_C2_C4_2017' #network of lines whose overlap with the project you want to get (e.g., truck routes, bike paths, etc.
+    links_description = "BikeC1C2C4"
+    
+    #BikeRte_C1_C2_C4_2017 for bike routes
 
     project_line = "test_project_STAA_partialOverlap" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
     proj_name = "TestProj" # arcpy.GetParameterAsText(1) #"TestProj"
@@ -138,7 +137,8 @@ if __name__ == '__main__':
     fl_project = "fl_project"
     arcpy.MakeFeatureLayer_management(project_line, fl_project)
 
-    get_line_overlap(fl_project, link_fc)
+    projdata = get_line_overlap(fl_project, link_fc, links_description)
+    print(projdata)
 
     elapsed_time = round((time.time() - start_time)/60, 1)
     print("Success! Time elapsed: {} minutes".format(elapsed_time))    
