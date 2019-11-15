@@ -30,6 +30,7 @@ dateSuffix = str(dt.date.today().strftime('%m%d%Y'))
 
 
 def conflate_link2projline(fl_proj, fl_links_buffd, links_desc):
+    arcpy.env.workspace = arcpy.env.scratchGDB
     print('starting conflation function for {}...'.format(links_desc))
 
     # get length of project
@@ -94,7 +95,7 @@ def conflate_link2projline(fl_proj, fl_links_buffd, links_desc):
 
 
 def get_line_overlap(fl_projline, fc_network_lines, links_desc):
-
+    arcpy.env.workspace = arcpy.env.scratchGDB
     arcpy.OverwriteOutput = True
     SEARCH_DIST_FT = 100
     LINKBUFF_DIST_FT = 90
@@ -122,16 +123,13 @@ def get_line_overlap(fl_projline, fc_network_lines, links_desc):
 if __name__ == '__main__':
     start_time = time.time()
 
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
+    #arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
 
-    link_fc = 'BikeRte_C1_C2_C4_2017' #network of lines whose overlap with the project you want to get (e.g., truck routes, bike paths, etc.
+    project_line = arcpy.GetParameterAsText(0) # "test_project_STAA_partialOverlap" #  #"NPMRDS_confl_testseg_seconn"
+    proj_name = arcpy.GetParameterAsText(1) # "TestProj" #  #"TestProj"
+    proj_type = arcpy.GetParameterAsText(2) # "Arterial" #  #"Freeway"
+    link_fc = r'https://services.sacog.org/hosting/rest/services/Hosted/BikeRte_C1_C2_C4_2017/FeatureServer/0' # r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\BikeRte_C1_C2_C4_2017' #network of lines whose overlap with the project you want to get (e.g., truck routes, bike paths, etc.
     links_description = "BikeC1C2C4"
-    
-    #BikeRte_C1_C2_C4_2017 for bike routes
-
-    project_line = "test_project_STAA_partialOverlap" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
-    proj_name = "TestProj" # arcpy.GetParameterAsText(1) #"TestProj"
-    proj_type = "Arterial" # arcpy.GetParameterAsText(2) #"Freeway"
 
     # make feature layers of NPMRDS and project line
     fl_project = "fl_project"
@@ -139,10 +137,7 @@ if __name__ == '__main__':
 
     arcpy.OverwriteOutput = True
     projdata = get_line_overlap(fl_project, link_fc, links_description)
-    print(projdata)
-
-    elapsed_time = round((time.time() - start_time)/60, 1)
-    print("Success! Time elapsed: {} minutes".format(elapsed_time))    
+    arcpy.AddMessage(projdata)
     
 
         

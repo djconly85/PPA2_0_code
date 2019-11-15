@@ -26,7 +26,7 @@ def intersection_density(fl_project, fl_intersxns):
         for row in cur:
             buff_area_ft2 += row[0]
 
-    buff_acre = buff_area_ft2 / 43560  # may need to adjust for projection-related issues. See PPA1 for more info
+    buff_acre = buff_area_ft2 / 43560  # convert from ft2 to acres. may need to adjust for projection-related issues. See PPA1 for more info
 
     # get count of transit stops within buffer
     arcpy.SelectLayerByLocation_management(fl_intersxns, "INTERSECT", fl_buff, 0, "NEW_SELECTION")
