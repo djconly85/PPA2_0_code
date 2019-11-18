@@ -18,11 +18,11 @@ import re
 import datetime as dt
 import time
 
-import pdb
-
 import arcpy
 #from arcgis.features import SpatialDataFrame
 import pandas as pd
+
+import npmrds_params as p
 
 arcpy.env.overwriteOutput = True
 
@@ -153,18 +153,8 @@ def simplify_outputs(in_df, proj_len_col):
 
 
 def get_npmrds_data(fl_projline, str_project_type):
-    import npmrds_params as p
+
     arcpy.OverwriteOutput = True
-
-    flds_speed_data = [p.col_ff_speed, p.col_congest_speed, p.col_reliab_ampk, p.col_reliab_md, p.col_reliab_pmpk,
-                       p.col_reliab_wknd]  # 'avspd_3p6p','congn_6a9a','congn_3p6p'
-
-    # add fields for project name
-    # fld_proj_name = "proj_name"
-    # arcpy.AddField_management(fl_projline, fld_proj_name, "TEXT")
-    #
-    # calc_set_proj_name = "'{}'".format(str_project_name)
-    # arcpy.CalculateField_management(project_line, fld_proj_name, calc_set_proj_name, "PYTHON")
 
     # make feature layer from speed data feature class
     fl_speed_data = "fl_speed_data"
@@ -187,7 +177,7 @@ def get_npmrds_data(fl_projline, str_project_type):
 
     # get "full" table with data for all directions
     projdata_df = conflate_tmc2projline(fl_projline, p.directions_tmc, p.col_tmcdir,
-                                        fl_tmc_buff, flds_speed_data)
+                                        fl_tmc_buff, p.flds_speed_data)
 
     # trim down table to only include outputs for directions that are "on the segment",
     # i.e., that have most overlap with segment

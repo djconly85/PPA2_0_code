@@ -35,5 +35,5 @@ col_ped_ind = 'PEDESTRIAN_ACCIDENT'
 
 ind_val_true = 'Y'
 
-colln_searchdist = 50 # in feet, might have projection-related issues in online tool-how was this resolved in PPA1?
+colln_searchdist = 75 # in feet, might have projection-related issues in online tool-how was this resolved in PPA1?
 years_of_collndata = 5
