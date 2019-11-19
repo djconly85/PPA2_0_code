@@ -12,7 +12,7 @@
 import pandas as pd
 import arcpy
 
-import collision_modelnet_params as p
+import ppa_input_params as p
 
 
 def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):

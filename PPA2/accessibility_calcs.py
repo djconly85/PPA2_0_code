@@ -26,7 +26,7 @@ def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
 
 def get_acc_data(fl_project, fl_accdata, get_ej=False):
     print("calculating accessibility metrics for project...")
-    import accessibility_params as p
+    import ppa_input_params as p
 
     # select polygons that intersect with the project line
     arcpy.SelectLayerByLocation_management(fl_accdata, "INTERSECT", fl_project, p.bg_search_dist, "NEW_SELECTION")

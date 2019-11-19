@@ -22,7 +22,7 @@ import arcpy
 #from arcgis.features import SpatialDataFrame
 import pandas as pd
 
-import npmrds_params as p
+import ppa_input_params as p
 
 arcpy.env.overwriteOutput = True
 
@@ -110,14 +110,12 @@ def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
             except ZeroDivisionError:
                 out_row_dict[fielddir] = df_spddata[field].mean() #if no length, just return mean speed? Maybe instead just return 'no data avaialble'? Or -1 to keep as int?
                 continue
-    return pd.DataFrame([out_row_dict])
-    
+
     #cleanup
     fcs_to_delete = [temp_intersctpts, temp_intrsctpt_singlpt, temp_splitprojlines, temp_splitproj_w_tmcdata]
     for fc in fcs_to_delete:
         arcpy.Delete_management(fc)
-
-    return out_df
+    return pd.DataFrame([out_row_dict])
     
     
 def simplify_outputs(in_df, proj_len_col):
@@ -183,8 +181,13 @@ def get_npmrds_data(fl_projline, str_project_type):
     # i.e., that have most overlap with segment
     out_dict = simplify_outputs(projdata_df, 'proj_length_ft')[0]
 
+    #cleanup
+    arcpy.Delete_management(temp_tmcbuff)
+
     print(out_dict)
     return out_dict
+
+
 
 
 # =====================RUN SCRIPT===========================
@@ -194,8 +197,8 @@ if __name__ == '__main__':
     workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
     arcpy.env.workspace = workspace
 
-    project_line = "NPMRDS_confl_testseg_seconn" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
-    proj_type = "Arterial" # arcpy.GetParameterAsText(2) #"Freeway"
+    project_line = "PPA_test_fwyproj" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
+    proj_type = "Freeway" # arcpy.GetParameterAsText(2) #"Freeway"
 
     # make feature layers of NPMRDS and project line
     fl_project = "fl_project"

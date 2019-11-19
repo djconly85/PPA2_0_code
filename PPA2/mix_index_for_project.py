@@ -93,7 +93,7 @@ def calc_mix_index(in_df, params_df, hh_col, lu_factor_cols, mix_idx_col):
 
 
 def do_work(fl_parcel, fl_project, buff_dist_ft):
-    import mix_index_params as p
+    import ppa_input_params as p
 
     in_cols = [p.col_parcelid, p.col_hh, p.col_k12_enr, p.col_emptot, p.col_empfood,
                p.col_empret, p.col_empsvc, p.col_area_ac, p.col_lutype]

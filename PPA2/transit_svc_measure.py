@@ -11,12 +11,19 @@
 # --------------------------------
 import arcpy
 
+import ppa_input_params as p
 
-def transit_svc_density(fl_project, fl_trnstops):
+
+def transit_svc_density(fc_project, fc_trnstops):
+    fl_project = "fl_projline"
+    fl_trnstops = "fl_trnstp"
+
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
+    arcpy.MakeFeatureLayer_management(fc_trnstops, fl_trnstops)
+
     # create temporary buffer
-    buff_dist = 1320 # distance in feet
     fc_buff = r"memory\temp_buff_qmi"
-    arcpy.Buffer_analysis(fl_project, fc_buff, buff_dist)
+    arcpy.Buffer_analysis(fl_project, fc_buff, p.trn_buff_dist)
 
     fl_buff = "fl_buff"
     arcpy.MakeFeatureLayer_management(fc_buff, fl_buff)
@@ -33,11 +40,11 @@ def transit_svc_density(fl_project, fl_trnstops):
     arcpy.SelectLayerByLocation_management(fl_trnstops, "INTERSECT", fl_buff, 0, "NEW_SELECTION")
 
     transit_veh_events = 0
-    col_transit_events = "COUNT_trip_id"
 
-    with arcpy.da.SearchCursor(fl_trnstops, [col_transit_events]) as cur:
+    with arcpy.da.SearchCursor(fl_trnstops, [p.col_transit_events]) as cur:
         for row in cur:
-            transit_veh_events += row[0]
+            vehstops = row[0] if row[0] is not None else 0
+            transit_veh_events += vehstops
 
     trnstops_per_acre = transit_veh_events / buff_acre if buff_acre > 0 else 0
 
@@ -50,11 +57,5 @@ if __name__ == '__main__':
     proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg'
     trnstops_fc = 'transit_stoplocn_w_eventcount_2016'
 
-    fl_projline = "fl_projline"
-    fl_trnstp = "fl_trnstp"
-
-    arcpy.MakeFeatureLayer_management(proj_line_fc, fl_projline)
-    arcpy.MakeFeatureLayer_management(trnstops_fc, fl_trnstp)
-
-    output = transit_svc_density(fl_projline, fl_trnstp)
+    output = transit_svc_density(proj_line_fc, trnstops_fc)
     print(output)

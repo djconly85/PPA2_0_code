@@ -1,7 +1,8 @@
 
 import arcpy
 
-from PPA2 import collisions as coll2
+from Testing.archived import collisions as coll2
+
 # TO GET CTYPE AVERAGES, WILL NEED TO USE MODEL-BASED VERSION MODULE BECAUSE NEED MODELED VMT
 
 fc_ctypes = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb\comm_type_juris_latest'

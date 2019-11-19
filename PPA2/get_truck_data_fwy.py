@@ -4,7 +4,7 @@
 import arcpy
 import pandas as pd
 
-import npmrds_params as p
+import ppa_input_params as p
 import npmrds_data_conflation as ndc
 
 def get_wtdavg_truckdata(in_df, col_name):
