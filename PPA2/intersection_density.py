@@ -11,7 +11,13 @@
 # --------------------------------
 import arcpy
 
-def intersection_density(fl_project, fl_intersxns):
+def intersection_density(fc_project, fc_intersxns):
+    fl_project = "fl_projline"
+    fl_intersxns = "fl_trnstp"
+
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
+    arcpy.MakeFeatureLayer_management(fc_intersxns, fl_intersxns)
+
     # create temporary buffer
     buff_dist = 1320 # distance in feet
     fc_buff = r"memory\temp_buff_qmi"
@@ -50,11 +56,5 @@ if __name__ == '__main__':
     proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg'
     intersxns_fc = 'intersections_2016'
 
-    fl_projline = "fl_projline"
-    fl_intersxn = "fl_trnstp"
-
-    arcpy.MakeFeatureLayer_management(proj_line_fc, fl_projline)
-    arcpy.MakeFeatureLayer_management(intersxns_fc, fl_intersxn)
-
-    output = intersection_density(fl_projline, fl_intersxn)
+    output = intersection_density(proj_line_fc, intersxns_fc)
     print(output)

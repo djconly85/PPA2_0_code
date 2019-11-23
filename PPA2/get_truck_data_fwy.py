@@ -27,9 +27,11 @@ def get_wtdavg_truckdata(in_df, col_name):
 
 
 
-def get_tmc_truck_data(fl_projline, str_project_type):
+def get_tmc_truck_data(fc_projline, str_project_type):
 
     arcpy.OverwriteOutput = True
+    fl_projline = "fl_project"
+    arcpy.MakeFeatureLayer_management(fc_projline, fl_projline)
 
     # make feature layer from speed data feature class
     fl_speed_data = "fl_speed_data"
@@ -56,31 +58,20 @@ def get_tmc_truck_data(fl_projline, str_project_type):
     out_dict = {}
     for col in p.flds_truck_data:
         output_val = get_wtdavg_truckdata(projdata_df, col)
-        out_dict["{}_proj"] = output_val
+        out_dict["{}_proj".format(col)] = output_val
         
     return out_dict
 
 
-
-
-    # trim down table to only include outputs for directions that are "on the segment",
-    # i.e., that have most overlap with segment
-    # out_dict = ndc.simplify_outputs(projdata_df, 'proj_length_ft')[0]
-    #
-    # print(out_dict)
-    # return out_dict
-
 if __name__ == '__main__':
 
-    workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
+    workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
     arcpy.env.workspace = workspace
 
-    project_line = "PPA_test_fwyproj"  # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
+    project_line = r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\testproj_causeway_fwy"  # arcpy.GetParameterAsText(0)
     proj_type = "Freeway"  # arcpy.GetParameterAsText(2) #"Freeway"
 
     # make feature layers of NPMRDS and project line
-    fl_project = "fl_project"
-    arcpy.MakeFeatureLayer_management(project_line, fl_project)
 
-    output_dict = get_tmc_truck_data(fl_project, proj_type)
+    output_dict = get_tmc_truck_data(project_line, proj_type)
     print(output_dict)

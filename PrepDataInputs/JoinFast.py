@@ -3,19 +3,19 @@ import arcpy
 arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 arcpy.OverwriteOutput = True
 
-left_table = 'pcl_w_mixindex_1mi_11042019' #can be feature class or table
-right_table = 'parcel_mixindex_halfmi_11052019' #can be feature class or table
+left_table = 'ilut_combined2016_23_latest' #can be feature class or table
+right_table = 'ilut_combined2040_38_latest' #can be feature class or table
 
 join_key_field_left = 'PARCELID' #case sensitive!
-join_key_field_right = 'parcelid'
-field_to_calc = 'mix_index_halfmi'
+join_key_field_right = 'PARCELID'
+field_to_calc = 'LUTYPE40'
 field_to_calc_dtype = "FLOAT" #FLOAT, TEXT, SHORT, or LONG
 
 print("loading values from right-side table into dict...")
 halfmi_dict = {}
 
-fields_right = [f.name for f in arcpy.ListFields(right_table)]
-fields_left = [f.name for f in arcpy.ListFields(left_table)]
+fields_right = # [f.name for f in arcpy.ListFields(right_table)]
+fields_left = # [f.name for f in arcpy.ListFields(left_table)]
 
 with arcpy.da.SearchCursor(right_table, fields_right) as cur:
     for row in cur:

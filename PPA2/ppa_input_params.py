@@ -1,5 +1,18 @@
+# ========================================INPUT DATA LAYERS=====================================================
+fc_speed_data = 'npmrds_metrics_v7'  # r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\npmrds_metrics_v6_wtruck" #npmrds speed data
+accdata_fc = 'Sugar_access_data_latest' # sugar accessibility polygon data
+collisions_fc = 'Collisions2014to2018fwytag' # collision point data
+parcel_pt_fc = "parcel_data_pts_2016" # parcel point data
+parcel_poly_fc = 'parcels_w_urbanization'
+trn_svc_fc = 'transit_stoplocn_w_eventcount_2016' # transit stop event data; point file
+freight_route_fc = 'STAATruckRoutes' # STAA truck route lines
+intersections_base_fc = 'intersections_2016'
+comm_types_fc = 'comm_type_juris_latest'
 
-
+# project type
+ptype_fwy = 'Freeway'
+ptype_arterial = 'Arterial'
+ptype_sgr = 'Complete Street or State of Good Repair'
 
 
 # ===================================ACCESSIBILITY PARAMETERS=========================================================
@@ -40,7 +53,6 @@ bg_search_dist = 300 # feet away from project line that you'll tag block groups 
 # ===================================PROBE-BASED SPEED DATA (E.G. NPMRDS) PARAMETERS================================
 
 # speed data attributes
-fc_speed_data = r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\npmrds_metrics_v6_wtruck"
 col_ff_speed = "ff_speed"
 col_congest_speed = "havg_spd_worst4hrs"
 col_reliab_ampk = "lottr_ampk"
@@ -49,7 +61,7 @@ col_reliab_pmpk = "lottr_pmpk"
 col_reliab_wknd = "lottr_wknd"
 col_tmcdir = "direction_signd"
 col_roadtype = "f_system"  # indicates if road is freeway or not, so that data from freeways doesn't affect data on surface streets, and vice-versa
-col_truckpct = "truck_pct_TEST"
+col_truckpct = "Trk_Veh_Pc"
 
 flds_speed_data = [col_ff_speed, col_congest_speed, col_reliab_ampk, col_reliab_md, col_reliab_pmpk,
                    col_reliab_wknd]
@@ -76,6 +88,9 @@ col_empret = 'EMPRET'
 col_empsvc = 'EMPSVC'
 col_k12_enr = 'ENR_K12'
 
+mix_index_buffdist = 5280 #feet
+du_mix_buffdist = 5280 #feet
+
 # park acreage info,
 col_area_ac = 'GISAc'
 col_lutype = 'LUTYPE'
@@ -85,6 +100,8 @@ park_calc_dict = {'area_field': col_area_ac,
                   'lutype_field': col_lutype,
                   'park_lutype': lutype_parks,
                   'park_acres_field': col_parkac}
+
+lutype_ag = 'Agriculture' #from LUTYPE colume for ILUT table
 
 mix_idx_col = 'mix_index_1mi'
 
@@ -173,3 +190,14 @@ cs_lu_facs = [col_area_ac, col_k12_enr, col_emptot, col_du]
 
 cs_threshold_speed = 40 # MPH
 cs_spd_pen_fac = 0.04 # speed penalty factor
+
+# ============================URBANIZATION PARAMETERS===========================
+
+#params for determining if project is in greenfield or infill area
+col_ctype = 'comm_type'
+ctypes_infill = ['Established', 'Corridor']
+threshold_val = 0.9  # if more than 90% of project length is in greenfield, then project is greenfield vice-versa for infill
+
+#for measuring loss in acres of natural resources within project area (nat resources = forest, parks, ag land)
+buff_nat_resources = 2640 #feet. Is area of consideration when measuring acres of natural resources lost within project area.
+lutypes_nat_resources = ['Forest', 'Agriculture', ]

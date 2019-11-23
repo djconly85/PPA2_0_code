@@ -13,6 +13,7 @@ import pandas as pd
 import ppa_input_params as p
 
 
+
 def point_sum(fc_pclpt, val_fields, buff_dist, fc_project, case_field=None, case_excs_list=[]):
     fl_parcel = "fl_parcel"
     arcpy.MakeFeatureLayer_management(fc_pclpt, fl_parcel)
@@ -31,7 +32,7 @@ def point_sum(fc_pclpt, val_fields, buff_dist, fc_project, case_field=None, case
 
     # load parcel data into dataframe
     rows_pcldata = []
-    with arcpy.da.SearchCursor(fc_pclpt, val_fields) as cur:
+    with arcpy.da.SearchCursor(fl_parcel, val_fields) as cur:
         for row in cur:
             df_row = list(row)
             rows_pcldata.append(df_row)
@@ -46,29 +47,56 @@ def point_sum(fc_pclpt, val_fields, buff_dist, fc_project, case_field=None, case
         out_df = pd.DataFrame(parcel_df[val_fields].sum(axis=0)).T
 
     out_dict = out_df.to_dict('records')[0]
+
+
     return out_dict
 
+# gets density of whatever you're summing, based on parcel area (i.e., excludes rivers, lakes, road ROW, etc.)
+# considers parcel area for parcels whose centroid is in the buffer. This is because the initial values are based on
+# entire parcels, not parcels that've been chopped by a buffer boundary
+def point_sum_density(fc_pclpt, val_fields, buff_dist, fc_project, case_field=None, case_excs_list=[]):
 
+    # make sure you calculate the area for normalizing
+    if p.col_area_ac not in val_fields:
+        val_fields.append(p.col_area_ac)
 
+    #get values (e.g. total pop, total jobs, etc.)
+    dict_vals = point_sum(fc_pclpt, val_fields, buff_dist, fc_project, case_field, case_excs_list)
+
+    #calculate density per unit of area for each value (e.g. jobs/acre, pop/acre, etc.)
+    area_unit = "acre"
+    dict_out = {}
+    for valfield, val in dict_vals.items():
+        if valfield == p.col_area_ac:
+            continue
+        else:
+            val_density = dict_vals[valfield] / dict_vals[p.col_area_ac]
+            dict_out_key = "{}_{}".format(valfield, area_unit)
+            dict_out[dict_out_key] = val_density
+
+    return dict_out
 
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
     # input fc of parcel data--must be points!
-    in_pcl_pt_fc = "parcel_data_2016_11062019_pts"
+    in_pcl_pt_fc = p.parcel_pt_fc
     value_fields = ['POP_TOT', 'EMPTOT', 'EMPIND', 'PT_TOT_RES', 'SOV_TOT_RES', 'HOV_TOT_RES', 'TRN_TOT_RES',
                     'BIK_TOT_RES', 'WLK_TOT_RES']
 
     # input line project for basing spatial selection
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_YubaCity'
 
     # get jobs, dwelling units, trips by mode within 0.5mi
-    output_dict = point_sum(in_pcl_pt_fc, value_fields, 2640, project_fc)
-    print(output_dict)
+    #output_dict = point_sum(in_pcl_pt_fc, value_fields, 2640, project_fc)
+    #print(output_dict)
 
     # dwelling units by housing type within 1mi
-    # point_sum(fl_parcel, ['DU_TOT'], 5280, fl_project, case_field='TYPCODE_DESC', case_excs_list=['Other'])
-
+    #output_dict = point_sum(in_pcl_pt_fc, ['DU_TOT'], 5280, project_fc, case_field='TYPCODE_DESC', case_excs_list=['Other'])
+    #print(output_dict)
     # EJ population
-    #point_sum(fl_parcel, ['POP_TOT'], 5280, fl_project, case_field='EJ_2018')
+    # output_dict = point_sum(in_pcl_pt_fc, ['POP_TOT', 'EMPTOT', 'GISAc'], 2640, project_fc)  # case_field='EJ_2018'
+    # print(output_dict)
 
+    output_dens_dict = point_sum_density(in_pcl_pt_fc, ['POP_TOT', 'EMPTOT'], 2640, project_fc)
+    print(output_dens_dict)

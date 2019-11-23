@@ -30,7 +30,6 @@ dateSuffix = str(dt.date.today().strftime('%m%d%Y'))
 
 
 def conflate_link2projline(fl_proj, fl_links_buffd, links_desc):
-    print('starting conflation function for {}...'.format(links_desc))
 
     # get length of project
     fld_shp_len = "SHAPE@LENGTH"
@@ -93,13 +92,17 @@ def conflate_link2projline(fl_proj, fl_links_buffd, links_desc):
     return out_dict
 
 
-def get_line_overlap(fl_projline, fc_network_lines, links_desc):
+def get_line_overlap(fc_projline, fc_network_lines, links_desc):
+    print("estimating share of project line that is {}...".format(links_desc))
 
     arcpy.OverwriteOutput = True
     SEARCH_DIST_FT = 100
     LINKBUFF_DIST_FT = 90
 
-    # make feature layer from speed data feature class
+    # make feature layers of NPMRDS and project line
+    fl_projline = "fl_project"
+    arcpy.MakeFeatureLayer_management(fc_projline, fl_projline)
+
     fl_network_lines = "fl_network_lines"
     arcpy.MakeFeatureLayer_management(fc_network_lines, fl_network_lines)
 
@@ -133,12 +136,10 @@ if __name__ == '__main__':
     proj_name = "TestProj" # arcpy.GetParameterAsText(1) #"TestProj"
     proj_type = "Arterial" # arcpy.GetParameterAsText(2) #"Freeway"
 
-    # make feature layers of NPMRDS and project line
-    fl_project = "fl_project"
-    arcpy.MakeFeatureLayer_management(project_line, fl_project)
+
 
     arcpy.OverwriteOutput = True
-    projdata = get_line_overlap(fl_project, link_fc, links_description)
+    projdata = get_line_overlap(project_line, link_fc, links_description)
     print(projdata)
 
     elapsed_time = round((time.time() - start_time)/60, 1)

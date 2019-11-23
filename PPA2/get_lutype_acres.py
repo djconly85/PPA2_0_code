@@ -12,7 +12,14 @@
 
 import arcpy
 
-def get_lutype_acreage(fl_project, fl_parcels, lutype):
+def get_lutype_acreage(fc_project, fc_poly_parcels, lutype):
+    arcpy.AddMessage("Estimating {} acres near project...".format(lutype))
+
+    fl_parcels = "fl_parcel"
+    fl_project = "fl_project"
+    arcpy.MakeFeatureLayer_management(fc_poly_parcels, fl_parcels)
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
+
     # create temporary buffer
     buff_dist = 2640  # distance in feet
     fc_buff = r"memory\temp_buff_qmi"
@@ -50,7 +57,9 @@ def get_lutype_acreage(fl_project, fl_parcels, lutype):
     lutype_intersect_acres = lutype_intersect_ft2 / 43560  # convert to acres
     pct_lutype = lutype_intersect_acres / buff_acre if buff_acre > 0 else 0
 
-    return {'total_buff_acres': buff_acre, '{}_acres_in_buffer'.format(lutype): lutype_intersect_acres,
+    [arcpy.Delete_management(item) for item in [fl_parcels, fl_project, fc_buff, fl_buff, fc_intersect, fl_intersect]]
+
+    return {'total_buff_acres': buff_acre, '{}_acres'.format(lutype): lutype_intersect_acres,
             'pct_{}_in_buff'.format(lutype): pct_lutype}
 
 
@@ -62,12 +71,8 @@ if __name__ == '__main__':
     project_featclass = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg'
     lutype = 'Agriculture'
 
-    flayer_parcel = "fl_parcel"
-    flayer_project = "fl_project"
-
-    arcpy.MakeFeatureLayer_management(parcel_featclass, flayer_parcel)
-    arcpy.MakeFeatureLayer_management(project_featclass, flayer_project)
-
-    out_pcl_data = get_lutype_acreage(flayer_project, flayer_parcel, lutype)
+    out_pcl_data = get_lutype_acreage(project_featclass, parcel_featclass, lutype)
     print(out_pcl_data)
+
+    # NOT 11/22/2019 - THIS IS GETTING AS PCT OF BUFFER AREA, NOT DEVELOPABLE ON-PARCEL ACRES! SHOULD FIX
 

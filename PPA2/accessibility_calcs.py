@@ -9,9 +9,11 @@
 # Copyright:   (c) SACOG
 # Python Version: 3.x
 # --------------------------------
-
 import arcpy
 import pandas as pd
+
+import ppa_input_params as p
+
 
 def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
     data_rows = []
@@ -24,9 +26,14 @@ def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
     return out_df
 
 
-def get_acc_data(fl_project, fl_accdata, get_ej=False):
+def get_acc_data(fc_project, fc_accdata, get_ej=False):
     print("calculating accessibility metrics for project...")
-    import ppa_input_params as p
+
+    fl_accdata = "fl_accdata"
+    fl_project = "fl_project"
+
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
+    arcpy.MakeFeatureLayer_management(fc_accdata, fl_accdata)
 
     # select polygons that intersect with the project line
     arcpy.SelectLayerByLocation_management(fl_accdata, "INTERSECT", fl_project, p.bg_search_dist, "NEW_SELECTION")
@@ -53,22 +60,19 @@ def get_acc_data(fl_project, fl_accdata, get_ej=False):
             out_wtd_acc = accdata_df[col_wtd].sum() / accdata_df[p.col_pop].sum()
             out_dict[col] = out_wtd_acc
 
-    print(out_dict)
     return out_dict
 
 
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    arcpy.OverwriteOutput = True
 
-    fc_project = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg'
-    fc_accdata = 'Sugar_access_data_latest'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg'
+    accdata_fc = 'Sugar_access_data_latest'
 
-    accdata_fl = "fl_accdata"
-    project_fl = "fl_project"
+    out_1 = get_acc_data(project_fc, accdata_fc, get_ej=False)
+    #out_2 = get_acc_data(project_fc, accdata_fc, get_ej=True)
 
-    arcpy.MakeFeatureLayer_management(fc_project, project_fl)
-    arcpy.MakeFeatureLayer_management(fc_accdata, accdata_fl)
-
-    get_acc_data(project_fl, accdata_fl, get_ej=False)
-    get_acc_data(project_fl, accdata_fl, get_ej=True)
+    print(out_1)
+    #print(out_2)
 

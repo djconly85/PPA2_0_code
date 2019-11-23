@@ -32,11 +32,18 @@ dateSuffix = str(dt.date.today().strftime('%m%d%Y'))
 
 #====================FUNCTIONS==========================================
 
+def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
+    data_rows = []
+    with arcpy.da.SearchCursor(in_esri_obj, esri_obj_fields) as cur:
+        for row in cur:
+            out_row = list(row)
+            data_rows.append(out_row)
+
+    out_df = pd.DataFrame(data_rows, index=index_field, columns=esri_obj_fields)
+    return out_df
 
 def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
                           fl_tmcs_buffd, speed_data_fields):
-
-    arcpy.AddMessage("Calculating congestion and reliability metrics...")
 
     out_row_dict = {}
     
@@ -90,9 +97,10 @@ def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
         
         #convert the selected records into a numpy array then a pandas dataframe
         flds_df = [fld_shp_len] + speed_data_fields
-        npa_spddata = arcpy.da.FeatureClassToNumPyArray(fl_splitproj_w_tmcdata, flds_df)
-        df_spddata = pd.DataFrame(npa_spddata)
-        df_spddata = df_spddata.loc[pd.notnull(df_spddata[speed_data_fields[0]])] #remove project pieces with no speed data so their distance isn't included in weighting        
+        df_spddata = esri_object_to_df(fl_splitproj_w_tmcdata, flds_df)
+
+        # remove project pieces with no speed data so their distance isn't included in weighting
+        df_spddata = df_spddata.loc[pd.notnull(df_spddata[speed_data_fields[0]])].astype(float)
         
         dir_len = df_spddata[fld_shp_len].sum() #sum of lengths of project segments that intersect TMCs in the specified direction
         out_row_dict["{}_calc_len".format(direcn)] = dir_len #"calc" length because it may not be same as project length
@@ -101,11 +109,11 @@ def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
         #for PHED or hours of delay, will want to get dist-weighted SUM; for speed/reliability, want dist-weighted AVG
         #ideally this would be a dict of {<field>:<aggregation method>}
         for field in speed_data_fields:
+            fielddir = "{}{}".format(direcn, field)  # add direction tag to field names
             try: #wgtd avg = sum(piece's data * piece's len)/(sum of all piece lengths)
                 avg_data_val = (df_spddata[field]*df_spddata[fld_shp_len]).sum() \
                                 / df_spddata[fld_shp_len].sum()
-                
-                fielddir = "{}{}".format(direcn, field) #add direction tag to field names
+
                 out_row_dict[fielddir] = avg_data_val
             except ZeroDivisionError:
                 out_row_dict[fielddir] = df_spddata[field].mean() #if no length, just return mean speed? Maybe instead just return 'no data avaialble'? Or -1 to keep as int?
@@ -151,7 +159,7 @@ def simplify_outputs(in_df, proj_len_col):
 
 
 def get_npmrds_data(fl_projline, str_project_type):
-
+    arcpy.AddMessage("Calculating congestion and reliability metrics...")
     arcpy.OverwriteOutput = True
 
     # make feature layer from speed data feature class
