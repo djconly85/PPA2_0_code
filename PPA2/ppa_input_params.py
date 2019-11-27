@@ -1,4 +1,7 @@
 # ========================================INPUT DATA LAYERS=====================================================
+fgdb = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb' #for now, is reference only. individual scripts explicitly indicate workspace and file locations
+
+region_fc = 'sacog_region'
 fc_speed_data = 'npmrds_metrics_v7'  # r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\npmrds_metrics_v6_wtruck" #npmrds speed data
 accdata_fc = 'Sugar_access_data_latest' # sugar accessibility polygon data
 collisions_fc = 'Collisions2014to2018fwytag' # collision point data
@@ -7,19 +10,25 @@ parcel_poly_fc = 'parcels_w_urbanization'
 trn_svc_fc = 'transit_stoplocn_w_eventcount_2016' # transit stop event data; point file
 freight_route_fc = 'STAATruckRoutes' # STAA truck route lines
 intersections_base_fc = 'intersections_2016'
-comm_types_fc = 'comm_type_juris_latest'
+comm_types_fc = 'comm_type_jurspecific_latest'
+model_links_fc = 'model_links_2016'
+reg_centerline_fc = 'RegionalCenterline_2019'
+reg_bikeway_fc = 'BikeRte_C1_C2_C4_2017'
 
 # project type
 ptype_fwy = 'Freeway'
 ptype_arterial = 'Arterial'
 ptype_sgr = 'Complete Street or State of Good Repair'
+ptype_area_agg = 'AreaAvg' # e.g., regional average, community type avg
 
-
+# ===================================CONVERSION FACTORS=========================================================
+ft2acre = 43560 # convert square feet to acres
+ft2mile = 5280
 # ===================================ACCESSIBILITY PARAMETERS=========================================================
 
 # Accessibility columns
 col_geoid = "bgid"
-col_ej_ind = "PPA_EJ2018"
+col_acc_ej_ind = "PPA_EJ2018"
 col_pop = "population"
 
 col_walk_alljob = 'WALKDESTSalljob'
@@ -90,6 +99,7 @@ col_k12_enr = 'ENR_K12'
 
 mix_index_buffdist = 5280 #feet
 du_mix_buffdist = 5280 #feet
+ilut_sum_buffdist = 2640 # feet
 
 # park acreage info,
 col_area_ac = 'GISAc'
@@ -122,6 +132,7 @@ params_df = pd.DataFrame(mix_calc_vals, columns = mix_calc_cols) \
 
 # other ILUT columns used
 col_pop_ilut = 'POP_TOT'
+col_ej_ind = "EJ_2018"
 col_empind = 'EMPIND'
 col_persntrip_res = 'PT_TOT_RES'
 col_sovtrip_res = 'SOV_TOT_RES'
@@ -144,8 +155,6 @@ capclasses_fwy = (1, 8, 51, 56) # freeway gen purpose, aux, and HOV lanes
 capclasses_ramps = (6, 16, 18, 26, 36, 46) # onramps, offramps, freeway-freeway connectors, HOV onramp meter byp lanes, metered onramp lanes
 capclass_arterials = (2, 3, 4, 5, 12)
 capclasses_nonroad = (7, 62, 63, 99)
-
-
 
 col_lanemi = 'LANEMI'
 col_distance = 'DISTANCE'
@@ -191,13 +200,18 @@ cs_lu_facs = [col_area_ac, col_k12_enr, col_emptot, col_du]
 cs_threshold_speed = 40 # MPH
 cs_spd_pen_fac = 0.04 # speed penalty factor
 
+intersxn_dens_buff = 1320 # distance in feet
+bikeway_buff = 1320 # distance in feet
+
 # ============================URBANIZATION PARAMETERS===========================
 
 #params for determining if project is in greenfield or infill area
 col_ctype = 'comm_type'
+col_ctype_2 = 'comm_type_ppa'
 ctypes_infill = ['Established', 'Corridor']
 threshold_val = 0.9  # if more than 90% of project length is in greenfield, then project is greenfield vice-versa for infill
 
 #for measuring loss in acres of natural resources within project area (nat resources = forest, parks, ag land)
 buff_nat_resources = 2640 #feet. Is area of consideration when measuring acres of natural resources lost within project area.
 lutypes_nat_resources = ['Forest', 'Agriculture', ]
+

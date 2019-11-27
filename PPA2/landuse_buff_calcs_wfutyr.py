@@ -12,7 +12,26 @@ import pandas as pd
 
 import ppa_input_params as p
 
+def get_other_yr_data(fl_selected_data, tbl_futyr, join_key_col, value_fields):
+    #make list of join key values whose values you want from joining table
+    filtered_join_keys = []
+    with arcpy.da.SearchCursor(fl_selected_data, join_key_col) as cur:
+        for row in cur:
+            filtered_join_keys.append(row[0])
 
+    #cursor for right-hand table: if the join key value is in list of join key values, then add as item to list of lists
+    rows_otheryear_data = []
+
+    value_fields.append(join_key_col)
+    with arcpy.da.SearchCursor(tbl_futyr, value_fields) as cur:
+        for row in cur:
+            join_key_val = row[value_fields.index(join_key_col)]
+            if join_key_val in filtered_join_keys:
+                data_row = list(row)
+                rows_otheryear_data.append(data_row)
+
+    #make a dataframe from the list of lists.
+    otheryear_pcldf = pd.DataFrame(rows_otheryear_data, columns=value_fields)
 
 def point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, case_excs_list=[]):
     arcpy.AddMessage("aggregating land use data...")

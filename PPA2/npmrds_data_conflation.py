@@ -148,8 +148,6 @@ def simplify_outputs(in_df, proj_len_col):
     maxdir = max_len_col[:max_len_col.find(dirlen_suffix)] #direction name without '_calc_len' suffix
     secdir = secndmax_col[:secndmax_col.find(dirlen_suffix)]
     
-    print(maxdir, secdir)
-    
     outcols_max = [c for c in in_df.columns if re.match(maxdir, c)]
     outcols_sec = [c for c in in_df.columns if re.match(secdir, c)]
     
@@ -158,9 +156,12 @@ def simplify_outputs(in_df, proj_len_col):
     return in_df[outcols].to_dict('records')
 
 
-def get_npmrds_data(fl_projline, str_project_type):
+def get_npmrds_data(fc_projline, str_project_type):
     arcpy.AddMessage("Calculating congestion and reliability metrics...")
     arcpy.OverwriteOutput = True
+
+    fl_projline = "fl_project"
+    arcpy.MakeFeatureLayer_management(fc_projline, fl_projline)
 
     # make feature layer from speed data feature class
     fl_speed_data = "fl_speed_data"
@@ -192,7 +193,6 @@ def get_npmrds_data(fl_projline, str_project_type):
     #cleanup
     arcpy.Delete_management(temp_tmcbuff)
 
-    print(out_dict)
     return out_dict
 
 
@@ -206,13 +206,12 @@ if __name__ == '__main__':
     arcpy.env.workspace = workspace
 
     project_line = "PPA_test_fwyproj" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
-    proj_type = "Freeway" # arcpy.GetParameterAsText(2) #"Freeway"
+    proj_type = p.ptype_fwy # arcpy.GetParameterAsText(2) #"Freeway"
 
     # make feature layers of NPMRDS and project line
-    fl_project = "fl_project"
-    arcpy.MakeFeatureLayer_management(project_line, fl_project)
 
-    get_npmrds_data(fl_project, proj_type)
+
+    get_npmrds_data(project_line, proj_type)
 
     elapsed_time = round((time.time() - start_time)/60, 1)
     print("Success! Time elapsed: {} minutes".format(elapsed_time))    

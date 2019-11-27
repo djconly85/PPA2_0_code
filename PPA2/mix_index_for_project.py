@@ -18,7 +18,7 @@ import pandas as pd
 import swifter
 import arcpy
 
-# from arcgis.features import GeoAccessor, GeoSeriesAccessor
+import ppa_input_params as p
 
 
 # =============FUNCTIONS=============================================
@@ -92,8 +92,14 @@ def calc_mix_index(in_df, params_df, hh_col, lu_factor_cols, mix_idx_col):
     return in_df
 
 
-def do_work(fl_parcel, fl_project, buff_dist_ft):
-    import ppa_input_params as p
+def get_mix_idx(fc_parcel, fc_project, project_type):
+    arcpy.AddMessage("calculating mix index...")
+
+    fl_parcel = "fl_parcel"
+    arcpy.MakeFeatureLayer_management(fc_parcel, fl_parcel)
+
+    fl_project = "fl_project"
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
 
     in_cols = [p.col_parcelid, p.col_hh, p.col_k12_enr, p.col_emptot, p.col_empfood,
                p.col_empret, p.col_empsvc, p.col_area_ac, p.col_lutype]
@@ -101,7 +107,8 @@ def do_work(fl_parcel, fl_project, buff_dist_ft):
     lu_fac_cols = [p.col_k12_enr, p.col_emptot, p.col_empfood, p.col_empret, p.col_empsvc, p.col_parkac]
     # make parcel feature layer
 
-    arcpy.SelectLayerByLocation_management(fl_parcel, "WITHIN_A_DISTANCE", fl_project, buff_dist_ft, "NEW_SELECTION")
+    buffer_dist = 0 if project_type == p.ptype_area_agg else p.mix_index_buffdist
+    arcpy.SelectLayerByLocation_management(fl_parcel, "WITHIN_A_DISTANCE", fl_project, buffer_dist, "NEW_SELECTION")
 
     summ_df = make_summary_df(fl_parcel, in_cols, lu_fac_cols, p.col_hh, p.park_calc_dict)
 
@@ -123,17 +130,13 @@ if __name__ == '__main__':
     
     # input fc of parcel data--must be points!
     in_pcl_pt_fc = "parcel_data_2016_11062019_pts"
-    fl_parcel = "fl_parcel"
-    arcpy.MakeFeatureLayer_management(in_pcl_pt_fc, fl_parcel)
 
     # input line project for basing spatial selection
     project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg_seconn'
-    fl_project = "fl_project"
-    arcpy.MakeFeatureLayer_management(project_fc, fl_project)
 
     buff_dist_ft = 5280  # distance in feet--MIGHT NEED TO BE ADJUSTED FOR WGS 84--SEE OLD TOOL FOR HOW THIS WAS RESOLVED
 
-    out_dict = do_work(fl_parcel, fl_project, buff_dist_ft)
+    out_dict = get_mix_idx(in_pcl_pt_fc, project_fc, p.ptype_arterial)
 
     print(out_dict)
     
