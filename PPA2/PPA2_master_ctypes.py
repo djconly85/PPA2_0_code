@@ -96,17 +96,13 @@ if __name__ == '__main__':
         # for all keys in the output dict, add a tag to the key value to indicate community type
         # append it to a master dict
 
-    regn_dict = get_poly_avg(p.region_fc)
-    regn_df = pd.DataFrame.from_dict(poly_dict, orient='index', columns=['REGION'])
+    master_out_dict['REGION'] = get_poly_avg(p.region_fc)
+    # regn_df = pd.DataFrame.from_dict(poly_dict, orient='index')
 
+    out_df = pd.DataFrame.from_dict(master_out_dict, orient='columns')
 
-    ctypes_df = pd.DataFrame.from_dict(master_out_dict, orient='index')
-
-    out_df = ctypes_df.join(regn_df)
-
+    #out_df = ctypes_df.join(regn_df)
     out_df.to_csv(output_csv)
     arcpy.AddMessage("summary completed as {}".format(output_csv))
-
-    #print(pd.DataFrame.from_dict(out_dict, orient='index'))
 
 
