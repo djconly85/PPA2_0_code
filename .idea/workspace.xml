@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="17e4acb0-29b3-4667-b3ba-79aaa1f4d2fd" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/PPA2_master_ctypes.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/PPA2_master_ctypes.py" afterDir="false" />
-    </list>
+    <list default="true" id="17e4acb0-29b3-4667-b3ba-79aaa1f4d2fd" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -219,7 +216,14 @@
       <option name="project" value="LOCAL" />
       <updated>1574707082812</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="commit11272019_PackageBranch">
+      <created>1574903882655</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1574903882655</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -240,7 +244,8 @@
     <MESSAGE value="commit11192019" />
     <MESSAGE value="commit11222019" />
     <MESSAGE value="commit11252019_PackageBranch" />
-    <option name="LAST_COMMIT_MESSAGE" value="commit11252019_PackageBranch" />
+    <MESSAGE value="commit11272019_PackageBranch" />
+    <option name="LAST_COMMIT_MESSAGE" value="commit11272019_PackageBranch" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
