@@ -5,8 +5,6 @@ region_fc = 'sacog_region'
 fc_speed_data = 'npmrds_metrics_v7'  # r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\npmrds_metrics_v6_wtruck" #npmrds speed data
 accdata_fc = 'Sugar_access_data_latest' # sugar accessibility polygon data
 collisions_fc = 'Collisions2014to2018fwytag' # collision point data
-parcel_pt_fc = "parcel_data_pts_2016" # parcel point data
-parcel_poly_fc = 'parcels_w_urbanization'
 trn_svc_fc = 'transit_stoplocn_w_eventcount_2016' # transit stop event data; point file
 freight_route_fc = 'STAATruckRoutes' # STAA truck route lines
 intersections_base_fc = 'intersections_2016'
@@ -14,6 +12,11 @@ comm_types_fc = 'comm_type_jurspecific_latest'
 model_links_fc = 'model_links_2016'
 reg_centerline_fc = 'RegionalCenterline_2019'
 reg_bikeway_fc = 'BikeRte_C1_C2_C4_2017'
+
+# layers with multiple potential year values (e.g. base, various future years, etc)
+parcel_pt_fc = "parcel_data_pts_2016" # parcel point data
+parcel_poly_fc = 'parcels_w_urbanization'
+
 
 # project type
 ptype_fwy = 'Freeway'
@@ -104,6 +107,7 @@ ilut_sum_buffdist = 2640 # feet
 # park acreage info,
 col_area_ac = 'GISAc'
 col_lutype = 'LUTYPE'
+col_housing_type = 'TYPCODE_DESC'
 lutype_parks = 'Park and/or Open Space'
 col_parkac = 'PARK_AC'  # will be calc'd as GISAc if LUTYPE = park/open space LUTYPE
 park_calc_dict = {'area_field': col_area_ac,

@@ -14,14 +14,14 @@ import ppa_input_params as p
 
 
 
-def point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, case_excs_list=[]):
+def point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field=None, case_excs_list=[]):
     arcpy.AddMessage("aggregating land use data...")
     fl_parcel = "fl_parcel"
     arcpy.MakeFeatureLayer_management(fc_pclpt, fl_parcel)
     fl_project = "fl_project"
     arcpy.MakeFeatureLayer_management(fc_project, fl_project)
 
-    buff_dist = 0 if project_type == p.ptype_area_agg else p.ilut_sum_buffdist
+    buff_dist = 0 if project_type == p.ptype_area_agg else buffdist
     arcpy.SelectLayerByLocation_management(fl_parcel, "WITHIN_A_DISTANCE", fl_project, buff_dist)
 
     # If there are no points in the buffer (e.g., no collisions on segment, no parcels, etc.),
@@ -49,7 +49,6 @@ def point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, c
         out_df = pd.DataFrame(parcel_df[val_fields].sum(axis=0)).T
 
     out_dict = out_df.to_dict('records')[0]
-
 
     return out_dict
 

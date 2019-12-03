@@ -26,7 +26,7 @@ def complete_streets_idx(fc_pclpt, fc_project, project_type, posted_speedlim, tr
 
     lu_fac_cols = [p.col_area_ac, p.col_k12_enr, p.col_emptot, p.col_du]
     lu_vals_cols = [p.col_k12_enr, p.col_emptot, p.col_du]
-    lu_vals_dict = luc.point_sum(fc_pclpt, fc_project, project_type, lu_fac_cols)  # point_sum(fc_pclpt, fc_project, project_type, val_fields
+    lu_vals_dict = luc.point_sum(fc_pclpt, fc_project, project_type, lu_fac_cols, p.cs_buffdist)  # point_sum(fc_pclpt, fc_project, project_type, val_fields
 
     #dens_score = (student_dens + trn_svc_dens + job_dens + du_dens)
     dens_score = sum([lu_vals_dict[i] / lu_vals_dict[p.col_area_ac] for i in lu_vals_cols]) + transit_svc_density

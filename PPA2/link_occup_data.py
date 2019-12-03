@@ -34,6 +34,7 @@ def link_vehocc(row):
 
     return (vol_sov + vol_hov2 * p.fac_hov2 + vol_hov3 * p.fac_hov3) / total_veh_vol
 
+
 def get_wtdavg_vehocc(in_df):
 
     col_wtdvol = 'col_wtdvol'
@@ -43,7 +44,6 @@ def get_wtdavg_vehocc(in_df):
     lanemi_tot = in_df[p.col_lanemi].sum()
     output_val = sumprod / lanemi_tot
 
-    print(output_val)
     return output_val
 
 
@@ -56,7 +56,13 @@ def get_wtdavg_vehvol(in_df, col_vehtype):
     return output_vehvol
 
 
-def get_linkoccup_data(fl_project, project_type, fl_model_links):
+def get_linkoccup_data(fc_project, project_type, fc_model_links):
+    arcpy.AddMessage("getting modeled vehicle occupancy data...")
+    fl_project = 'proj_fl'
+    fl_model_links = 'modlink_fl'
+
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
+    arcpy.MakeFeatureLayer_management(fc_model_links, fl_model_links)
 
     # get model links that are on specified link type with centroid within search distance of project
     arcpy.SelectLayerByLocation_management(fl_model_links, 'HAVE_THEIR_CENTER_IN', fl_project, p.modlink_searchdist)
@@ -65,15 +71,13 @@ def get_linkoccup_data(fl_project, project_type, fl_model_links):
     df_cols = [p.col_capclass, p.col_lanemi, p.col_tranvol, p.col_dayvehvol, p.col_sovvol, p.col_hov2vol, p.col_hov3vol]
     df_linkdata = esri_object_to_df(fl_model_links, df_cols)
 
-    if project_type == 'Freeway':
+    if project_type == p.ptype_fwy:
         df_linkdata = df_linkdata.loc[df_linkdata[p.col_capclass].isin(p.capclasses_fwy)]
     else:
         df_linkdata = df_linkdata.loc[df_linkdata[p.col_capclass].isin(p.capclass_arterials)]
 
-    print(df_linkdata)
-
     avg_proj_trantrips = get_wtdavg_vehvol(df_linkdata, p.col_tranvol) if df_linkdata.shape[0] > 0 else 0
-    avg_proj_vehocc = get_wtdavg_vehocc(df_linkdata)
+    avg_proj_vehocc = get_wtdavg_vehocc(df_linkdata) if df_linkdata.shape[0] > 0 else 0
 
     out_dict = {"avg_2way_trantrips": avg_proj_trantrips, "avg_2way_vehocc": avg_proj_vehocc}
 
@@ -83,18 +87,10 @@ def get_linkoccup_data(fl_project, project_type, fl_model_links):
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
-    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg'
+    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_xmult_strt'
     model_link_fc = 'model_links_2016'
-    proj_type = 'Freeway'
+    proj_type = p.ptype_arterial
 
-    proj_fl = 'proj_fl'
-    modlink_fl = 'modlink_fl'
-
-    fc_fl_dict = {proj_line_fc: proj_fl, model_link_fc: modlink_fl}
-
-    for k, v in fc_fl_dict.items():
-        arcpy.MakeFeatureLayer_management(k, v)
-
-    output = get_linkoccup_data(proj_fl, proj_type, modlink_fl)
+    output = get_linkoccup_data(proj_line_fc, proj_type, model_link_fc)
 
     print(output)

@@ -14,6 +14,10 @@ import ppa_input_params as p
 
 def get_other_yr_data(fl_selected_data, tbl_futyr, join_key_col, value_fields):
     #make list of join key values whose values you want from joining table
+    tv_futyear = "tv_futureyear"
+    arcpy.MakeTableView_management(tbl_futyr, tv_futyear)
+    
+    
     filtered_join_keys = []
     with arcpy.da.SearchCursor(fl_selected_data, join_key_col) as cur:
         for row in cur:
@@ -32,8 +36,11 @@ def get_other_yr_data(fl_selected_data, tbl_futyr, join_key_col, value_fields):
 
     #make a dataframe from the list of lists.
     otheryear_pcldf = pd.DataFrame(rows_otheryear_data, columns=value_fields)
+    return otheryear_pcldf
 
 def point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, case_excs_list=[]):
+    arcpy.env.OverwriteOutput = True
+    
     arcpy.AddMessage("aggregating land use data...")
     fl_parcel = "fl_parcel"
     arcpy.MakeFeatureLayer_management(fc_pclpt, fl_parcel)
@@ -59,6 +66,8 @@ def point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, c
             rows_pcldata.append(df_row)
 
     parcel_df = pd.DataFrame(rows_pcldata, columns = val_fields)
+    
+    parcel_fyr_df = get_other_yr_data(fl_parcel, "ilut_combined2040_38_latest", "PARCELID", val_fields)
 
     if case_field is not None:
         parcel_df = parcel_df.loc[~parcel_df[case_field].isin(case_excs_list)] #exclude specified categories
@@ -70,7 +79,7 @@ def point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, c
     out_dict = out_df.to_dict('records')[0]
 
 
-    return out_dict
+    return parcel_fyr_df
 
 # gets density of whatever you're summing, based on parcel area (i.e., excludes rivers, lakes, road ROW, etc.)
 # considers parcel area for parcels whose centroid is in the buffer. This is because the initial values are based on
@@ -117,9 +126,11 @@ if __name__ == '__main__':
     #output_dict = point_sum(in_pcl_pt_fc, ['DU_TOT'], 5280, project_fc, case_field='TYPCODE_DESC', case_excs_list=['Other'])
     #print(output_dict)
     # EJ population
-    output_dict = point_sum(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT'], 2640, )  # case_field='EJ_2018'
-    print(output_dict)
+#    output_dict = point_sum(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT'], 2640, )  # case_field='EJ_2018'
+#    print(output_dict)
+    
+    test_output_df = point_sum(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT'], 2640, )
 
-    # point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, case_excs_list=[])
-    output_dens_dict = point_sum_density(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT', 'EMPTOT'])
-    print(output_dens_dict)
+#    # point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, case_excs_list=[])
+#    output_dens_dict = point_sum_density(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT', 'EMPTOT'])
+#    print(output_dens_dict)

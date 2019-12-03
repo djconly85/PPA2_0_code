@@ -18,7 +18,7 @@ import ppa_input_params as p
 # get list of ctypes that a project passes through. "infill" if ctype = is established or corridor; greenfield if not
 def projarea_infill_status(fc_project, comm_types_fc):
     arcpy.AddMessage("Determining project greenfield/infill status...")
-    temp_intersect_fc = r"memory\temp_intersect_fc"
+    temp_intersect_fc = r"memory/temp_intersect_fc"
 
     arcpy.Intersect_analysis([fc_project, comm_types_fc], temp_intersect_fc)
 
@@ -55,17 +55,20 @@ def nat_resources(fc_project, fc_pcl_poly, year): #NOTE - this is year dependent
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
-    # input fc of parcel data--must be points!
+    # input fc of parcel data--must be polygons!
     in_pcl_base_fc = p.parcel_poly_fc
     # in_pcl_future_tbl =
     # in_ctypes_fc =
 
     # input line project for basing spatial selection
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg_seconn'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
     an_year = 2016
 
-    out_gfield_dict = projarea_infill_status(project_fc, p.comm_types_fc)
-    out_natacres_dict = nat_resources(project_fc, in_pcl_base_fc, an_year)
+    #out_gfield_dict = projarea_infill_status(project_fc, p.comm_types_fc)
+    # out_natacres_dict = nat_resources(project_fc, in_pcl_base_fc, an_year)
+    #
+    # #print(out_gfield_dict)
+    # print(out_natacres_dict)
 
-    print(out_gfield_dict)
-    print(out_natacres_dict)
+    infill_status_dict = projarea_infill_status(project_fc, p.comm_types_fc)
+    print(infill_status_dict)
