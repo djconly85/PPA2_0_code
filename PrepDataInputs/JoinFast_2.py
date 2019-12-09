@@ -3,14 +3,14 @@ import arcpy
 arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 arcpy.OverwriteOutput = True
 
-left_table = 'parcels_w_urbanization' #can be feature class or table
-right_table = 'ilut_combined2040_38_latest' #can be feature class or table
+left_table = 'parcel_data_pts_2016' #can be feature class or table
+right_table = 'ilut_combined2016_23_latest' #can be feature class or table
 
 join_key_field_left = 'PARCELID' #case sensitive!
 join_key_field_right = 'PARCELID'
-val_field_right = 'LUTYPE'
-field_to_calc = 'LUTYPE40'
-field_to_calc_dtype = "TEXT" #FLOAT, TEXT, SHORT, or LONG
+val_field_right = 'VMT_TOT_RES'
+field_to_calc = 'VMT_TOT_RES'
+field_to_calc_dtype = "FLOAT" #FLOAT, TEXT, SHORT, or LONG
 
 print("loading values from right-side table into dict...")
 val_dict = {}

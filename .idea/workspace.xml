@@ -3,13 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="17e4acb0-29b3-4667-b3ba-79aaa1f4d2fd" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/PPA2_masterTest.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/PPA2_masterTest.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/complete_street_score.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/complete_street_score.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/landuse_buff_calcs.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/landuse_buff_calcs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/landuse_buff_calcs_wfutyr.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/landuse_buff_calcs_wfutyr.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/link_occup_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/link_occup_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/ppa_input_params.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/ppa_input_params.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/urbanization_metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/urbanization_metrics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PrepDataInputs/JoinFast_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/PrepDataInputs/JoinFast_2.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
