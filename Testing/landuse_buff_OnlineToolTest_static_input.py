@@ -7,6 +7,8 @@ Get following numbers within 0.5mi of project area:
     sum of trips (for each mode)
 
 """
+import os
+
 import arcpy
 import pandas as pd
 
@@ -61,6 +63,8 @@ def point_sum(fc_pclpt, fc_project, val_fields, buffdist=2640, case_field=None, 
 
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    output_space = r'C:\TEMP_OUTPUT'  # arcpy.env.scratchFolder
+    output_txt = 'PPA_test_output.txt'
 
     # input fc of parcel data--must be points!
     in_pcl_pt_fc = r'https://services.sacog.org/hosting/rest/services/Hosted/parcel_data_pts_2016_ElDoradoTest/FeatureServer/0?' \
@@ -72,4 +76,13 @@ if __name__ == '__main__':
     
     dict_out = point_sum(in_pcl_pt_fc, project_fc, value_fields)
     
+    out_txt = os.path.join(output_space, output_txt)
+    
+    arcpy.SetParameterAsText(2, out_txt)
+    with open(out_txt,'w') as fout:
+        for k, v in dict_out.items():
+            lineout = '{}: {}'.format(k, v)
+            fout.write(lineout)
+    
     arcpy.AddMessage(dict_out)
+    arcpy.AddMessage('printed to {}'.format(out_txt))

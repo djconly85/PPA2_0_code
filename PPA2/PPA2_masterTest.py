@@ -38,8 +38,8 @@ if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
     arcpy.OverwriteOutput = True
 
-    #project data
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_OffNPMRDSNet'
+    # project data
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_offNPMRDSNet'
     project_type = p.ptype_arterial  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
     adt = 17000
     project_speedlim = 30

@@ -15,7 +15,7 @@ reg_bikeway_fc = 'BikeRte_C1_C2_C4_2017'
 
 # layers with multiple potential year values (e.g. base, various future years, etc)
 parcel_pt_fc = "parcel_data_pts_2016" # parcel point data
-parcel_poly_fc = 'parcels_w_urbanization'
+parcel_poly_fc = 'parcel_data_polys_2016'
 
 
 # project type
@@ -107,6 +107,7 @@ ilut_sum_buffdist = 2640 # feet
 # park acreage info,
 col_area_ac = 'GISAc'
 col_lutype = 'LUTYPE'
+col_lutype_base = 'LUTYPE16'
 col_housing_type = 'TYPCODE_DESC'
 lutype_parks = 'Park and/or Open Space'
 col_parkac = 'PARK_AC'  # will be calc'd as GISAc if LUTYPE = park/open space LUTYPE
@@ -211,7 +212,7 @@ bikeway_buff = 1320 # distance in feet
 
 #params for determining if project is in greenfield or infill area
 col_ctype = 'comm_type'
-col_ctype_2 = 'comm_type_ppa'
+col_ctype_2 = 'comm_type_ppa' #WHAT IS DIFF between this and the other col_ctype???
 ctypes_infill = ['Established', 'Corridor']
 threshold_val = 0.9  # if more than 90% of project length is in greenfield, then project is greenfield vice-versa for infill
 

@@ -12,13 +12,20 @@
 
 import arcpy
 
+import ppa_input_params as p
+
 def get_lutype_acreage(fc_project, fc_poly_parcels, lutype):
     arcpy.AddMessage("Estimating {} acres near project...".format(lutype))
 
     fl_parcels = "fl_parcel"
     fl_project = "fl_project"
-    arcpy.MakeFeatureLayer_management(fc_poly_parcels, fl_parcels)
-    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
+
+    for fc, fl in {fc_project: fl_project, fc_poly_parcels: fl_parcels}.items():
+        if arcpy.Exists(fl):
+            arcpy.Delete_management(fl)
+            arcpy.MakeFeatureLayer_management(fc, fl)
+        else:
+            arcpy.MakeFeatureLayer_management(fc, fl)
 
     # create temporary buffer
     buff_dist = 2640  # distance in feet
@@ -37,8 +44,7 @@ def get_lutype_acreage(fc_project, fc_poly_parcels, lutype):
     buff_acre = buff_area_ft2 / 43560  # convert from ft2 to acres. may need to adjust for projection-related issues. See PPA1 for more info
 
     # select only parcels of desired land use type (lutype)
-    col_lutype = "LUTYPE16"
-    sql_lutype = "{} = '{}'".format(col_lutype, lutype)
+    sql_lutype = "{} = '{}'".format(p.col_lutype_base, lutype)
     arcpy.SelectLayerByAttribute_management(fl_parcels, "NEW_SELECTION", sql_lutype)
 
     # create intersect layer of buffer with parcels of selected LUTYPE
@@ -65,13 +71,14 @@ def get_lutype_acreage(fc_project, fc_poly_parcels, lutype):
 
 
 if __name__ == '__main__':
+    import ppa_input_params as p
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
-    parcel_featclass = 'parcels_w_urbanization'
-    project_featclass = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg'
+    parcel_featclass = p.parcel_poly_fc #'parcel_data_polys_2016'
+    project_featclass = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_OffNPMRDSNet'
     lutype = 'Agriculture'
 
-    out_pcl_data = get_lutype_acreage(project_featclass, parcel_featclass, lutype)
+    out_pcl_data = get_lutype_acreage(project_featclass, parcel_featclass, p.lutype_ag)
     print(out_pcl_data)
 
     # NOT 11/22/2019 - THIS IS GETTING AS PCT OF BUFFER AREA, NOT DEVELOPABLE ON-PARCEL ACRES! SHOULD FIX

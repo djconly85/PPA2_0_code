@@ -25,7 +25,7 @@ def projarea_infill_status(fc_project, comm_types_fc):
     proj_len_infill = 0
     proj_len_greenfield = 0
 
-    with arcpy.da.SearchCursor(temp_intersect_fc, [p.col_ctype, "SHAPE@LENGTH"]) as cur:
+    with arcpy.da.SearchCursor(temp_intersect_fc, [p.col_ctype_2, "SHAPE@LENGTH"]) as cur:
         for row in cur:
             if row[0] in p.ctypes_infill:
                 proj_len_infill += row[1]
@@ -49,7 +49,6 @@ def nat_resources(fc_project, fc_pcl_poly, year): #NOTE - this is year dependent
         nat_resource_ac += lutype_ac_dict['{}_acres'.format(lutype)]
 
     return {"nat_resource_acres{}".format(year): nat_resource_ac}
-
 
 
 if __name__ == '__main__':
