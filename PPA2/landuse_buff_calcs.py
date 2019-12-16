@@ -86,8 +86,8 @@ if __name__ == '__main__':
                     'BIK_TOT_RES', 'WLK_TOT_RES']
 
     # input line project for basing spatial selection
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_YubaCity'
-    ptype = p.ptype_sgr
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_offNPMRDSNet'
+    ptype = p.ptype_arterial
 
     # get jobs, dwelling units, trips by mode within 0.5mi
     #output_dict = point_sum(in_pcl_pt_fc, value_fields, 2640, project_fc)
@@ -97,9 +97,12 @@ if __name__ == '__main__':
     #output_dict = point_sum(in_pcl_pt_fc, ['DU_TOT'], 5280, project_fc, case_field='TYPCODE_DESC', case_excs_list=['Other'])
     #print(output_dict)
     # EJ population
-    output_dict = point_sum(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT'], 2640, )  # case_field='EJ_2018'
-    print(output_dict)
+    # output_dict = point_sum(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT'], 2640, )  # case_field='EJ_2018'
+    # print(output_dict)
 
     # point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, case_excs_list=[])
-    output_dens_dict = point_sum_density(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT', 'EMPTOT'])
-    print(output_dens_dict)
+    output_dict = point_sum(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT'], 2640, case_field='EJ_2018', case_excs_list=[])
+    pop_ej = "POP_EJ"
+    pop_non_ej = "POP_NON_EJ"
+
+    print(output_dict)

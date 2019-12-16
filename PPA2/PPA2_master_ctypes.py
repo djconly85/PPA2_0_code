@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # get list of ctypes to search/loop through
     ctypes_list = []
     master_out_dict = {}
-    with arcpy.da.SearchCursor(ctype_fc, [p.col_ctype_2]) as cur:
+    with arcpy.da.SearchCursor(ctype_fc, [p.col_ctype]) as cur:
         for row in cur:
             ctypes_list.append(row[0])
 
@@ -85,7 +85,7 @@ if __name__ == '__main__':
         arcpy.AddMessage("\ngetting aggregate values for {} community type".format(ctype))
         temp_poly_fc = 'TEMP_ctype_fc'
 
-        sql = "{} = '{}'".format(p.col_ctype_2, ctype)
+        sql = "{} = '{}'".format(p.col_ctype, ctype)
         # arcpy.SelectLayerByAttribute_management(fl_ctype, "NEW_SELECTION", sql)
         arcpy.FeatureClassToFeatureClass_conversion(ctype_fc, 'memory', temp_poly_fc, sql)
 

@@ -139,21 +139,22 @@ def simplify_outputs(in_df, proj_len_col):
     
     #if there's less than 10% overlap in the 'highest overlap' direction, then say that the project is not on any TMCs (and any TMC data is from cross streets or is insufficient to represent the segment)
     if (max_dir_len / proj_len) < 0.1:
-        return pd.DataFrame([-1])
+        out_df = pd.DataFrame([-1], columns=['SegmentSpeedData'])
+        return out_df.to_dict('records')
     else:
         max_len_col = df_lencols.idxmax(axis = 1)[0] #return column name of direction with greatest overlap
         df_lencols2 = df_lencols.drop(max_len_col, axis = 1)
         secndmax_col = df_lencols2.idxmax(axis = 1)[0] #return col name of direction with second-most overlap (should be reverse of direction with most overlap)
 
-    maxdir = max_len_col[:max_len_col.find(dirlen_suffix)] #direction name without '_calc_len' suffix
-    secdir = secndmax_col[:secndmax_col.find(dirlen_suffix)]
-    
-    outcols_max = [c for c in in_df.columns if re.match(maxdir, c)]
-    outcols_sec = [c for c in in_df.columns if re.match(secdir, c)]
-    
-    outcols = outcols_max + outcols_sec
-    
-    return in_df[outcols].to_dict('records')
+        maxdir = max_len_col[:max_len_col.find(dirlen_suffix)] #direction name without '_calc_len' suffix
+        secdir = secndmax_col[:secndmax_col.find(dirlen_suffix)]
+
+        outcols_max = [c for c in in_df.columns if re.match(maxdir, c)]
+        outcols_sec = [c for c in in_df.columns if re.match(secdir, c)]
+
+        outcols = outcols_max + outcols_sec
+
+        return in_df[outcols].to_dict('records')
 
 
 def get_npmrds_data(fc_projline, str_project_type):
@@ -196,8 +197,6 @@ def get_npmrds_data(fc_projline, str_project_type):
     return out_dict
 
 
-
-
 # =====================RUN SCRIPT===========================
 if __name__ == '__main__':
     start_time = time.time()
@@ -205,13 +204,11 @@ if __name__ == '__main__':
     workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
     arcpy.env.workspace = workspace
 
-    project_line = "PPA_test_fwyproj" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
+    project_line = "test_project_offNPMRDSNet" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
     proj_type = p.ptype_fwy # arcpy.GetParameterAsText(2) #"Freeway"
 
-    # make feature layers of NPMRDS and project line
-
-
-    get_npmrds_data(project_line, proj_type)
+    test_dict = get_npmrds_data(project_line, proj_type)
+    print(test_dict)
 
     elapsed_time = round((time.time() - start_time)/60, 1)
     print("Success! Time elapsed: {} minutes".format(elapsed_time))    

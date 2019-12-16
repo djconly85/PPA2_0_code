@@ -31,7 +31,6 @@ import npmrds_data_conflation as npmrds
 import transit_svc_measure as trnsvc
 import urbanization_metrics as urbn
 
-import transit_svc_measure as trn_svc
 
 if __name__ == '__main__':
     time_sufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
@@ -40,6 +39,7 @@ if __name__ == '__main__':
 
     # project data
     project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_offNPMRDSNet'
+    proj_name = 'test_project_offNPMRDSNet'
     project_type = p.ptype_arterial  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
     adt = 17000
     project_speedlim = 30
@@ -74,9 +74,12 @@ if __name__ == '__main__':
     # job + du total
     job_du_tot = {"SUM_JOB_DU": lu_buff_arterialexp[p.col_du] + lu_buff_arterialexp[p.col_emptot]}
 
-    #get EJ pop data
+    # get EJ pop data
     ej_data_arterial = lu_pt_buff.point_sum(p.parcel_pt_fc, project_fc, project_type, [p.col_pop_ilut],
                                             p.ilut_sum_buffdist, p.col_ej_ind, case_excs_list=[])
+    # rename outputs from 0/1 to ej/non-ej
+    ej_flag_dict = {0: "Pop_NonEJ", 1: "Pop_EJ"}
+    ej_data_arterial = {v: ej_data_arterial.pop(k) for k, v in ej_flag_dict.items()}
 
     # model-based vehicle occupancy
     veh_occ_data = link_occ.get_linkoccup_data(project_fc, p.ptype_arterial, p.model_links_fc)
@@ -86,10 +89,9 @@ if __name__ == '__main__':
     housing_mix_data = lu_pt_buff.point_sum(p.parcel_pt_fc, project_fc, project_type, [p.col_du], p.du_mix_buffdist,
                                             p.col_housing_type, case_excs_list=['Other'])
 
-
     # combine all together-----------------------------------------------------------
 
-    out_dict = {}
+    out_dict = {"project_name": proj_name}
     for d in [accdata, collision_data, complete_street_score, truck_route_pct, pct_adt_truck, ag_acres, intersxn_data,
               npmrds_data, lu_buff_arterialexp, ej_data_arterial, veh_occ_data, transit_data, mix_index_data,
               housing_mix_data, bikeway_data, infill_status]:

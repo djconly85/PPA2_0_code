@@ -210,13 +210,14 @@ bikeway_buff = 1320 # distance in feet
 
 # ============================URBANIZATION PARAMETERS===========================
 
-#params for determining if project is in greenfield or infill area
-col_ctype = 'comm_type'
-col_ctype_2 = 'comm_type_ppa' #WHAT IS DIFF between this and the other col_ctype???
-ctypes_infill = ['Established', 'Corridor']
+# params for determining if project is in greenfield or infill area
+col_ctype_old = 'comm_type'  # base ctype field, but doesn't distinguish by jurisdiction (e.g. center/corridor in dowtown sac vs in rural main street)
+col_ctype = 'comm_type_ppa'  # ctype field used in jurisdiction-specific ctypes layer (e.g. rural main streets vs. downtown core)
+ctypes_infill = ['Established Communities', 'Arterials & Suburban Corridors', 'Rural & Small Town Main Street',
+                 'Small-Town Established Communities', 'Urban core']
 threshold_val = 0.9  # if more than 90% of project length is in greenfield, then project is greenfield vice-versa for infill
 
-#for measuring loss in acres of natural resources within project area (nat resources = forest, parks, ag land)
+# for measuring loss in acres of natural resources within project area (nat resources = forest, parks, ag land)
 buff_nat_resources = 2640 #feet. Is area of consideration when measuring acres of natural resources lost within project area.
 lutypes_nat_resources = ['Forest', 'Agriculture', ]
 

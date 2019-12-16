@@ -25,7 +25,7 @@ def projarea_infill_status(fc_project, comm_types_fc):
     proj_len_infill = 0
     proj_len_greenfield = 0
 
-    with arcpy.da.SearchCursor(temp_intersect_fc, [p.col_ctype_2, "SHAPE@LENGTH"]) as cur:
+    with arcpy.da.SearchCursor(temp_intersect_fc, [p.col_ctype, "SHAPE@LENGTH"]) as cur:
         for row in cur:
             if row[0] in p.ctypes_infill:
                 proj_len_infill += row[1]
@@ -60,14 +60,7 @@ if __name__ == '__main__':
     # in_ctypes_fc =
 
     # input line project for basing spatial selection
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
-    an_year = 2016
-
-    #out_gfield_dict = projarea_infill_status(project_fc, p.comm_types_fc)
-    # out_natacres_dict = nat_resources(project_fc, in_pcl_base_fc, an_year)
-    #
-    # #print(out_gfield_dict)
-    # print(out_natacres_dict)
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_offNPMRDSNet'
 
     infill_status_dict = projarea_infill_status(project_fc, p.comm_types_fc)
     print(infill_status_dict)
