@@ -51,7 +51,7 @@ def get_wtdavg_vehvol(in_df, col_vehtype):
 
     sumprod = in_df[p.col_lanemi].dot(in_df[col_vehtype]) # sum product of lanemi * volume, for the occupancy class (sov, hov2, hov3+)
     lanemi_tot = in_df[p.col_lanemi].sum()
-    output_vehvol = sumprod / lanemi_tot # lanemi-weighted average volume for the occupancy class
+    output_vehvol = sumprod / lanemi_tot  # lanemi-weighted average volume for the occupancy class
 
     return output_vehvol
 
@@ -76,7 +76,8 @@ def get_linkoccup_data(fc_project, project_type, fc_model_links):
     else:
         df_linkdata = df_linkdata.loc[df_linkdata[p.col_capclass].isin(p.capclass_arterials)]
 
-    avg_proj_trantrips = get_wtdavg_vehvol(df_linkdata, p.col_tranvol) if df_linkdata.shape[0] > 0 else 0
+    df_trnlinkdata = df_linkdata.loc[pd.notnull(df_linkdata[p.col_tranvol])]
+    avg_proj_trantrips = get_wtdavg_vehvol(df_trnlinkdata, p.col_tranvol) if df_trnlinkdata.shape[0] > 0 else 0
     avg_proj_vehocc = get_wtdavg_vehocc(df_linkdata) if df_linkdata.shape[0] > 0 else 0
 
     out_dict = {"avg_2way_trantrips": avg_proj_trantrips, "avg_2way_vehocc": avg_proj_vehocc}
@@ -87,7 +88,7 @@ def get_linkoccup_data(fc_project, project_type, fc_model_links):
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
-    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_xmult_strt'
+    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_offNPMRDSNet'
     model_link_fc = 'model_links_2016'
     proj_type = p.ptype_arterial
 

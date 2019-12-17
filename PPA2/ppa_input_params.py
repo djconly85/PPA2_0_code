@@ -13,8 +13,14 @@ model_links_fc = 'model_links_2016'
 reg_centerline_fc = 'RegionalCenterline_2019'
 reg_bikeway_fc = 'BikeRte_C1_C2_C4_2017'
 
+
 # layers with multiple potential year values (e.g. base, various future years, etc)
-parcel_pt_fc = "parcel_data_pts_2016" # parcel point data
+def parcel_pt_fc_yr(year=2016):
+    return "parcel_data_pts_{}".format(year)
+
+
+parcel_pt_fc = parcel_pt_fc_yr(2016) # parcel point data
+parcel_pt_fc_fyr = parcel_pt_fc_yr(2040)
 parcel_poly_fc = 'parcel_data_polys_2016'
 
 
@@ -139,13 +145,15 @@ params_df = pd.DataFrame(mix_calc_vals, columns = mix_calc_cols) \
 col_pop_ilut = 'POP_TOT'
 col_ej_ind = "EJ_2018"
 col_empind = 'EMPIND'
+col_du = 'DU_TOT'
+
 col_persntrip_res = 'PT_TOT_RES'
 col_sovtrip_res = 'SOV_TOT_RES'
 col_hovtrip_res = 'HOV_TOT_RES'
 col_trntrip_res = 'TRN_TOT_RES'
 col_biketrip_res = 'BIK_TOT_RES'
 col_walktrip_res = 'WLK_TOT_RES'
-col_du = 'DU_TOT'
+ilut_ptrip_mode_fields = [col_sovtrip_res, col_hovtrip_res, col_trntrip_res, col_biketrip_res, col_walktrip_res]
 
 
 

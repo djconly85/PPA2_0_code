@@ -23,7 +23,8 @@ def netmiles_in_buffer(fc_project, fc_network, project_type):
         arcpy.Buffer_analysis(fc_project, fc_poly_buff, p.bikeway_buff)
 
     fl_poly = "fl_buff"
-    arcpy.MakeFeatureLayer_management(fc_poly_buff, fl_poly)
+    if not arcpy.Exists(fl_poly):
+        arcpy.MakeFeatureLayer_management(fc_poly_buff, fl_poly)
 
     temp_intersect_fc = r"memory\temp_intersect_fc"
 

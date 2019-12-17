@@ -38,7 +38,7 @@ if __name__ == '__main__':
     arcpy.OverwriteOutput = True
 
     # project data
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_offNPMRDSNet'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
     proj_name = 'test_project_offNPMRDSNet'
     project_type = p.ptype_arterial  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
     adt = 17000
@@ -65,14 +65,20 @@ if __name__ == '__main__':
 
     # outputs that use both base year and future year values--MIGHT WANT TO MAKE SEPARATE SCRIPT-----------------
     #get data on pop, job, k12 totals
-    ilut_val_fields_artexp = [p.col_pop_ilut, p.col_du, p.col_emptot, p.col_k12_enr, p.col_empind]
+    ilut_val_fields = [p.col_pop_ilut, p.col_du, p.col_emptot, p.col_k12_enr, p.col_empind, p.col_persntrip_res] \
+                      + p.ilut_ptrip_mode_fields
 
     # point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field=None, case_excs_list=[])
-    lu_buff_arterialexp = lu_pt_buff.point_sum(p.parcel_pt_fc, project_fc, project_type, ilut_val_fields_artexp,
-                                               p.ilut_sum_buffdist, case_field=None, case_excs_list=[])
-    
+    ilut_buff_vals = lu_pt_buff.point_sum(p.parcel_pt_fc, project_fc, project_type, ilut_val_fields,
+                                          p.ilut_sum_buffdist, case_field=None, case_excs_list=[])
+    ilut_mode_split = {"{}_share".format(modetrp): ilut_buff_vals[modetrp] / ilut_buff_vals[ p.col_persntrip_res] for modetrp in p.ilut_ptrip_mode_fields}
+    ilut_buff_vals.update(ilut_mode_split)
+
+    # cleanup to remove non-percentage mode split values, if we want to keep output CSV from getting too long.
+    # for trip_numcol in p.ilut_ptrip_mode_fields: del ilut_buff_vals[trip_numcol]
+
     # job + du total
-    job_du_tot = {"SUM_JOB_DU": lu_buff_arterialexp[p.col_du] + lu_buff_arterialexp[p.col_emptot]}
+    job_du_tot = {"SUM_JOB_DU": ilut_buff_vals[p.col_du] + ilut_buff_vals[p.col_emptot]}
 
     # get EJ pop data
     ej_data_arterial = lu_pt_buff.point_sum(p.parcel_pt_fc, project_fc, project_type, [p.col_pop_ilut],
@@ -83,17 +89,19 @@ if __name__ == '__main__':
 
     # model-based vehicle occupancy
     veh_occ_data = link_occ.get_linkoccup_data(project_fc, p.ptype_arterial, p.model_links_fc)
+
     # land use diversity index
     mix_index_data = mixidx.get_mix_idx(p.parcel_pt_fc, project_fc, p.ptype_arterial)
+
     # housing type mix
     housing_mix_data = lu_pt_buff.point_sum(p.parcel_pt_fc, project_fc, project_type, [p.col_du], p.du_mix_buffdist,
                                             p.col_housing_type, case_excs_list=['Other'])
 
     # combine all together-----------------------------------------------------------
 
-    out_dict = {"project_name": proj_name}
+    out_dict = {"project_name": proj_name, "project_type": project_type}
     for d in [accdata, collision_data, complete_street_score, truck_route_pct, pct_adt_truck, ag_acres, intersxn_data,
-              npmrds_data, lu_buff_arterialexp, ej_data_arterial, veh_occ_data, transit_data, mix_index_data,
+              npmrds_data, ilut_buff_vals, ej_data_arterial, veh_occ_data, transit_data, mix_index_data,
               housing_mix_data, bikeway_data, infill_status]:
         out_dict.update(d)
 
