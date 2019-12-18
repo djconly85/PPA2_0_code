@@ -1,16 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="17e4acb0-29b3-4667-b3ba-79aaa1f4d2fd" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/PPA2_masterTest.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/PPA2_masterTest.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/landuse_buff_calcs.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/landuse_buff_calcs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/link_occup_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/link_occup_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/ppa_input_params.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/ppa_input_params.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PrepDataInputs/calc_mix_index_sacog.py" beforeDir="false" afterPath="$PROJECT_DIR$/PrepDataInputs/calc_mix_index_sacog.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Testing/get_line_overlap_onlineToolTest.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Testing/landuse_buff_OnlineToolTest_static_input.py" beforeDir="false" afterPath="$PROJECT_DIR$/Testing/landuse_buff_OnlineToolTest_static_input.py" afterDir="false" />
-    </list>
+    <list default="true" id="17e4acb0-29b3-4667-b3ba-79aaa1f4d2fd" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
