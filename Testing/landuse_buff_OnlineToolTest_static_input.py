@@ -63,7 +63,7 @@ def point_sum(fc_pclpt, fc_project, val_fields, buffdist=2640, case_field=None, 
 
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
-    output_space = r'C:\TEMP_OUTPUT'  # arcpy.env.scratchFolder
+    output_space = arcpy.env.scratchFolder  # arcpy.env.scratchFolder --- is I:\Projects\Darren\PPA_V2_GIS\scratch\PPA_test_output.txt if run in arcgis pro
     output_txt = 'PPA_test_output.txt'
 
     # input fc of parcel data--must be points!
@@ -84,5 +84,6 @@ if __name__ == '__main__':
             lineout = '{}: {}'.format(k, v)
             fout.write(lineout)
     
+    arcpy.AddMessage(output_space)
     arcpy.AddMessage(dict_out)
     arcpy.AddMessage('printed to {}'.format(out_txt))

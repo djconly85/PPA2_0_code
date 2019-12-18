@@ -86,7 +86,7 @@ if __name__ == '__main__':
                     'BIK_TOT_RES', 'WLK_TOT_RES']
 
     # input line project for basing spatial selection
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_offNPMRDSNet'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
     ptype = p.ptype_arterial
 
     # get jobs, dwelling units, trips by mode within 0.5mi
@@ -102,7 +102,15 @@ if __name__ == '__main__':
 
     # point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, case_excs_list=[])
     output_dict = point_sum(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT'], 2640, case_field='EJ_2018', case_excs_list=[])
-    pop_ej = "POP_EJ"
-    pop_non_ej = "POP_NON_EJ"
+    ej_flag_dict = {0: "Pop_NonEJ", 1: "Pop_EJ"}
+    out_dict2 = {}
+    for k, v in ej_flag_dict.items():
+        if k in list(output_dict.keys()):
+            out_dict2[v] = output_dict[k]
+        else:
+            out_dict2[v] = 0
+
+    #ej_data_arterial = {v: output_dict.pop(k) for k, v in ej_flag_dict.items() if output_dict.get(k) is not None}
 
     print(output_dict)
+    print(out_dict2)

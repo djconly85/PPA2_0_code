@@ -32,6 +32,18 @@ import transit_svc_measure as trnsvc
 import urbanization_metrics as urbn
 
 
+def rename_dict_keys(dict_in, new_key_dict):
+    '''if dict in = {0:1} and dict out supposed to be {'zero':1}, this function renames the key accordingly per
+    the new_key_dict (which for this example would be {0:'zero'}'''
+    dict_out = {}
+    for k, v in new_key_dict.items():
+        if k in list(dict_in.keys()):
+            dict_out[v] = dict_in[k]
+        else:
+            dict_out[v] = 0
+    return dict_out
+
+
 if __name__ == '__main__':
     time_sufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
@@ -83,9 +95,9 @@ if __name__ == '__main__':
     # get EJ pop data
     ej_data_arterial = lu_pt_buff.point_sum(p.parcel_pt_fc, project_fc, project_type, [p.col_pop_ilut],
                                             p.ilut_sum_buffdist, p.col_ej_ind, case_excs_list=[])
-    # rename outputs from 0/1 to ej/non-ej
+    # rename keys from 0/1 to more human-readable names
     ej_flag_dict = {0: "Pop_NonEJ", 1: "Pop_EJ"}
-    ej_data_arterial = {v: ej_data_arterial.pop(k) for k, v in ej_flag_dict.items()}
+    ej_data_arterial = rename_dict_keys(ej_data_arterial, ej_flag_dict)
 
     # model-based vehicle occupancy
     veh_occ_data = link_occ.get_linkoccup_data(project_fc, p.ptype_arterial, p.model_links_fc)

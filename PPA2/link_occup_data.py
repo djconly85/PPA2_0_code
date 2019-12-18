@@ -27,17 +27,20 @@ def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
 
 
 def link_vehocc(row):
-    total_veh_vol = row[p.col_dayvehvol]
     vol_sov = row[p.col_sovvol]
     vol_hov2 = row[p.col_hov2vol]
     vol_hov3 = row[p.col_hov3vol]
+    vol_commveh = row[p.col_daycommvehvol]
+    total_veh_vol = sum([vol_sov, vol_hov2, vol_hov3, vol_commveh])
 
-    return (vol_sov + vol_hov2 * p.fac_hov2 + vol_hov3 * p.fac_hov3) / total_veh_vol
+    out_row = (vol_commveh + vol_sov + vol_hov2 * p.fac_hov2 + vol_hov3 * p.fac_hov3) / total_veh_vol
+    return out_row
 
 
 def get_wtdavg_vehocc(in_df):
 
     col_wtdvol = 'col_wtdvol'
+    in_df = in_df.loc[in_df[p.col_dayvehvol] > 0]  # exclude links with daily volume of zero.
     in_df[col_wtdvol] = in_df.apply(lambda x: link_vehocc(x), axis = 1)
 
     sumprod = in_df[p.col_lanemi].dot(in_df[col_wtdvol])
@@ -68,7 +71,8 @@ def get_linkoccup_data(fc_project, project_type, fc_model_links):
     arcpy.SelectLayerByLocation_management(fl_model_links, 'HAVE_THEIR_CENTER_IN', fl_project, p.modlink_searchdist)
 
     # load data into dataframe then subselect only ones that are on same road type as project (e.g. fwy vs. arterial)
-    df_cols = [p.col_capclass, p.col_lanemi, p.col_tranvol, p.col_dayvehvol, p.col_sovvol, p.col_hov2vol, p.col_hov3vol]
+    df_cols = [p.col_capclass, p.col_lanemi, p.col_tranvol, p.col_dayvehvol, p.col_sovvol, p.col_hov2vol, p.col_hov3vol,
+               p.col_daycommvehvol]
     df_linkdata = esri_object_to_df(fl_model_links, df_cols)
 
     if project_type == p.ptype_fwy:
@@ -88,7 +92,7 @@ def get_linkoccup_data(fc_project, project_type, fc_model_links):
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
-    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_offNPMRDSNet'
+    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
     model_link_fc = 'model_links_2016'
     proj_type = p.ptype_arterial
 

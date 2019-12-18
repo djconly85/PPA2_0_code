@@ -166,7 +166,7 @@ col_capclass = "CAPCLASS"
 
 capclasses_fwy = (1, 8, 51, 56) # freeway gen purpose, aux, and HOV lanes
 capclasses_ramps = (6, 16, 18, 26, 36, 46) # onramps, offramps, freeway-freeway connectors, HOV onramp meter byp lanes, metered onramp lanes
-capclass_arterials = (2, 3, 4, 5, 12)
+capclass_arterials = (2, 3, 4, 5, 12, 22, 24)
 capclasses_nonroad = (7, 62, 63, 99)
 
 col_lanemi = 'LANEMI'
@@ -178,6 +178,7 @@ col_dayvehvol = 'DYV'
 col_sovvol = 'DYV_DA'
 col_hov2vol = 'DYV_SD2'
 col_hov3vol = 'DYV_SD3'
+col_daycommvehvol = 'DYV_CV'
 
 # occupancy factors for shared vehicles
 fac_hov2 = 2 # HOV2 = 2 people per veh
