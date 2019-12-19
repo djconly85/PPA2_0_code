@@ -14,6 +14,10 @@ import arcpy
 
 import ppa_input_params as p
 
+def make_fl_conditional(fc, fl):
+    if arcpy.Exists(fl):
+        arcpy.Delete_management(fl)
+    arcpy.MakeFeatureLayer_management(fc, fl)
 
 def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
     data_rows = []
@@ -31,8 +35,8 @@ def get_model_link_sums(fc_polygon, fc_model_links):
 
     fl_polygon = "fl_polygon"
     fl_model_links = "fl_model_links"
-    arcpy.MakeFeatureLayer_management(fc_polygon, fl_polygon)
-    arcpy.MakeFeatureLayer_management(fc_model_links, fl_model_links)
+    make_fl_conditional(fc_polygon, fl_polygon)
+    make_fl_conditional(fc_model_links, fl_model_links)
 
     # select model links whose centroid is within the polygon area
     arcpy.SelectLayerByLocation_management(fl_model_links, "HAVE_THEIR_CENTER_IN", fl_polygon)
@@ -52,8 +56,8 @@ def get_centerline_miles(selection_poly_fc, centerline_fc):
     fl_selection_poly = "fl_selection_poly"
     fl_centerline = "fl_centerline"
 
-    arcpy.MakeFeatureLayer_management(selection_poly_fc, fl_selection_poly)
-    arcpy.MakeFeatureLayer_management(centerline_fc, fl_centerline)
+    make_fl_conditional(selection_poly_fc, fl_selection_poly)
+    make_fl_conditional(centerline_fc, fl_centerline)
 
     arcpy.SelectLayerByLocation_management(fl_centerline, "HAVE_THEIR_CENTER_IN", fl_selection_poly)
 
@@ -71,8 +75,8 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
     fl_project = 'proj_fl'
     fl_colln_pts = 'collision_fl'
 
-    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
-    arcpy.MakeFeatureLayer_management(fc_colln_pts, fl_colln_pts)
+    make_fl_conditional(fc_project, fl_project)
+    make_fl_conditional(fc_colln_pts, fl_colln_pts)
 
     # if for project segment, get annual VMT for project segment based on user input and segment length
     df_projlen = esri_object_to_df(fl_project, ["SHAPE@LENGTH"])
@@ -129,7 +133,7 @@ if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
     # user-entered values
-    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg'
+    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
     proj_type = 'Freeway' # 'Freeway', 'Arterial', 'State of Good Repair'
     proj_weekday_adt = 16000  # avg daily traffic, will be user-entered value
 

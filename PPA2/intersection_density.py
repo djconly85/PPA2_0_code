@@ -13,6 +13,11 @@ import arcpy
 
 import ppa_input_params as p
 
+def make_fl_conditional(fc, fl):
+    if arcpy.Exists(fl):
+        arcpy.Delete_management(fl)
+    arcpy.MakeFeatureLayer_management(fc, fl)
+
 def get_poly_area(poly_fl):
     buff_area_ft2 = 0
     with arcpy.da.SearchCursor(poly_fl, ["SHAPE@AREA"]) as cur:
@@ -29,8 +34,8 @@ def intersection_density(fc_project, fc_intersxns, project_type):
     fl_project = "fl_projline"
     fl_intersxns = "fl_trnstp"
 
-    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
-    arcpy.MakeFeatureLayer_management(fc_intersxns, fl_intersxns)
+    make_fl_conditional(fc_project, fl_project)
+    make_fl_conditional(fc_intersxns, fl_intersxns)
 
     # analysis area. If project is line or point, then it's a buffer around the line/point.
     # If it's a polygon (e.g. ctype or region), then no buffer and analysis area is that within the input polygon
@@ -42,7 +47,7 @@ def intersection_density(fc_project, fc_intersxns, project_type):
         arcpy.Buffer_analysis(fl_project, fc_buff, p.intersxn_dens_buff)
 
     fl_buff = "fl_buff"
-    arcpy.MakeFeatureLayer_management(fc_buff, fl_buff)
+    make_fl_conditional(fc_buff, fl_buff)
 
     buff_acres = get_poly_area(fl_buff)
 

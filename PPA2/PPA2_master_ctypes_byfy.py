@@ -26,7 +26,7 @@ import transit_svc_measure as trn_svc
 
 
 def get_poly_avg(input_poly_fc):
-    # as of 11/26/2019, each of these outputs are dictionaries
+#     as of 11/26/2019, each of these outputs are dictionaries
     accdata = acc.get_acc_data(input_poly_fc, p.accdata_fc, p.ptype_area_agg, get_ej=False)
     collision_data = coll.get_collision_data(input_poly_fc, p.ptype_area_agg, p.collisions_fc, 0)
     mix_data = mixidx.get_mix_idx(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg)
@@ -34,15 +34,15 @@ def get_poly_avg(input_poly_fc):
     bikeway_covg = bufnet.get_bikeway_mileage_share(input_poly_fc, p.ptype_area_agg)
     tran_stop_density = trn_svc.transit_svc_density(input_poly_fc, p.trn_svc_fc, p.ptype_area_agg)
 
-    emp_ind_wtot = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, 0, [p.col_empind, p.col_emptot])
+    emp_ind_wtot = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, [p.col_empind, p.col_emptot], 0)
     emp_ind_pct = {'emp_ind_pct': emp_ind_wtot[p.col_empind] / emp_ind_wtot[p.col_emptot]}
 
-    pop_x_ej = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, 0, [p.col_pop_ilut], p.col_ej_ind)
+    pop_x_ej = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, [p.col_pop_ilut], 0, p.col_ej_ind)
     pop_tot = sum(pop_x_ej.values())
     pct_pop_ej = {'pct_ej_pop': pop_x_ej[1] / pop_tot}
 
-    job_pop_dens = lubuff.point_sum_density(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, 0, \
-                                            [p.col_du, p.col_emptot])
+    job_pop_dens = lubuff.point_sum_density(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, \
+                                            [p.col_du, p.col_emptot], 0)
     total_dens = {"job_du_dens_ac": sum(job_pop_dens.values())}
 
     out_dict = {}
@@ -67,6 +67,8 @@ if __name__ == '__main__':
     ctype_fc = p.comm_types_fc
     output_csv = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals{}.csv'.format(time_sufx)
     
+    test_run = True
+    
     # ------------------SELDOM-CHANGED INPUTS-----------------------------------------
 
     # fl_ctype = 'fl_ctype'
@@ -75,11 +77,15 @@ if __name__ == '__main__':
     # loop through each feature in ctype fc, make a temp fc of it, run the calcs on that fc
     # get list of ctypes to search/loop through
     region = 'REGION'
+    
     ctypes_list = []
 
     with arcpy.da.SearchCursor(ctype_fc, [p.col_ctype]) as cur:
         for row in cur:
             ctypes_list.append(row[0])
+            
+    if test_run:
+        ctypes_list = ['Urban core']
 
     base_out_dict = {}
     fy_out_dict = {}
@@ -87,28 +93,31 @@ if __name__ == '__main__':
     for ctype in ctypes_list:
         arcpy.AddMessage("\ngetting aggregate values for {} community type".format(ctype))
         temp_poly_fc = 'TEMP_ctype_fc'
+        temp_poly_fc_fp = 'memory/{}'.format(temp_poly_fc)
 
         sql = "{} = '{}'".format(p.col_ctype, ctype)
         # arcpy.SelectLayerByAttribute_management(fl_ctype, "NEW_SELECTION", sql)
+        if arcpy.Exists(temp_poly_fc_fp):
+            arcpy.Delete_management(temp_poly_fc_fp)
         arcpy.FeatureClassToFeatureClass_conversion(ctype_fc, 'memory', temp_poly_fc, sql)
 
         # on that temp fc, run the PPA tools, but SET BUFFER DISTANCES TO ZERO SOMEHOW
         # this will return a dict with all numbers for that ctype
-        input_fc = 'memory/{}'.format(temp_poly_fc)
-        poly_dict = get_poly_avg(input_fc)
+        poly_dict = get_poly_avg(temp_poly_fc_fp)
         
         base_out_dict[ctype] = poly_dict
         # for all keys in the output dict, add a tag to the key value to indicate community type
         # append it to a master dict
         
-    for ctype in ctypes_list:
-        arcpy.AddMessage("calculating numbers for future year...")
-        fy_vals_dict = poly_avg_futyears(input_fc, p.parcel_pt_fc_fyr(future_year)) #get future-year data--IDEALLY would make refer to list of future years
+        ##---------future year data-----------------------------------------------
+        print("calculating numbers for future year...")
+
+        fy_vals_dict = poly_avg_futyears(temp_poly_fc_fp, future_year) #get future-year data--IDEALLY would make refer to list of future years
     
         fy_out_dict[ctype] = fy_vals_dict
 
     base_out_dict[region] = get_poly_avg(p.region_fc)
-    fy_out_dict[region] = poly_avg_futyears(p.region_fc, p.parcel_pt_fc_fyr(future_year))
+    fy_out_dict[region] = poly_avg_futyears(p.region_fc, future_year)
     # regn_df = pd.DataFrame.from_dict(poly_dict, orient='index')
 
     base_df = pd.DataFrame.from_dict(base_out_dict, orient='columns')

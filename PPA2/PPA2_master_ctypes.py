@@ -34,15 +34,15 @@ def get_poly_avg(input_poly_fc):
     bikeway_covg = bufnet.get_bikeway_mileage_share(input_poly_fc, p.ptype_area_agg)
     tran_stop_density = trn_svc.transit_svc_density(input_poly_fc, p.trn_svc_fc, p.ptype_area_agg)
 
-    emp_ind_wtot = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, [p.col_empind, p.col_emptot])
+    emp_ind_wtot = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, [p.col_empind, p.col_emptot], 0)
     emp_ind_pct = {'emp_ind_pct': emp_ind_wtot[p.col_empind] / emp_ind_wtot[p.col_emptot]}
 
-    pop_x_ej = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, [p.col_pop_ilut], p.col_ej_ind)
+    pop_x_ej = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, [p.col_pop_ilut], 0, p.col_ej_ind)
     pop_tot = sum(pop_x_ej.values())
     pct_pop_ej = {'pct_ej_pop': pop_x_ej[1] / pop_tot}
 
     job_pop_dens = lubuff.point_sum_density(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, \
-                                            [p.col_du, p.col_emptot])
+                                            [p.col_du, p.col_emptot], 0)
     total_dens = {"job_du_dens_ac": sum(job_pop_dens.values())}
 
     out_dict = {}
@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     # fc of community type polygons
     ctype_fc = p.comm_types_fc
-    output_csv = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals{}.csv'.format(time_sufx)
+    output_csv = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_valsBYFY{}.csv'.format(time_sufx)
 
 
     # fl_ctype = 'fl_ctype'
@@ -78,14 +78,17 @@ if __name__ == '__main__':
     for ctype in ctypes_list:
         arcpy.AddMessage("\ngetting aggregate values for {} community type".format(ctype))
         temp_poly_fc = 'TEMP_ctype_fc'
+        temp_poly_fc_fp = 'memory/{}'.format(temp_poly_fc)
 
         sql = "{} = '{}'".format(p.col_ctype, ctype)
         # arcpy.SelectLayerByAttribute_management(fl_ctype, "NEW_SELECTION", sql)
+        if arcpy.Exists(temp_poly_fc_fp):
+            arcpy.Delete_management(temp_poly_fc_fp)
         arcpy.FeatureClassToFeatureClass_conversion(ctype_fc, 'memory', temp_poly_fc, sql)
 
         # on that temp fc, run the PPA tools, but SET BUFFER DISTANCES TO ZERO SOMEHOW
         # this will return a dict with all numbers for that ctype
-        poly_dict = get_poly_avg('memory/{}'.format(temp_poly_fc))
+        poly_dict = get_poly_avg(temp_poly_fc_fp)
         master_out_dict[ctype] = poly_dict
         # for all keys in the output dict, add a tag to the key value to indicate community type
         # append it to a master dict

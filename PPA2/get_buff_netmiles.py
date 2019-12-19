@@ -13,6 +13,11 @@
 import arcpy
 import ppa_input_params as p
 
+def make_fl_conditional(fc, fl):
+    if arcpy.Exists(fl):
+        arcpy.Delete_management(fl)
+    arcpy.MakeFeatureLayer_management(fc, fl)
+
 def netmiles_in_buffer(fc_project, fc_network, project_type):
 
     # if project is polygon, then use polygon. If line or point, then make polygon as buffer around line/point.
@@ -24,7 +29,7 @@ def netmiles_in_buffer(fc_project, fc_network, project_type):
 
     fl_poly = "fl_buff"
     if not arcpy.Exists(fl_poly):
-        arcpy.MakeFeatureLayer_management(fc_poly_buff, fl_poly)
+        make_fl_conditional(fc_poly_buff, fl_poly)
 
     temp_intersect_fc = r"memory\temp_intersect_fc"
 

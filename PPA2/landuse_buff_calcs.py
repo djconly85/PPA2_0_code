@@ -12,14 +12,18 @@ import pandas as pd
 
 import ppa_input_params as p
 
-
+def make_fl_conditional(fc, fl):
+    if arcpy.Exists(fl):
+        arcpy.Delete_management(fl)
+    arcpy.MakeFeatureLayer_management(fc, fl)
 
 def point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field=None, case_excs_list=[]):
     arcpy.AddMessage("aggregating land use data...")
     fl_parcel = "fl_parcel"
-    arcpy.MakeFeatureLayer_management(fc_pclpt, fl_parcel)
     fl_project = "fl_project"
-    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
+
+    make_fl_conditional(fc_pclpt, fl_parcel)
+    make_fl_conditional(fc_project, fl_project)
 
     buff_dist = 0 if project_type == p.ptype_area_agg else buffdist
     arcpy.SelectLayerByLocation_management(fl_parcel, "WITHIN_A_DISTANCE", fl_project, buff_dist)
@@ -55,14 +59,14 @@ def point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_fie
 # gets density of whatever you're summing, based on parcel area (i.e., excludes rivers, lakes, road ROW, etc.)
 # considers parcel area for parcels whose centroid is in the buffer. This is because the initial values are based on
 # entire parcels, not parcels that've been chopped by a buffer boundary
-def point_sum_density(fc_pclpt, fc_project, project_type, val_fields, case_field=None, case_excs_list=[]):
+def point_sum_density(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field=None, case_excs_list=[]):
 
     # make sure you calculate the area for normalizing
     if p.col_area_ac not in val_fields:
         val_fields.append(p.col_area_ac)
 
     #get values (e.g. total pop, total jobs, etc.)
-    dict_vals = point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field, case_excs_list)
+    dict_vals = point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field, case_excs_list)
 
     #calculate density per unit of area for each value (e.g. jobs/acre, pop/acre, etc.)
     area_unit = "acre"
@@ -88,17 +92,6 @@ if __name__ == '__main__':
     # input line project for basing spatial selection
     project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
     ptype = p.ptype_arterial
-
-    # get jobs, dwelling units, trips by mode within 0.5mi
-    #output_dict = point_sum(in_pcl_pt_fc, value_fields, 2640, project_fc)
-    #print(output_dict)
-
-    # dwelling units by housing type within 1mi
-    #output_dict = point_sum(in_pcl_pt_fc, ['DU_TOT'], 5280, project_fc, case_field='TYPCODE_DESC', case_excs_list=['Other'])
-    #print(output_dict)
-    # EJ population
-    # output_dict = point_sum(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT'], 2640, )  # case_field='EJ_2018'
-    # print(output_dict)
 
     # point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, case_excs_list=[])
     output_dict = point_sum(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT'], 2640, case_field='EJ_2018', case_excs_list=[])

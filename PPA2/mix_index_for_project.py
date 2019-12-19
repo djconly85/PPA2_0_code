@@ -23,6 +23,11 @@ import ppa_input_params as p
 
 # =============FUNCTIONS=============================================
 
+def make_fl_conditional(fc, fl):
+    if arcpy.Exists(fl):
+        arcpy.Delete_management(fl)
+    arcpy.MakeFeatureLayer_management(fc, fl)
+
 def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
     data_rows = []
     with arcpy.da.SearchCursor(in_esri_obj, esri_obj_fields) as cur:
@@ -96,11 +101,10 @@ def get_mix_idx(fc_parcel, fc_project, project_type):
     arcpy.AddMessage("calculating mix index...")
 
     fl_parcel = "fl_parcel"
-    arcpy.MakeFeatureLayer_management(fc_parcel, fl_parcel)
-
     fl_project = "fl_project"
-    if not arcpy.Exists(fl_project):
-        arcpy.MakeFeatureLayer_management(fc_project, fl_project)
+
+    make_fl_conditional(fc_parcel, fl_parcel)
+    make_fl_conditional(fc_project, fl_project)
 
     in_cols = [p.col_parcelid, p.col_hh, p.col_k12_enr, p.col_emptot, p.col_empfood,
                p.col_empret, p.col_empsvc, p.col_area_ac, p.col_lutype]
@@ -130,10 +134,10 @@ if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
     
     # input fc of parcel data--must be points!
-    in_pcl_pt_fc = "parcel_data_2016_11062019_pts"
+    in_pcl_pt_fc = "parcel_data_pts_2016"
 
     # input line project for basing spatial selection
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg_seconn'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_urbancore'
 
     buff_dist_ft = 5280  # distance in feet--MIGHT NEED TO BE ADJUSTED FOR WGS 84--SEE OLD TOOL FOR HOW THIS WAS RESOLVED
 

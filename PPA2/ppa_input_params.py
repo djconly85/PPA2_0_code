@@ -15,8 +15,8 @@ reg_bikeway_fc = 'BikeRte_C1_C2_C4_2017'
 
 
 # layers with multiple potential year values (e.g. base, various future years, etc)
-def parcel_pt_fc_yr(year=2016):
-    return "parcel_data_pts_{}".format(year)
+def parcel_pt_fc_yr(in_year=2016):
+    return "parcel_data_pts_{}".format(in_year)
 
 
 parcel_pt_fc = parcel_pt_fc_yr(2016) # parcel point data

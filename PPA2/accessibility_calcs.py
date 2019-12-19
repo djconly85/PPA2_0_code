@@ -14,6 +14,10 @@ import pandas as pd
 
 import ppa_input_params as p
 
+def make_fl_conditional(fc, fl):
+    if arcpy.Exists(fl):
+        arcpy.Delete_management(fl)
+    arcpy.MakeFeatureLayer_management(fc, fl)
 
 def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
     data_rows = []
@@ -32,8 +36,8 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
     fl_accdata = "fl_accdata"
     fl_project = "fl_project"
 
-    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
-    arcpy.MakeFeatureLayer_management(fc_accdata, fl_accdata)
+    make_fl_conditional(fc_project, fl_project)
+    make_fl_conditional(fc_accdata, fl_accdata)
 
     # select polygons that intersect with the project line
     searchdist = 0 if project_type == p.ptype_area_agg else p.bg_search_dist
