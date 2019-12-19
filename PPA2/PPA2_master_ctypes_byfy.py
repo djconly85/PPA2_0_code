@@ -26,7 +26,7 @@ import transit_svc_measure as trn_svc
 
 
 def get_poly_avg(input_poly_fc):
-#     as of 11/26/2019, each of these outputs are dictionaries
+    # as of 11/26/2019, each of these outputs are dictionaries
     accdata = acc.get_acc_data(input_poly_fc, p.accdata_fc, p.ptype_area_agg, get_ej=False)
     collision_data = coll.get_collision_data(input_poly_fc, p.ptype_area_agg, p.collisions_fc, 0)
     mix_data = mixidx.get_mix_idx(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg)
@@ -35,11 +35,13 @@ def get_poly_avg(input_poly_fc):
     tran_stop_density = trn_svc.transit_svc_density(input_poly_fc, p.trn_svc_fc, p.ptype_area_agg)
 
     emp_ind_wtot = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, [p.col_empind, p.col_emptot], 0)
-    emp_ind_pct = {'emp_ind_pct': emp_ind_wtot[p.col_empind] / emp_ind_wtot[p.col_emptot]}
+    emp_ind_pct = {'emp_ind_pct': emp_ind_wtot[p.col_empind] / emp_ind_wtot[p.col_emptot] \
+                   if emp_ind_wtot[p.col_emptot] > 0 else 0}
 
     pop_x_ej = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, [p.col_pop_ilut], 0, p.col_ej_ind)
     pop_tot = sum(pop_x_ej.values())
-    pct_pop_ej = {'pct_ej_pop': pop_x_ej[1] / pop_tot}
+    key_yes_ej = max(list(pop_x_ej.keys()))
+    pct_pop_ej = {'pct_ej_pop': pop_x_ej[key_yes_ej] / pop_tot if pop_tot > 0 else 0}
 
     job_pop_dens = lubuff.point_sum_density(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, \
                                             [p.col_du, p.col_emptot], 0)
@@ -56,76 +58,123 @@ def poly_avg_futyears(input_poly_fc, data_year): #IDEALLY could make this part o
     mix_data = mixidx.get_mix_idx(p.parcel_pt_fc_yr(data_year), input_poly_fc, p.ptype_area_agg)    
     return mix_data
 
+def get_ppa_agg_data(fc_poly_in, poly_id_field, year_base, year_analysis, test_run=False):
+    """
+    Parameters
+    ----------
+    fc_poly_in : TYPE - polygon feature class
+    poly_id_field : TYPE - feature class field
+        Feature ID field. Can be name of each feature (e.g. city names, project IDs, etc.), or other unique ID
+    test_run : TYPE, optional
+        Set to true if you only want to run the first item in the polygon file as a test
+    test_val : TYPE, optional
+        DESCRIPTION. The default is None.
+
+    Returns
+    -------
+    df_out : TYPE
+        DESCRIPTION.
+
+    """
+    
+    poly_types_list = []  #based on column values, e.g., distinct community type values.
+    
+    output_dict = {}
+
+    # create list of ctypes to loop through
+    with arcpy.da.SearchCursor(fc_poly_in, [poly_id_field]) as cur:
+        for row in cur:
+            poly_types_list.append(row[0])
+            
+    # only do single ctype for test to save time
+    if test_run:
+        poly_types_list = [poly_types_list[0]]
+
+    # for each ctype, select polygon feature from cytpes fc and export to temporary single feature fc
+    for polytype in poly_types_list:
+        
+        temp_poly_fc = 'TEMP_ctype_fc'
+        temp_poly_fc_fp = 'memory/{}'.format(temp_poly_fc)
+
+
+        # need to know if search value is a string so that SQL syntax comes out correct
+        if type(polytype) == str:
+            sql = "{} = '{}'".format(poly_id_field, polytype)
+        else:
+            sql = "{} = {}".format(poly_id_field, polytype)
+
+        if arcpy.Exists(temp_poly_fc_fp):
+            arcpy.Delete_management(temp_poly_fc_fp)
+        arcpy.FeatureClassToFeatureClass_conversion(fc_poly_in, 'memory', temp_poly_fc, sql)
+
+        # on that temp fc, run the PPA tools, but SET BUFFER DISTANCES TO ZERO SOMEHOW
+        # this will return a dict with all numbers for that ctype
+        
+        if year_analysis == year_base:
+            print("\ngetting base year values for {} areas...".format(polytype))
+            poly_dict = get_poly_avg(temp_poly_fc_fp)
+        else:
+            print("\ngetting {} values for {} areas...".format(year_analysis, polytype))
+            poly_dict = poly_avg_futyears(temp_poly_fc_fp, year_analysis)
+        
+        output_dict[polytype] = poly_dict
+        # for all keys in the output dict, add a tag to the key value to indicate community type
+        # append it to a master dict
+
+    
+    df_out = pd.DataFrame.from_dict(output_dict, orient='columns')
+    return df_out
+
 
 if __name__ == '__main__':
     time_sufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
     arcpy.OverwriteOutput = True
+    base_year = 2016
     future_year = 2040
     
     # fc of community type polygons
     ctype_fc = p.comm_types_fc
     output_csv = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals{}.csv'.format(time_sufx)
     
-    test_run = True
+    test_run = False
     
-    # ------------------SELDOM-CHANGED INPUTS-----------------------------------------
-
-    # fl_ctype = 'fl_ctype'
-    # arcpy.MakeFeatureLayer_management(ctype_fc, fl_ctype)
-
-    # loop through each feature in ctype fc, make a temp fc of it, run the calcs on that fc
-    # get list of ctypes to search/loop through
-    region = 'REGION'
+    # ------------------RUN SCRIPT-----------------------------------------
     
-    ctypes_list = []
+    
+    # table with fields: poly ID, data values for base year for each ID, but not entire region
+    print("getting community type aggregate values")
+    df_base_ctypes = get_ppa_agg_data(ctype_fc, p.col_ctype, base_year, base_year, test_run)
+    df_future_ctypes = get_ppa_agg_data(ctype_fc, p.col_ctype, base_year, future_year, test_run)
 
-    with arcpy.da.SearchCursor(ctype_fc, [p.col_ctype]) as cur:
-        for row in cur:
-            ctypes_list.append(row[0])
-            
-    if test_run:
-        ctypes_list = ['Urban core']
+    print("getting regional aggregate values")
+    col_region = 'REGION'
+    col_year = 'year'
+    col_poly_id = 1 # for region feature class, assume only one feature, and this is its OBJECTID column value
+    
+    df_base_region = get_ppa_agg_data(p.region_fc, "OBJECTID", base_year, base_year, test_run)
+    df_future_region = get_ppa_agg_data(p.region_fc, "OBJECTID", base_year, future_year, test_run)
 
-    base_out_dict = {}
-    fy_out_dict = {}
-    #for each ctype, select polygon feature from cytpes fc and export to temporary single feature fc
-    for ctype in ctypes_list:
-        arcpy.AddMessage("\ngetting aggregate values for {} community type".format(ctype))
-        temp_poly_fc = 'TEMP_ctype_fc'
-        temp_poly_fc_fp = 'memory/{}'.format(temp_poly_fc)
-
-        sql = "{} = '{}'".format(p.col_ctype, ctype)
-        # arcpy.SelectLayerByAttribute_management(fl_ctype, "NEW_SELECTION", sql)
-        if arcpy.Exists(temp_poly_fc_fp):
-            arcpy.Delete_management(temp_poly_fc_fp)
-        arcpy.FeatureClassToFeatureClass_conversion(ctype_fc, 'memory', temp_poly_fc, sql)
-
-        # on that temp fc, run the PPA tools, but SET BUFFER DISTANCES TO ZERO SOMEHOW
-        # this will return a dict with all numbers for that ctype
-        poly_dict = get_poly_avg(temp_poly_fc_fp)
+    df_base_region = df_base_region.rename(columns={col_poly_id: col_region})
+    df_future_region = df_future_region.rename(columns={col_poly_id: col_region})
         
-        base_out_dict[ctype] = poly_dict
-        # for all keys in the output dict, add a tag to the key value to indicate community type
-        # append it to a master dict
-        
-        ##---------future year data-----------------------------------------------
-        print("calculating numbers for future year...")
-
-        fy_vals_dict = poly_avg_futyears(temp_poly_fc_fp, future_year) #get future-year data--IDEALLY would make refer to list of future years
+    df_base_all = df_base_ctypes.join(df_base_region)
+    df_base_all[col_year] = base_year
     
-        fy_out_dict[ctype] = fy_vals_dict
-
-    base_out_dict[region] = get_poly_avg(p.region_fc)
-    fy_out_dict[region] = poly_avg_futyears(p.region_fc, future_year)
-    # regn_df = pd.DataFrame.from_dict(poly_dict, orient='index')
-
-    base_df = pd.DataFrame.from_dict(base_out_dict, orient='columns')
-    fy_df = pd.DataFrame.from_dict(fy_out_dict, orient='columns')
-
+    df_future_all = df_future_ctypes.join(df_future_region)
+    df_future_all[col_year] = future_year
     
-    out_df = base_df.join(fy_df, rsuffix = future_year)
-    out_df.to_csv(output_csv)
-    arcpy.AddMessage("summary completed as {}".format(output_csv))
+    df_out = df_base_all.append(df_future_all, sort=False)
+                            
+    df_out.to_csv(output_csv)
+    print("summary completed as {}".format(output_csv))
+    
+    # for now, don't do FY mix index for region because base-year region LU mix is the basis for the
+    # mix index values. If you want to get regional mix index for FY you'd need
+    # to recalculate for the future year.
+    # fy_out_dict[region] = poly_avg_futyears(p.region_fc, future_year)
+    
+
+
 
 

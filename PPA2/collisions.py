@@ -71,7 +71,7 @@ def get_centerline_miles(selection_poly_fc, centerline_fc):
 
 def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
 
-    print("Aggregating collision data...")
+    arcpy.AddMessage("Aggregating collision data...")
     fl_project = 'proj_fl'
     fl_colln_pts = 'collision_fl'
 

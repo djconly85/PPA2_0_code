@@ -31,7 +31,7 @@ def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
 
 
 def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
-    print("calculating accessibility metrics...")
+    arcpy.AddMessage("calculating accessibility metrics...")
 
     fl_accdata = "fl_accdata"
     fl_project = "fl_project"
@@ -76,8 +76,7 @@ if __name__ == '__main__':
     accdata_fc = 'Sugar_access_data_latest'
 
     out_1 = get_acc_data(project_fc, accdata_fc, p.ptype_arterial, get_ej=False)
-    #out_2 = get_acc_data(project_fc, accdata_fc, get_ej=True)
 
     print(out_1)
-    #print(out_2)
+
 
