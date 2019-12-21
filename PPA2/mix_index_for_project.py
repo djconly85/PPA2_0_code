@@ -124,7 +124,7 @@ def get_mix_idx(fc_parcel, fc_project, project_type):
     #print("Done! Output CSV: {}".format(out_csv))
 
     out_val = out_df[p.mix_idx_col][0]
-    return {'mix_index_proj': out_val}
+    return {p.mix_idx_col: out_val}
 
 # ===============================SCRIPT=================================================
 

@@ -68,8 +68,13 @@ def point_sum_density(fc_pclpt, fc_project, project_type, val_fields, buffdist, 
     #get values (e.g. total pop, total jobs, etc.)
     dict_vals = point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field, case_excs_list)
 
-    #calculate density per unit of area for each value (e.g. jobs/acre, pop/acre, etc.)
-    area_unit = "acre"
+    # calculate density per unit of area for each value (e.g. jobs/acre, pop/acre, etc.)
+    # This density is based on total parcel area, i.e., even if parts of some of the parcels are outside of the
+    # buffer polygon. Since it is density this is a good method (alternative, which would give same answer, is to do
+    # the intersect, then divide that area by the area-weighted value (value = pop, emptot, etc.). But this is simpler and
+    # gives same density number.
+
+    area_unit = "NetPclAcre"
     dict_out = {}
     for valfield, val in dict_vals.items():
         if valfield == p.col_area_ac:
@@ -80,6 +85,7 @@ def point_sum_density(fc_pclpt, fc_project, project_type, val_fields, buffdist, 
             dict_out[dict_out_key] = val_density
 
     return dict_out
+
 
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
@@ -94,16 +100,15 @@ if __name__ == '__main__':
     ptype = p.ptype_arterial
 
     # point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, case_excs_list=[])
-    output_dict = point_sum(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT'], 2640, case_field='EJ_2018', case_excs_list=[])
-    ej_flag_dict = {0: "Pop_NonEJ", 1: "Pop_EJ"}
-    out_dict2 = {}
-    for k, v in ej_flag_dict.items():
-        if k in list(output_dict.keys()):
-            out_dict2[v] = output_dict[k]
-        else:
-            out_dict2[v] = 0
+    # output_dict = point_sum(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT'], 2640, case_field='EJ_2018', case_excs_list=[])
+    # ej_flag_dict = {0: "Pop_NonEJ", 1: "Pop_EJ"}
+    # out_dict2 = {}
+    # for k, v in ej_flag_dict.items():
+    #     if k in list(output_dict.keys()):
+    #         out_dict2[v] = output_dict[k]
+    #     else:
+    #         out_dict2[v] = 0
+
+    print(point_sum_density(in_pcl_pt_fc, project_fc, ptype, ['EMPTOT', 'DU_TOT'], 2640))
 
     #ej_data_arterial = {v: output_dict.pop(k) for k, v in ej_flag_dict.items() if output_dict.get(k) is not None}
-
-    print(output_dict)
-    print(out_dict2)

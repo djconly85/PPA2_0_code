@@ -112,6 +112,7 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
     fatal_collns = df_collndata.loc[df_collndata[p.col_nkilled] > 0].shape[0]
     bikeped_collns = df_collndata.loc[(df_collndata[p.col_bike_ind] == p.ind_val_true)
                                       | (df_collndata[p.col_ped_ind] == p.ind_val_true)].shape[0]
+    pct_bikeped_collns = bikeped_collns / total_collns if total_collns > 0 else 0
 
     bikeped_colln_clmile = bikeped_collns / proj_len_mi
 
@@ -124,7 +125,8 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
 
     out_dict = {"TOT_COLLISNS": total_collns, "TOT_COLLISNS_PER_100MVMT": colln_rate_per_vmt,
                 "FATAL_COLLISNS": fatal_collns, "FATAL_COLLISNS_PER_100MVMT": fatalcolln_per_vmt,
-                "BIKEPED_COLLISNS": bikeped_collns, "BIKEPED_COLLISNS_PER_CLMILE": bikeped_colln_clmile}
+                "BIKEPED_COLLISNS": bikeped_collns, "BIKEPED_COLLISNS_PER_CLMILE": bikeped_colln_clmile,
+                "PCT_BIKEPED_COLLISNS": pct_bikeped_collns}
 
     return out_dict
 
@@ -133,12 +135,13 @@ if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
     # user-entered values
-    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
-    proj_type = 'Freeway' # 'Freeway', 'Arterial', 'State of Good Repair'
+    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_sr51riverXing'
+    proj_type = p.ptype_fwy # 'Freeway', 'Arterial', 'State of Good Repair'
     proj_weekday_adt = 16000  # avg daily traffic, will be user-entered value
+    pci = 60 # pavement condition index, will be user-entered value
 
     # collision data layer
-    collision_fc = 'Collisions2014to2018fwytag'
+    collision_fc = p.collisions_fc
 
     output = get_collision_data(proj_line_fc, proj_type, collision_fc, proj_weekday_adt)
 

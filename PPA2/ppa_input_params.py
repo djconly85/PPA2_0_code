@@ -124,7 +124,7 @@ park_calc_dict = {'area_field': col_area_ac,
 
 lutype_ag = 'Agriculture' #from LUTYPE colume for ILUT table
 
-mix_idx_col = 'mix_index_1mi'
+mix_idx_col = 'mix_index'
 
 # by default, bal_ratio_per_hh = ratio of that land use factor per HH at the regional level, and represents "ideal" ratio
 mix_calc_cols = ['lu_fac', 'bal_ratio_per_hh', 'weight']

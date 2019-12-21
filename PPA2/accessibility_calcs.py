@@ -57,7 +57,8 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
             accdata_df[col_wtd] = accdata_df[col] * accdata_df[p.col_pop] * accdata_df[p.col_acc_ej_ind]
             accdata_df[col_ej_pop] = accdata_df[p.col_pop] * accdata_df[p.col_acc_ej_ind]
             out_wtd_acc = accdata_df[col_wtd].sum() / accdata_df[col_ej_pop].sum()
-            out_dict[col] = out_wtd_acc
+            col_out_ej = "{}_EJ".format(col)
+            out_dict[col_out_ej] = out_wtd_acc
     else:
         for col in p.acc_cols:
             col_wtd = "{}_wtd".format(col)
@@ -72,10 +73,10 @@ if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
     arcpy.OverwriteOutput = True
 
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_sr51riverXing'
     accdata_fc = 'Sugar_access_data_latest'
 
-    out_1 = get_acc_data(project_fc, accdata_fc, p.ptype_arterial, get_ej=False)
+    out_1 = get_acc_data(project_fc, accdata_fc, p.ptype_arterial, get_ej=True)
 
     print(out_1)
 

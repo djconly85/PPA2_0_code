@@ -48,7 +48,7 @@ def nat_resources(fc_project, fc_pcl_poly, year): #NOTE - this is year dependent
         lutype_ac_dict = luta.get_lutype_acreage(fc_project, fc_pcl_poly, lutype)
         nat_resource_ac += lutype_ac_dict['{}_acres'.format(lutype)]
 
-    return {"nat_resource_acres{}".format(year): nat_resource_ac}
+    return {"nat_resource_acres": nat_resource_ac}
 
 
 if __name__ == '__main__':
