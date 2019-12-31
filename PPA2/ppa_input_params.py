@@ -9,7 +9,7 @@ trn_svc_fc = 'transit_stoplocn_w_eventcount_2016' # transit stop event data; poi
 freight_route_fc = 'STAATruckRoutes' # STAA truck route lines
 intersections_base_fc = 'intersections_2016'
 comm_types_fc = 'comm_type_jurspec_dissolve'
-model_links_fc = 'model_links_2016'
+
 reg_centerline_fc = 'RegionalCenterline_2019'
 reg_bikeway_fc = 'BikeRte_C1_C2_C4_2017'
 
@@ -18,6 +18,13 @@ reg_bikeway_fc = 'BikeRte_C1_C2_C4_2017'
 def parcel_pt_fc_yr(in_year=2016):
     return "parcel_data_pts_{}".format(in_year)
 
+
+def parcel_poly_fc_yr(in_year=2016):
+    return "parcel_data_polys_{}".format(in_year)
+
+
+def model_links_fc(in_year=2016):
+    return "model_links_{}".format(in_year)
 
 parcel_pt_fc = parcel_pt_fc_yr(2016) # parcel point data
 parcel_pt_fc_fyr = parcel_pt_fc_yr(2040)
@@ -113,7 +120,6 @@ ilut_sum_buffdist = 2640 # feet
 # park acreage info,
 col_area_ac = 'GISAc'
 col_lutype = 'LUTYPE'
-col_lutype_base = 'LUTYPE16'
 col_housing_type = 'TYPCODE_DESC'
 lutype_parks = 'Park and/or Open Space'
 col_parkac = 'PARK_AC'  # will be calc'd as GISAc if LUTYPE = park/open space LUTYPE

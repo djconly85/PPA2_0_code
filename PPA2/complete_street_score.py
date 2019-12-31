@@ -19,7 +19,7 @@ import transit_svc_measure as ts
 
 
 def complete_streets_idx(fc_pclpt, fc_project, project_type, posted_speedlim, transit_event_fc):
-    print("getting complete street score...")
+    arcpy.AddMessage("getting complete street score...")
 
     # get transit service density around project
     tran_stops_dict = ts.transit_svc_density(fc_project, transit_event_fc, project_type)

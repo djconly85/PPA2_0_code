@@ -29,3 +29,15 @@ def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
     out_df = pd.DataFrame(data_rows, index=index_field, columns=esri_obj_fields)
     return out_df
 
+
+def rename_dict_keys(dict_in, new_key_dict):
+    '''if dict in = {0:1} and dict out supposed to be {'zero':1}, this function renames the key accordingly per
+    the new_key_dict (which for this example would be {0:'zero'}'''
+    dict_out = {}
+    for k, v in new_key_dict.items():
+        if k in list(dict_in.keys()):
+            dict_out[v] = dict_in[k]
+        else:
+            dict_out[v] = 0
+    return dict_out
+

@@ -58,7 +58,7 @@ def get_lutype_acreage(fc_project, fc_poly_parcels, lutype):
     # get total acres within intersect polygons
     pclarea_inbuff_ft2 = 0  # total on-parcel acres within buffer
     lutype_intersect_ft2 = 0  # total acres of specified land use type within buffer
-    with arcpy.da.SearchCursor(fl_intersect, ["SHAPE@AREA", p.col_lutype_base]) as cur:
+    with arcpy.da.SearchCursor(fl_intersect, ["SHAPE@AREA", p.col_lutype]) as cur:
         for row in cur:
             pclarea_inbuff_ft2 += row[0]
             if row[1] == lutype:

@@ -91,7 +91,7 @@ def conflate_link2projline(fl_proj, fl_links_buffd, links_desc):
 
 
 def get_line_overlap(fc_projline, fc_network_lines, links_desc):
-    print("estimating share of project line that is {}...".format(links_desc))
+    arcpy.AddMessage("estimating share of project line that is {}...".format(links_desc))
 
     arcpy.OverwriteOutput = True
     SEARCH_DIST_FT = 100

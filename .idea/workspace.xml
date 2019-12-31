@@ -2,22 +2,23 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="17e4acb0-29b3-4667-b3ba-79aaa1f4d2fd" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/PPA2/PPA2_masterBYFY_2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/PPA2_masterBYFY.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/PPA2_masterBYFY.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/accessibility_calcs.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/accessibility_calcs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/collisions.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/collisions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/get_buff_netmiles.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/get_buff_netmiles.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/AggValCSVs/Agg_ppa_vals12192019_1250working.csv" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/AggValCSVs/Agg_ppa_vals12192019_1250working.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_SEConnector_12172019_1517.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_SEConnector_12172019_1629.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_SEConnector_12172019_MarkNeededAddns.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_SEConnector_12202019_1450.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_offNPMRDSNet_12172019_1055.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_sr51riverXing_12202019_1524.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_sr51riverXing_12202019_1535.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_xmult_strt_12302019_1716.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/complete_street_score.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/complete_street_score.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PPA2/get_line_overlap.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/get_line_overlap.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PPA2/get_lutype_acres.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/get_lutype_acres.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/get_lutype_acres_working.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/intersection_density.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/intersection_density.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/link_occup_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/link_occup_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/mix_index_for_project.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/mix_index_for_project.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/npmrds_data_conflation.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/npmrds_data_conflation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PPA2/ppa_input_params.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/ppa_input_params.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/transit_svc_measure.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/transit_svc_measure.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/ppa_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/ppa_utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PPA2/urbanization_metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/urbanization_metrics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PrepDataInputs/agg_parcel_to_hexgeom_4toolbox.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -297,6 +298,11 @@
           <url>file://$PROJECT_DIR$/PostProcessing/ReplicaDataSummary_latest.py</url>
           <line>7</line>
           <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/PPA2/PPA2_masterBYFY_2.py</url>
+          <line>11</line>
+          <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
