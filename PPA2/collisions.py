@@ -13,30 +13,17 @@ import pandas as pd
 import arcpy
 
 import ppa_input_params as p
+import ppa_utils as utils
 
-def make_fl_conditional(fc, fl):
-    if arcpy.Exists(fl):
-        arcpy.Delete_management(fl)
-    arcpy.MakeFeatureLayer_management(fc, fl)
 
-def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
-    data_rows = []
-    with arcpy.da.SearchCursor(in_esri_obj, esri_obj_fields) as cur:
-        for row in cur:
-            out_row = list(row)
-            data_rows.append(out_row)
-
-    out_df = pd.DataFrame(data_rows, index=index_field, columns=esri_obj_fields)
-    return out_df
-
-#for aggregate, polygon-based avgs (e.g., community type, whole region), use model for VMT; for
-#project, the VMT will be based on combo of project length and user-entered ADT for project
+# for aggregate, polygon-based avgs (e.g., community type, whole region), use model for VMT; for
+# project, the VMT will be based on combo of project length and user-entered ADT for project
 def get_model_link_sums(fc_polygon, fc_model_links):
 
     fl_polygon = "fl_polygon"
     fl_model_links = "fl_model_links"
-    make_fl_conditional(fc_polygon, fl_polygon)
-    make_fl_conditional(fc_model_links, fl_model_links)
+    utils.make_fl_conditional(fc_polygon, fl_polygon)
+    utils.make_fl_conditional(fc_model_links, fl_model_links)
 
     # select model links whose centroid is within the polygon area
     arcpy.SelectLayerByLocation_management(fl_model_links, "HAVE_THEIR_CENTER_IN", fl_polygon)
@@ -45,7 +32,7 @@ def get_model_link_sums(fc_polygon, fc_model_links):
     output_data_cols = [p.col_dayvmt, p.col_distance]
 
     # load model links, selected to be near project, into a dataframe
-    df_linkdata = esri_object_to_df(fl_model_links, link_data_cols)
+    df_linkdata = utils.esri_object_to_df(fl_model_links, link_data_cols)
 
     # get total VMT for links within the area
     out_dict = {col: df_linkdata[col].sum() for col in output_data_cols}
@@ -56,8 +43,8 @@ def get_centerline_miles(selection_poly_fc, centerline_fc):
     fl_selection_poly = "fl_selection_poly"
     fl_centerline = "fl_centerline"
 
-    make_fl_conditional(selection_poly_fc, fl_selection_poly)
-    make_fl_conditional(centerline_fc, fl_centerline)
+    utils.make_fl_conditional(selection_poly_fc, fl_selection_poly)
+    utils.make_fl_conditional(centerline_fc, fl_centerline)
 
     arcpy.SelectLayerByLocation_management(fl_centerline, "HAVE_THEIR_CENTER_IN", fl_selection_poly)
 
@@ -75,11 +62,11 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
     fl_project = 'proj_fl'
     fl_colln_pts = 'collision_fl'
 
-    make_fl_conditional(fc_project, fl_project)
-    make_fl_conditional(fc_colln_pts, fl_colln_pts)
+    utils.make_fl_conditional(fc_project, fl_project)
+    utils.make_fl_conditional(fc_colln_pts, fl_colln_pts)
 
     # if for project segment, get annual VMT for project segment based on user input and segment length
-    df_projlen = esri_object_to_df(fl_project, ["SHAPE@LENGTH"])
+    df_projlen = utils.esri_object_to_df(fl_project, ["SHAPE@LENGTH"])
     proj_len_mi = df_projlen.iloc[0][0] / p.ft2mile  # return project length in miles
 
     # for aggregate, polygon-based avgs (e.g., community type, whole region), use model for VMT; for
@@ -98,7 +85,7 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
     arcpy.SelectLayerByLocation_management(fl_colln_pts, 'WITHIN_A_DISTANCE', fl_project, searchdist)
     colln_cols = [p.col_fwytag, p.col_nkilled, p.col_bike_ind, p.col_ped_ind]
 
-    df_collndata = esri_object_to_df(fl_colln_pts, colln_cols)
+    df_collndata = utils.esri_object_to_df(fl_colln_pts, colln_cols)
 
     # filter so that fwy collisions don't get tagged to non-freeway projects, and vice-versa
     if project_type == p.ptype_fwy:

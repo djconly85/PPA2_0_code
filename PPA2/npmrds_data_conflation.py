@@ -23,6 +23,7 @@ import arcpy
 import pandas as pd
 
 import ppa_input_params as p
+import ppa_utils as utils
 
 arcpy.env.overwriteOutput = True
 
@@ -30,24 +31,15 @@ dateSuffix = str(dt.date.today().strftime('%m%d%Y'))
 
 
 
-#====================FUNCTIONS==========================================
+# ====================FUNCTIONS==========================================
 
-def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
-    data_rows = []
-    with arcpy.da.SearchCursor(in_esri_obj, esri_obj_fields) as cur:
-        for row in cur:
-            out_row = list(row)
-            data_rows.append(out_row)
-
-    out_df = pd.DataFrame(data_rows, index=index_field, columns=esri_obj_fields)
-    return out_df
 
 def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
                           fl_tmcs_buffd, speed_data_fields):
 
     out_row_dict = {}
     
-    #get length of project
+    # get length of project
     fld_shp_len = "SHAPE@LENGTH"
     fld_totprojlen = "proj_length_ft"
     
@@ -74,30 +66,30 @@ def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
         sql_sel_tmcxdir = "{} = '{}'".format(tmc_dir_field, direcn)
         arcpy.SelectLayerByAttribute_management(fl_tmcs_buffd, "SUBSET_SELECTION", sql_sel_tmcxdir)
         
-        #split the project line at the boundaries of the TMC buffer, creating points where project line intersects TMC buffer boundaries
+        # split the project line at the boundaries of the TMC buffer, creating points where project line intersects TMC buffer boundaries
         arcpy.Intersect_analysis([fl_proj, fl_tmcs_buffd],temp_intersctpts,"","","POINT")
         arcpy.MultipartToSinglepart_management (temp_intersctpts, temp_intrsctpt_singlpt)
         
-        #split project line into pieces at points where it intersects buffer, with 10ft tolerance
-        #(not sure why 10ft tolerance needed but it is, zero tolerance results in some not splitting)
+        # split project line into pieces at points where it intersects buffer, with 10ft tolerance
+        # (not sure why 10ft tolerance needed but it is, zero tolerance results in some not splitting)
         arcpy.SplitLineAtPoint_management(fl_proj, temp_intrsctpt_singlpt,
                                           temp_splitprojlines, "10 Feet")
         arcpy.MakeFeatureLayer_management(temp_splitprojlines, fl_splitprojlines)
         
-        #get TMC speeds onto each piece of the split project line via spatial join
+        # get TMC speeds onto each piece of the split project line via spatial join
         arcpy.SpatialJoin_analysis(temp_splitprojlines, fl_tmcs_buffd, temp_splitproj_w_tmcdata,
                                    "JOIN_ONE_TO_ONE", "KEEP_ALL", "#", "HAVE_THEIR_CENTER_IN", "30 Feet")
                                    
-        #convert to fl and select records where "check field" col val is not none
+        # convert to fl and select records where "check field" col val is not none
         arcpy.MakeFeatureLayer_management(temp_splitproj_w_tmcdata, fl_splitproj_w_tmcdata)
         
-        check_field = speed_data_fields[0] #choose first speed value field for checking--if it's null, then don't include those rows in aggregation
+        check_field = speed_data_fields[0]  # choose first speed value field for checking--if it's null, then don't include those rows in aggregation
         sql_notnull = "{} IS NOT NULL".format(check_field)
         arcpy.SelectLayerByAttribute_management(fl_splitproj_w_tmcdata, "NEW_SELECTION", sql_notnull)
         
-        #convert the selected records into a numpy array then a pandas dataframe
+        # convert the selected records into a numpy array then a pandas dataframe
         flds_df = [fld_shp_len] + speed_data_fields
-        df_spddata = esri_object_to_df(fl_splitproj_w_tmcdata, flds_df)
+        df_spddata = utils.esri_object_to_df(fl_splitproj_w_tmcdata, flds_df)
 
         # remove project pieces with no speed data so their distance isn't included in weighting
         df_spddata = df_spddata.loc[pd.notnull(df_spddata[speed_data_fields[0]])].astype(float)

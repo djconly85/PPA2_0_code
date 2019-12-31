@@ -17,8 +17,6 @@ import datetime as dt
 import time
 
 import arcpy
-#from arcgis.features import SpatialDataFrame
-import pandas as pd
 
 arcpy.env.overwriteOutput = True
 

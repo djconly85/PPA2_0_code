@@ -1,10 +1,10 @@
 #--------------------------------
 # Name:get_lutype_acres.py
 # Purpose: Based on parcel polygon intersection with buffer around project segment, get % of acres near project that are of specific land use type
-#
+#           This version of script calculates the percent based on on-parcel acres (i.e., the total acreage excludes water/rights of way)
 #
 # Author: Darren Conly
-# Last Updated: <date>
+# Last Updated: 12/30/2019
 # Updated by: <name>
 # Copyright:   (c) SACOG
 # Python Version: 3.x
@@ -13,12 +13,7 @@
 import arcpy
 
 import ppa_input_params as p
-
-
-def make_fl_conditional(fc, fl):
-    if arcpy.Exists(fl):
-        arcpy.Delete_management(fl)
-    arcpy.MakeFeatureLayer_management(fc, fl)
+import ppa_utils as utils
 
 
 def get_lutype_acreage(fc_project, fc_poly_parcels, lutype):
@@ -28,7 +23,7 @@ def get_lutype_acreage(fc_project, fc_poly_parcels, lutype):
     fl_project = "fl_project"
 
     for fc, fl in {fc_project: fl_project, fc_poly_parcels: fl_parcels}.items():
-        make_fl_conditional(fc, fl)
+        utils.make_fl_conditional(fc, fl)
         # if arcpy.Exists(fl):
         #     arcpy.Delete_management(fl)
         #     arcpy.MakeFeatureLayer_management(fc, fl)
@@ -43,56 +38,54 @@ def get_lutype_acreage(fc_project, fc_poly_parcels, lutype):
     fl_buff = "fl_buff"
     arcpy.MakeFeatureLayer_management(fc_buff, fl_buff)
 
+    """
     # calculate buffer area, inclusive of water bodies and rights of way
     buff_area_ft2 = 0
     with arcpy.da.SearchCursor(fl_buff, ["SHAPE@AREA"]) as cur:
         for row in cur:
             buff_area_ft2 += row[0]
     buff_acre = buff_area_ft2 / p.ft2acre  # convert from ft2 to acres. may need to adjust for projection-related issues. See PPA1 for more info
+    """
 
-    # create intersect layer of buffer with parcels, to "slice" parcels so you only
-    # capture parcel portions that are within buffer. We want to do this since we are 
-    # calculating the percent of total land within buffer that is a given land use.
+    # create intersect layer of buffer with parcels of selected LUTYPE
     fc_intersect = r"memory\temp_intersect"
     arcpy.Intersect_analysis([fl_buff, fl_parcels], fc_intersect, "ALL", "", "INPUT")
-    
-    fl_intersect = "fl_intersect"
-    make_fl_conditional(fc_intersect, fl_intersect)
 
+    # calculate total area on parcels within buffer (excluding water and rights of way)
+    fl_intersect = "fl_intersect"
+    arcpy.MakeFeatureLayer_management(fc_intersect, fl_intersect)
 
     # get total acres within intersect polygons
-    tot_net_pclarea_ft2 = 0
-    lutype_intersect_ft2 = 0
+    pclarea_inbuff_ft2 = 0  # total on-parcel acres within buffer
+    lutype_intersect_ft2 = 0  # total acres of specified land use type within buffer
     with arcpy.da.SearchCursor(fl_intersect, ["SHAPE@AREA", p.col_lutype_base]) as cur:
         for row in cur:
-            area = row[0]
-            lutype_val = row[1]
-            if lutype_val == lutype:
-                lutype_intersect_ft2 += area
-            tot_net_pclarea_ft2 += area
+            pclarea_inbuff_ft2 += row[0]
+            if row[1] == lutype:
+                lutype_intersect_ft2 += row[0]
+
+    # get share of on-parcel land within buffer that is of specified land use type
+    pct_lutype = lutype_intersect_ft2 / pclarea_inbuff_ft2 if pclarea_inbuff_ft2 > 0 else 0
 
     # convert to acres
-    lutype_intersect_acres = lutype_intersect_ft2 / p.ft2acre  
-    tot_net_pcl_acres = tot_net_pclarea_ft2 / p.ft2acre
-    
-    # pct_lutype_infullbuff = lutype_intersect_acres / buff_acre if buff_acre > 0 else 0
-    net_pct_lutype = lutype_intersect_acres / tot_net_pcl_acres if tot_net_pcl_acres > 0 else 0
+    buff_acre = pclarea_inbuff_ft2 / p.ft2acre
+    lutype_intersect_acres = lutype_intersect_ft2 / p.ft2acre
 
     [arcpy.Delete_management(item) for item in [fl_parcels, fl_project, fc_buff, fl_buff, fc_intersect, fl_intersect]]
 
-    return {'total_buff_acres': buff_acre, 'net_onpcl_buff_acres': tot_net_pcl_acres, 
-            '{}_acres'.format(lutype): lutype_intersect_acres, 'pct_netPclAcs_{}_inBuff'.format(lutype): net_pct_lutype}
-
+    return {'total_net_pcl_acres': buff_acre, 'net_{}_acres'.format(lutype): lutype_intersect_acres,
+            'pct_{}_inbuff'.format(lutype): pct_lutype}
 
 
 if __name__ == '__main__':
+    import ppa_input_params as p
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
-    parcel_featclass = p.parcel_poly_fc #'parcel_data_polys_2016'
-    project_featclass = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
-    lutype = p.lutype_ag
+    parcel_featclass = p.parcel_poly_fc  # 'parcel_data_polys_2016'
+    project_featclass = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_sr51riverXing'
+    lutype = 'Agriculture'
 
-    out_pcl_data = get_lutype_acreage(project_featclass, parcel_featclass, lutype)
+    out_pcl_data = get_lutype_acreage(project_featclass, parcel_featclass, p.lutype_ag)
     print(out_pcl_data)
 
     # NOT 11/22/2019 - THIS IS GETTING AS PCT OF BUFFER AREA, NOT DEVELOPABLE ON-PARCEL ACRES! SHOULD FIX

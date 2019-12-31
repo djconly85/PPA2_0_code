@@ -13,17 +13,7 @@ import pandas as pd
 import arcpy
 
 import ppa_input_params as p
-
-
-def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
-    data_rows = []
-    with arcpy.da.SearchCursor(in_esri_obj, esri_obj_fields) as cur:
-        for row in cur:
-            out_row = list(row)
-            data_rows.append(out_row)
-
-    out_df = pd.DataFrame(data_rows, index=index_field, columns=esri_obj_fields)
-    return out_df
+import ppa_utils as utils
 
 
 def link_vehocc(row):
@@ -73,7 +63,7 @@ def get_linkoccup_data(fc_project, project_type, fc_model_links):
     # load data into dataframe then subselect only ones that are on same road type as project (e.g. fwy vs. arterial)
     df_cols = [p.col_capclass, p.col_lanemi, p.col_tranvol, p.col_dayvehvol, p.col_sovvol, p.col_hov2vol, p.col_hov3vol,
                p.col_daycommvehvol]
-    df_linkdata = esri_object_to_df(fl_model_links, df_cols)
+    df_linkdata = utils.esri_object_to_df(fl_model_links, df_cols)
 
     if project_type == p.ptype_fwy:
         df_linkdata = df_linkdata.loc[df_linkdata[p.col_capclass].isin(p.capclasses_fwy)]

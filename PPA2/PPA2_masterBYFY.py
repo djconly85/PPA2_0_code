@@ -50,9 +50,9 @@ if __name__ == '__main__':
     arcpy.OverwriteOutput = True
 
     # project data
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_sr51riverXing'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_xmult_strt'
     proj_name = os.path.basename(project_fc)
-    project_type = p.ptype_fwy  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
+    project_type = p.ptype_arterial  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
     adt = 17000
     project_speedlim = 30
     pci = 60  # pavement condition index, will be user-entered value

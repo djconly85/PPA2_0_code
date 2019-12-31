@@ -13,21 +13,7 @@ import arcpy
 import pandas as pd
 
 import ppa_input_params as p
-
-def make_fl_conditional(fc, fl):
-    if arcpy.Exists(fl):
-        arcpy.Delete_management(fl)
-    arcpy.MakeFeatureLayer_management(fc, fl)
-
-def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
-    data_rows = []
-    with arcpy.da.SearchCursor(in_esri_obj, esri_obj_fields) as cur:
-        for row in cur:
-            out_row = list(row)
-            data_rows.append(out_row)
-
-    out_df = pd.DataFrame(data_rows, index=index_field, columns=esri_obj_fields)
-    return out_df
+import ppa_utils as utils
 
 
 def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
@@ -36,8 +22,8 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
     fl_accdata = "fl_accdata"
     fl_project = "fl_project"
 
-    make_fl_conditional(fc_project, fl_project)
-    make_fl_conditional(fc_accdata, fl_accdata)
+    utils.make_fl_conditional(fc_project, fl_project)
+    utils.make_fl_conditional(fc_accdata, fl_accdata)
 
     # select polygons that intersect with the project line
     searchdist = 0 if project_type == p.ptype_area_agg else p.bg_search_dist
@@ -45,7 +31,7 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
 
     # read accessibility data from selected polygons into a dataframe
     accdata_fields = [p.col_geoid, p.col_acc_ej_ind, p.col_pop] + p.acc_cols_ej
-    accdata_df = esri_object_to_df(fl_accdata, accdata_fields)
+    accdata_df = utils.esri_object_to_df(fl_accdata, accdata_fields)
 
     # get pop-weighted accessibility values for all accessibility columns
 

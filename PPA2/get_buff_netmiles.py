@@ -11,12 +11,10 @@
 # --------------------------------
 
 import arcpy
+
+import ppa_utils as utils
 import ppa_input_params as p
 
-def make_fl_conditional(fc, fl):
-    if arcpy.Exists(fl):
-        arcpy.Delete_management(fl)
-    arcpy.MakeFeatureLayer_management(fc, fl)
 
 def netmiles_in_buffer(fc_project, fc_network, project_type):
 
@@ -29,7 +27,7 @@ def netmiles_in_buffer(fc_project, fc_network, project_type):
 
     fl_poly = "fl_buff"
     if not arcpy.Exists(fl_poly):
-        make_fl_conditional(fc_poly_buff, fl_poly)
+        utils.make_fl_conditional(fc_poly_buff, fl_poly)
 
     temp_intersect_fc = r"memory\temp_intersect_fc"
 

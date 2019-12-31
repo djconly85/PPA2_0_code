@@ -19,30 +19,15 @@ import swifter
 import arcpy
 
 import ppa_input_params as p
-
+import ppa_utils as utils
 
 # =============FUNCTIONS=============================================
-
-def make_fl_conditional(fc, fl):
-    if arcpy.Exists(fl):
-        arcpy.Delete_management(fl)
-    arcpy.MakeFeatureLayer_management(fc, fl)
-
-def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
-    data_rows = []
-    with arcpy.da.SearchCursor(in_esri_obj, esri_obj_fields) as cur:
-        for row in cur:
-            out_row = list(row)
-            data_rows.append(out_row)
-
-    out_df = pd.DataFrame(data_rows, index=index_field, columns=esri_obj_fields)
-    return out_df
 
 
 def make_summary_df(in_fl, input_cols,  landuse_cols, col_hh, park_calc_dict):
 
     # load into dataframe
-    parcel_df = esri_object_to_df(in_fl, input_cols)
+    parcel_df = utils.esri_object_to_df(in_fl, input_cols)
 
     col_parkac = park_calc_dict['park_acres_field']
     col_lutype = park_calc_dict['lutype_field']
@@ -103,8 +88,8 @@ def get_mix_idx(fc_parcel, fc_project, project_type):
     fl_parcel = "fl_parcel"
     fl_project = "fl_project"
 
-    make_fl_conditional(fc_parcel, fl_parcel)
-    make_fl_conditional(fc_project, fl_project)
+    utils.make_fl_conditional(fc_parcel, fl_parcel)
+    utils.make_fl_conditional(fc_project, fl_project)
 
     in_cols = [p.col_parcelid, p.col_hh, p.col_k12_enr, p.col_emptot, p.col_empfood,
                p.col_empret, p.col_empsvc, p.col_area_ac, p.col_lutype]
@@ -139,7 +124,7 @@ if __name__ == '__main__':
     # input line project for basing spatial selection
     project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_urbancore'
 
-    buff_dist_ft = 5280  # distance in feet--MIGHT NEED TO BE ADJUSTED FOR WGS 84--SEE OLD TOOL FOR HOW THIS WAS RESOLVED
+    buff_dist_ft = p.mix_index_buffdist  # distance in feet--MIGHT NEED TO BE ADJUSTED FOR WGS 84--SEE OLD TOOL FOR HOW THIS WAS RESOLVED
 
     out_dict = get_mix_idx(in_pcl_pt_fc, project_fc, p.ptype_arterial)
 
