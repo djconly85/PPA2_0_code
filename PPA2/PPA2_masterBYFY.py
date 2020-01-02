@@ -105,7 +105,7 @@ if __name__ == '__main__':
     job_du_dens = lu_pt_buff.point_sum_density(p.parcel_pt_fc, project_fc, project_type, 
                                                [p.col_emptot, p.col_du], p.ilut_sum_buffdist)
     comb_du_dens = sum(list(job_du_dens.values()))
-    job_du_dens['job_du_perAcre'] = comb_du_dens
+    job_du_dens['job_du_perNetAcre'] = comb_du_dens
 
     # get EJ data
     ej_data = lu_pt_buff.point_sum(p.parcel_pt_fc, project_fc, project_type, [p.col_pop_ilut],

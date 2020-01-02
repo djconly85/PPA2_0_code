@@ -35,17 +35,17 @@ def get_poly_avg(input_poly_fc):
     tran_stop_density = trn_svc.transit_svc_density(input_poly_fc, p.trn_svc_fc, p.ptype_area_agg)
 
     emp_ind_wtot = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, [p.col_empind, p.col_emptot], 0)
-    emp_ind_pct = {'emp_ind_pct': emp_ind_wtot[p.col_empind] / emp_ind_wtot[p.col_emptot] \
+    emp_ind_pct = {'EMPIND_jobshare': emp_ind_wtot[p.col_empind] / emp_ind_wtot[p.col_emptot] \
                    if emp_ind_wtot[p.col_emptot] > 0 else 0}
 
     pop_x_ej = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, [p.col_pop_ilut], 0, p.col_ej_ind)
     pop_tot = sum(pop_x_ej.values())
     key_yes_ej = max(list(pop_x_ej.keys()))
-    pct_pop_ej = {'pct_ej_pop': pop_x_ej[key_yes_ej] / pop_tot if pop_tot > 0 else 0}
+    pct_pop_ej = {'Pct_PopEJArea': pop_x_ej[key_yes_ej] / pop_tot if pop_tot > 0 else 0}
 
     job_pop_dens = lubuff.point_sum_density(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, \
                                             [p.col_du, p.col_emptot], 0)
-    total_dens = {"job_du_dens_ac": sum(job_pop_dens.values())}
+    total_dens = {"job_du_perNetAcre": sum(job_pop_dens.values())}
 
     out_dict = {}
     for d in [accdata, collision_data, mix_data, intsecn_dens, bikeway_covg, tran_stop_density, pct_pop_ej,\

@@ -9,7 +9,6 @@
 # Copyright:   (c) SACOG
 # Python Version: 3.x
 # --------------------------------
-import pandas as pd
 import arcpy
 
 import ppa_input_params as p
@@ -59,6 +58,8 @@ def get_centerline_miles(selection_poly_fc, centerline_fc):
 def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
 
     arcpy.AddMessage("Aggregating collision data...")
+    fc_model_links = p.model_links_fc()
+    
     fl_project = 'proj_fl'
     fl_colln_pts = 'collision_fl'
 
@@ -73,7 +74,7 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
     # project, the VMT will be based on combo of project length and user-entered ADT for project
     # approximate annual project VMT, assuming ADT is reflective of weekdays only, but assumes
     if project_type == p.ptype_area_agg:
-        vmt_dict = get_model_link_sums(fc_project, p.model_links_fc)
+        vmt_dict = get_model_link_sums(fc_project, fc_model_links)
         dayvmt = vmt_dict[p.col_dayvmt]
         ann_proj_vmt = dayvmt * 320
         proj_len_mi = get_centerline_miles(fc_project, p.reg_centerline_fc)

@@ -23,11 +23,28 @@ def esri_field_exists(in_tbl, field_name):
 
 # make dataframe summarizing items by desired group field (e.g. trips by block group ID)
 def trips_x_polygon(in_df, val_field, agg_fxn, groupby_field, case_field=None):
+    
+    col_sov = 'PRIVATE_AUTO'
+    col_hov = 'CARPOOL'
+    col_commveh = 'COMMERCIAL'
+    col_tnc = 'ON_DEMAND_AUTO'
+    col_walk = 'WALKING'
+    col_bike = 'BICYCLE'
+    col_transit = 'TRANSIT'
+    
+    col_tottrips = 'tot_trips'
+    col_trippctlrank = 'trips_pctlrank'
+    
+    allmodes = [col_sov, col_hov, col_commveh, col_tnc, col_walk, col_bike, col_transit]
+    
     piv = in_df.pivot_table(values=val_field, index=groupby_field, columns=case_field, 
                             aggfunc=agg_fxn)
     piv = piv.reset_index()
-
-    piv['pct_of_trips'] = piv[]
+    
+    tblmodes = [mode for mode in allmodes if mode in piv.columns]
+    
+    piv[col_tottrips] = piv[tblmodes].sum(axis=1)
+    piv[col_trippctlrank] = piv[col_tottrips].rank(method='min', pct=True)
 
     return piv
 
@@ -76,22 +93,31 @@ def join_vals_to_polydf(in_df, groupby_field, in_poly_fc, poly_id_field):
 
 if __name__ == '__main__':
     
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
+    # ------------------USER INPUTS----------------------------------------
+    
+    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    
     csv_tripdata = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica\ReplicaDownloads\GrantLineRoad_ThursdayFall.csv"
     
-    value_field = 'trip_start_time'
-    val_aggn_type = 'count'
+    csvcol_bgid = 'origin_blockgroup_id'  # Replica/big data block group ID column
+    csvcol_mode = 'trip_primary_mode'  # Replica/big data trip mode column
     
-    fc_bg = "BlockGroups2010"
-    bg_poly_id_field = "GEOID10"
+    csvcol_valfield = 'trip_start_time' # field for which you want to aggregate values
+    val_aggn_type = 'count'  # how you want to aggregate the values field (e.g. count of values, sum of values, avg, etc.)
+    
+    # feature class of polygons to which you'll join data to based on ID field
+    fc_bg = "ReplicaTShed_SECTest"
+    fc_poly_id_field = "GEOID10"
+    
+    join_to_fc = True
 
-    col_bgid = 'origin_blockgroup_id'
-    mode_col = 'trip_primary_mode'
+    #------------RUN SCRIPT------------------------------------
     
     df_tripdata = pd.read_csv(csv_tripdata)
     
-    pivtbl = trips_x_polygon(df_tripdata, value_field, val_aggn_type, col_bgid, mode_col)
+    pivtbl = trips_x_polygon(df_tripdata, csvcol_valfield, val_aggn_type, csvcol_bgid, csvcol_mode)
     
-    print("adding data to {} feature class...".format(fc_bg))
-    join_vals_to_polydf(pivtbl, col_bgid, fc_bg, bg_poly_id_field)
+    if join_to_fc:
+        print("adding data to {} feature class...".format(fc_bg))
+        join_vals_to_polydf(pivtbl, csvcol_bgid, fc_bg, fc_poly_id_field)
     
