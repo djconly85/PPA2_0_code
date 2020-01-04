@@ -43,10 +43,10 @@ def projarea_infill_status(fc_project, comm_types_fc):
     return {"Project's use of existing assets": category}
 
 
-def nat_resources(fc_project, fc_pcl_poly, year=2016):  # NOTE - this is year dependent!
+def nat_resources(fc_project, projtyp, fc_pcl_poly, year=2016):  # NOTE - this is year dependent!
     nat_resource_ac = 0
     for lutype in p.lutypes_nat_resources:
-        lutype_ac_dict = luta.get_lutype_acreage(fc_project, fc_pcl_poly, lutype)
+        lutype_ac_dict = luta.get_lutype_acreage(fc_project, projtyp, fc_pcl_poly, lutype)
         nat_resource_ac += lutype_ac_dict['net_{}_acres'.format(lutype)]
 
     return {"nat_resource_acres": nat_resource_ac}

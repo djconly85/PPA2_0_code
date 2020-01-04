@@ -42,7 +42,10 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
             col_ej_pop = "{}_EJ".format(p.col_pop)
             accdata_df[col_wtd] = accdata_df[col] * accdata_df[p.col_pop] * accdata_df[p.col_acc_ej_ind]
             accdata_df[col_ej_pop] = accdata_df[p.col_pop] * accdata_df[p.col_acc_ej_ind]
-            out_wtd_acc = accdata_df[col_wtd].sum() / accdata_df[col_ej_pop].sum()
+            
+            tot_ej_pop = accdata_df[col_ej_pop].sum()
+            
+            out_wtd_acc = accdata_df[col_wtd].sum() / tot_ej_pop if tot_ej_pop > 0 else 0
             col_out_ej = "{}_EJ".format(col)
             out_dict[col_out_ej] = out_wtd_acc
     else:

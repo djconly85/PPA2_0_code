@@ -16,7 +16,7 @@ import ppa_input_params as p
 import ppa_utils as utils
 
 
-def get_lutype_acreage(fc_project, fc_poly_parcels, lutype):
+def get_lutype_acreage(fc_project, projtyp, fc_poly_parcels, lutype):
     arcpy.AddMessage("Estimating {} acres near project...".format(lutype))
 
     fl_parcels = "fl_parcel"
@@ -30,10 +30,13 @@ def get_lutype_acreage(fc_project, fc_poly_parcels, lutype):
         # else:
         #     arcpy.MakeFeatureLayer_management(fc, fl)
 
-    # create temporary buffer
-    buff_dist = 2640  # distance in feet
-    fc_buff = r"memory\temp_buff_qmi"
-    arcpy.Buffer_analysis(fl_project, fc_buff, buff_dist)
+    # create temporary buffer IF the input project fc is a line. If it's a polygon, then don't make separate buffer
+    if projtyp == p.ptype_area_agg:
+        fc_buff = fc_project
+    else:
+        buff_dist = p.ilut_sum_buffdist  # distance in feet
+        fc_buff = r"memory\temp_buff_qmi"
+        arcpy.Buffer_analysis(fl_project, fc_buff, buff_dist)
 
     fl_buff = "fl_buff"
     arcpy.MakeFeatureLayer_management(fc_buff, fl_buff)
@@ -71,7 +74,11 @@ def get_lutype_acreage(fc_project, fc_poly_parcels, lutype):
     buff_acre = pclarea_inbuff_ft2 / p.ft2acre
     lutype_intersect_acres = lutype_intersect_ft2 / p.ft2acre
 
-    [arcpy.Delete_management(item) for item in [fl_parcels, fl_project, fc_buff, fl_buff, fc_intersect, fl_intersect]]
+    [arcpy.Delete_management(item) for item in [fl_parcels, fl_project, fl_buff, fc_intersect, fl_intersect]]
+    
+    # delete temp buffer feature class only if it's not the same as the project FC
+    if fc_buff != fc_project:
+        arcpy.Delete_management(fc_buff)
 
     return {'total_net_pcl_acres': buff_acre, 'net_{}_acres'.format(lutype): lutype_intersect_acres,
             'pct_{}_inbuff'.format(lutype): pct_lutype}
