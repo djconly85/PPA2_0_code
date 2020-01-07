@@ -33,7 +33,7 @@ import urbanization_metrics as urbn
 import ppa_utils as utils
 
 
-def get_singleyr_data(fc_tripshedpoly, projtyp, out_dict_base={}):
+def get_singleyr_data(fc_tripshedpoly, projtyp, adt, out_dict={}):
     print("getting accessibility data for base...")
     accdata = acc.get_acc_data(fc_tripshedpoly, p.accdata_fc, projtyp, get_ej=False)
         
@@ -72,8 +72,8 @@ def get_multiyear_data(fc_tripshedpoly, projtyp, base_df, analysis_year):
     ilut_val_fields = [p.col_pop_ilut, p.col_du, p.col_emptot, p.col_k12_enr, p.col_empind, p.col_persntrip_res] \
                   + p.ilut_ptrip_mode_fields    
 
-    fc_pcl_pt = p.parcel_pt_fc_yr(analysis_year)
-    fc_pcl_poly = p.parcel_poly_fc_yr(analysis_year)
+    fc_pcl_pt = p.parcel_pt_fc_yr(year)
+    fc_pcl_poly = p.parcel_poly_fc_yr(year)
 
     year_dict = {}
     # get data on pop, job, k12 totals
@@ -103,7 +103,7 @@ def get_multiyear_data(fc_tripshedpoly, projtyp, base_df, analysis_year):
                                             p.col_housing_type, case_excs_list=['Other'])
 
     # acres of "natural resources" (land use type = forest or agriculture)
-    nat_resources_data = urbn.nat_resources(fc_tripshedpoly, projtyp, fc_pcl_poly, analysis_year)
+    nat_resources_data = urbn.nat_resources(fc_tripshedpoly, projtyp, fc_pcl_poly, year)
     # combine into dict
     for d in [ilut_buff_vals, job_du_tot, mix_index_data, housing_mix_data, nat_resources_data]:
         year_dict.update(d)
@@ -113,38 +113,6 @@ def get_multiyear_data(fc_tripshedpoly, projtyp, base_df, analysis_year):
     
     return df_year_out
 
-def get_tripshed_data(fc_tripshed, project_type, analysis_years, csv_aggvals, base_dict={}):
-
-    # metrics that only have base year value
-    outdf_base = get_singleyr_data(fc_tripshed, project_type, base_dict)
-    
-    # outputs that use both base year and future year values
-    for year in analysis_years:
-        df_year = get_multiyear_data(fc_tripshed, project_type, outdf_base, year)
-        # if it's base year, then append values to bottom of outdf_base,
-        # if it's future year, then left-join the values to the outdf.
-        # table has metrics as rows; years as columns (and will also append     
-        if year == min(analysis_years):
-            out_df = outdf_base.rename(columns={0: 'tripshed_{}'.format(year)})
-            df_year = df_year.rename(columns={0: 'tripshed_{}'.format(year)})
-            out_df = out_df.append(df_year)
-        else:
-            df_year = df_year.rename(columns={0: 'tripshed_{}'.format(year)})
-            out_df = out_df.join(df_year)
-        
-    # get community type and regional level data
-    df_aggvals = pd.read_csv(csv_aggvals, index_col='Unnamed: 0')
-    col_aggvals_year = 'year'
-    cols_ctype_reg = ['REGION']
-    
-    for year in analysis_years:
-        df_agg_yr = df_aggvals[df_aggvals[col_aggvals_year] == year]  # filter to specific year
-        df_agg_yr = df_agg_yr[cols_ctype_reg]  # only include community types for community types that project is in
-        df_agg_yr = df_agg_yr.rename(columns={col:'{}_{}'.format(col, year) for col in list(df_agg_yr.columns)})
-        
-        out_df = out_df.join(df_agg_yr)
-    
-    return out_df
     
 if __name__ == '__main__':
     # =====================================USER/TOOLBOX INPUTS===============================================
@@ -158,7 +126,7 @@ if __name__ == '__main__':
     adt = 17000
     
     # CSV of aggregate values by community type and for whole region
-    
+    aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals01022020_1004.csv"
 
     # =======================BEGIN SCRIPT==============================================================
     analysis_years = [2016, 2040]  # which years will be used.
@@ -168,7 +136,36 @@ if __name__ == '__main__':
 
     out_dict_base = {"project_name": proj_name, "project_type": project_type, 'project_aadt': adt}
 
-    out_df = get_tripshed_data(tripshed_fc, project_type, analysis_years, aggvals_csv, base_dict={})
+    # metrics that only have base year value ------------------------------------
+    outdf_base = get_singleyr_data(tripshed_fc, project_type, adt, out_dict_base)
+
+    # ---------------------------------------------------------------------------------------------------------
+    # outputs that use both base year and future year values
+
+    for year in analysis_years:
+        df_year = get_multiyear_data(tripshed_fc, project_type, outdf_base, year)
+        # if it's base year, then append values to bottom of outdf_base,
+        # if it's future year, then left-join the values to the outdf.
+        # table has metrics as rows; years as columns (and will also append     
+        if year == min(analysis_years):
+            out_df = outdf_base.rename(columns={0: 'tripshed_{}'.format(year)})
+            df_year = df_year.rename(columns={0: 'tripshed_{}'.format(year)})
+            out_df = out_df.append(df_year)
+        else:
+            df_year = df_year.rename(columns={0: 'tripshed_{}'.format(year)})
+            out_df = out_df.join(df_year)
+        
+    # get community type and regional level data
+    df_aggvals = pd.read_csv(aggvals_csv, index_col = 'Unnamed: 0')
+    col_aggvals_year = 'year'
+    cols_ctype_reg = ['REGION']
+    
+    for year in analysis_years:
+        df_agg_yr = df_aggvals[df_aggvals[col_aggvals_year] == year]  # filter to specific year
+        df_agg_yr = df_agg_yr[cols_ctype_reg]  # only include community types for community types that project is in
+        df_agg_yr = df_agg_yr.rename(columns={col:'{}_{}'.format(col, year) for col in list(df_agg_yr.columns)})
+        
+        out_df = out_df.join(df_agg_yr)
 
     out_df.to_csv(output_csv)
     print("success!")

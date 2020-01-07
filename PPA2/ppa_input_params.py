@@ -1,6 +1,7 @@
 # ========================================INPUT DATA LAYERS=====================================================
 fgdb = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb' #for now, is reference only. individual scripts explicitly indicate workspace and file locations
 
+# input feature classes
 region_fc = 'sacog_region'
 fc_speed_data = 'npmrds_metrics_v7'  # r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\npmrds_metrics_v6_wtruck" #npmrds speed data
 accdata_fc = 'Sugar_access_data_latest' # sugar accessibility polygon data
@@ -30,6 +31,9 @@ parcel_pt_fc = parcel_pt_fc_yr(2016) # parcel point data
 parcel_pt_fc_fyr = parcel_pt_fc_yr(2040)
 parcel_poly_fc = 'parcel_data_polys_2016'
 
+# input CSV of community type and regional values for indicated metrics; used to compare how project scores compared to 
+# "typical" values for the region and for the community type in which the project lies.
+aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals01022020_1004.csv"
 
 # project type
 ptype_fwy = 'Freeway'
