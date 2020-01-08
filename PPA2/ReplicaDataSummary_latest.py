@@ -8,11 +8,25 @@ import os
 import datetime as dt
 
 import pandas as pd
+from openpyxl import load_workbook
 import arcpy
 
 import ppa_input_params as p
 import PPA2_masterBYFY_tripshed as tripshed
 
+
+def writedfs2xlsx(df_tabname_dict, xlsx_template, out_xlsx):
+    book = load_workbook(xlsx_template)
+    writer = pd.ExcelWriter(xlsx_template, engine='openpyxl')
+    writer.book=book
+    
+    desired_sheets = ['sample_chart']
+    writer.sheets = {ws.title: ws for ws in book.worksheets if ws.title in desired_sheets}
+    
+    for tabname, df in df_tabname_dict.items():
+        df.to_excel(writer, tabname)
+        
+    book.save(out_xlsx)
 
 def make_fl_conditional(fc, fl):
     if arcpy.Exists(fl):
@@ -188,7 +202,8 @@ if __name__ == '__main__':
     
     proj_name = input('Enter project name (numbers, letters, and underscores only): ')
     
-    tripdata_files = ['trips_listGrantLineNOJackson.zip']
+    tripdata_files = ['trips_list_sr51brg_mon_0000_1259.zip',
+                      'trips_list_sr51brg_mon_1259_2359.zip']
     
     csvcol_bgid = 'origin_blockgroup_id'  # Replica/big data block group ID column
     csvcol_mode = 'trip_primary_mode'  # Replica/big data trip mode column
@@ -202,6 +217,9 @@ if __name__ == '__main__':
     fc_poly_id_field = "GEOID10"
     
     years = [2016, 2040]
+    
+    xlsx_template = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica\TemplateTestSheet.xlsx"
+    xlsx_out = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica\TemplateTestSheet_OUTPUT.xlsx"
 
     #------------RUN SCRIPT------------------------------------
     os.chdir(dir_tripdata)
@@ -225,5 +243,9 @@ if __name__ == '__main__':
     
     df_tshed_data.to_csv(output_csv)
     print("Success! Output file is {}".format(output_csv))
+    
+    dfs_tabs_dict = {'df_tshed_data': df_tshed_data, 'link_trip_summary': link_trip_summary}
+    
+    writedfs2xlsx(dfs_tabs_dict, xlsx_template, xlsx_out)
     
     

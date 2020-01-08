@@ -139,7 +139,7 @@ def get_multiyear_data(project_fc, project_type, base_df, analysis_year):
                                             p.col_housing_type, case_excs_list=['Other'])
 
     # acres of "natural resources" (land use type = forest or agriculture)
-    nat_resources_data = urbn.nat_resources(project_fc, fc_pcl_poly, year)
+    nat_resources_data = urbn.nat_resources(project_fc, project_type, fc_pcl_poly, year)
 
     # combine into dict
     for d in [ilut_buff_vals, job_du_tot, veh_occ_data, mix_index_data, housing_mix_data, nat_resources_data]:

@@ -31,7 +31,7 @@ import mix_index_for_project as mixidx
 # import transit_svc_measure as trnsvc
 import urbanization_metrics as urbn
 import ppa_utils as utils
-
+    
 
 def get_singleyr_data(fc_tripshedpoly, projtyp, out_dict_base={}):
     print("getting accessibility data for base...")
@@ -158,6 +158,7 @@ if __name__ == '__main__':
     adt = 17000
     
     # CSV of aggregate values by community type and for whole region
+    xlsx_template = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica\TemplateTestSheet.xlsx"
     
 
     # =======================BEGIN SCRIPT==============================================================
