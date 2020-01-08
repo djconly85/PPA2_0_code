@@ -15,18 +15,23 @@ import ppa_input_params as p
 import PPA2_masterBYFY_tripshed as tripshed
 
 
-def writedfs2xlsx(df_tabname_dict, xlsx_template, out_xlsx):
-    book = load_workbook(xlsx_template)
-    writer = pd.ExcelWriter(xlsx_template, engine='openpyxl')
-    writer.book=book
+def overwrite_df_to_xlsx(in_df, xlsx_template, xlsx_out, tab_name, start_row=0, start_col=0):
     
-    desired_sheets = ['sample_chart']
-    writer.sheets = {ws.title: ws for ws in book.worksheets if ws.title in desired_sheets}
+    df_records = in_df.to_records()
+    out_header_list = [list(in_df.columns)]  # get header row for output
+    out_data_list = [list(i) for i in df_records]  # get output data rows
     
-    for tabname, df in df_tabname_dict.items():
-        df.to_excel(writer, tabname)
-        
-    book.save(out_xlsx)
+    comb_out_list = out_header_list + out_data_list
+    
+    wb = load_workbook(xlsx_template)
+    ws = wb[tab_name]
+    for i, row in enumerate(comb_out_list):
+        for j, val in enumerate(row):
+            cell = ws.cell(row = (start_row + (i + 1)), column = (start_col + (j + 1)))
+            if(cell):
+                cell.value = val
+    wb.save(xlsx_out)
+    
 
 def make_fl_conditional(fc, fl):
     if arcpy.Exists(fl):
@@ -177,7 +182,6 @@ def make_trip_shed_report(in_tripdata_files, tripdata_val_field, tripdata_agg_fx
 
     # filter out block groups that don't meet inclusion criteria (remove polys that have few trips, but keep enough polys to capture X percent of all trips)
     df_outdata = filter_cumulpct(df_groupd_tripdata, df_col_trip_pct, 0.8)
-    
 
 
     # make new polygon feature class with trip data
@@ -202,8 +206,7 @@ if __name__ == '__main__':
     
     proj_name = input('Enter project name (numbers, letters, and underscores only): ')
     
-    tripdata_files = ['trips_list_sr51brg_mon_0000_1259.zip',
-                      'trips_list_sr51brg_mon_1259_2359.zip']
+    tripdata_files = ['trips_listGrantLineNOJacksonThu.zip']
     
     csvcol_bgid = 'origin_blockgroup_id'  # Replica/big data block group ID column
     csvcol_mode = 'trip_primary_mode'  # Replica/big data trip mode column
@@ -219,20 +222,15 @@ if __name__ == '__main__':
     years = [2016, 2040]
     
     xlsx_template = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica\TemplateTestSheet.xlsx"
-    xlsx_out = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica\TemplateTestSheet_OUTPUT.xlsx"
+    xlsx_out_dir = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica"
 
     #------------RUN SCRIPT------------------------------------
+    timesufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
     os.chdir(dir_tripdata)
     
+    xlsx_out = '{}_TripShedAnalysis_{}.xlsx'.format(proj_name, timesufx)
+    xlsx_out = os.path.join(xlsx_out_dir, xlsx_out)
 
-    
-    trip_modes = ['PRIVATE_AUTO', 'CARPOOL', 'COMMERCIAL', 'ON_DEMAND_AUTO', 'WALKING',
-             'BIKING', 'PUBLIC_TRANSIT']
-    
-    trip_purposes = ['HOME', 'SHOP', 'WORK', 'MAINTENANCE', 'EAT', 'SCHOOL', 'RECREATION',
-                'COMMERCIAL', 'LODGING', 'REGION_DEPARTURE', 'OTHER']
-    
-    timesufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
     fc_tripshed_out = "TripShed_{}{}".format(proj_name, timesufx)
     
     df_tshed_data, link_trip_summary = make_trip_shed_report(tripdata_files, csvcol_valfield, val_aggn_type, csvcol_bgid,
@@ -246,6 +244,8 @@ if __name__ == '__main__':
     
     dfs_tabs_dict = {'df_tshed_data': df_tshed_data, 'link_trip_summary': link_trip_summary}
     
-    writedfs2xlsx(dfs_tabs_dict, xlsx_template, xlsx_out)
+    overwrite_df_to_xlsx(df_tshed_data, xlsx_template, xlsx_out, 'df_tshed_data', start_row=0, start_col=0)
+    overwrite_df_to_xlsx(link_trip_summary, xlsx_out, xlsx_out, 'link_trip_summary', start_row=0, start_col=0)
+    
     
     
