@@ -22,7 +22,7 @@ def get_wtdavg_truckdata(in_df, col_name):
         wtd_val_sum += dir_wtdval
         dist_sum += in_df[dirlen][0]
 
-    return wtd_val_sum / dist_sum
+    return wtd_val_sum / dist_sum if dist_sum > 0 else -1
 
 
 

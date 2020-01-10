@@ -35,6 +35,9 @@ parcel_poly_fc = 'parcel_data_polys_2016'
 # "typical" values for the region and for the community type in which the project lies.
 aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals01022020_1004.csv"
 
+#template csv for project-level output metrics
+project_data_template_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\project_data_template.csv"
+
 # project type
 ptype_fwy = 'Freeway'
 ptype_arterial = 'Arterial'

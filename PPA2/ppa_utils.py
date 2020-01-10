@@ -41,3 +41,14 @@ def rename_dict_keys(dict_in, new_key_dict):
             dict_out[v] = 0
     return dict_out
 
+def join_csv_template(template_csv, in_df):
+    '''takes in template CSV, left joins to desired output dataframe, ensure that
+    output CSV has same rows every time, even if data frame that you're joining doesn't
+    have all records'''
+    df_template = pd.read_csv(template_csv)
+    df_template = df_template.set_index(df_template.columns[0])
+    
+    df_out = df_template.join(in_df)
+    
+    return df_out
+

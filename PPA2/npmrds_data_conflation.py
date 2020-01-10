@@ -102,12 +102,14 @@ def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
         #ideally this would be a dict of {<field>:<aggregation method>}
         for field in speed_data_fields:
             fielddir = "{}{}".format(direcn, field)  # add direction tag to field names
-            try: #wgtd avg = sum(piece's data * piece's len)/(sum of all piece lengths)
+            # if there's speed data, get weighted average value.
+            linklen_w_speed_data = df_spddata[fld_shp_len].sum()
+            if linklen_w_speed_data > 0: #wgtd avg = sum(piece's data * piece's len)/(sum of all piece lengths)
                 avg_data_val = (df_spddata[field]*df_spddata[fld_shp_len]).sum() \
                                 / df_spddata[fld_shp_len].sum()
 
                 out_row_dict[fielddir] = avg_data_val
-            except ZeroDivisionError:
+            else:
                 out_row_dict[fielddir] = df_spddata[field].mean() #if no length, just return mean speed? Maybe instead just return 'no data avaialble'? Or -1 to keep as int?
                 continue
 

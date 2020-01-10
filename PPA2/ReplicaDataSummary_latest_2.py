@@ -8,30 +8,26 @@ import os
 import datetime as dt
 
 import pandas as pd
-from openpyxl import load_workbook
+import openpyxl
 import arcpy
 
 import ppa_input_params as p
 import PPA2_masterBYFY_tripshed as tripshed
 
 
-def overwrite_df_to_xlsx(in_df, xlsx_template, xlsx_out, tab_name, start_row=0, start_col=0):
+def overwrite_df_to_xlsx(in_df, xlsx_template, xlsx_out, tab_name, fixed_rows=False, start_row=0, start_col=0):
     
-    df_records = in_df.to_records()
-    out_header_list = [list(in_df.columns)]  # get header row for output
-    out_data_list = [list(i) for i in df_records]  # get output data rows
+    # set up a workbook object for openpyxl
+    wb = openpyxl.load_workbook(xlsx_template)
     
-    comb_out_list = out_header_list + out_data_list
-    
-    wb = load_workbook(xlsx_template)
-    ws = wb[tab_name]
-    for i, row in enumerate(comb_out_list):
-        if i > 0:
-            for j, val in enumerate(row):
-                cell = ws.cell(row = (start_row + (i + 1)), column = (start_col + (j + 1)))
-                if(cell):
-                    cell.value = val
-    wb.save(xlsx_out)
+    if fixed_rows:
+        # read in necessary sheets whose row headers you want to keep constant
+        df_rows = pd
+        
+        # left join the rows dataframe to the actual trip data, set null vals = 0
+        
+        # write the resulting df back to the tab from which the df was imported, to preserve all row headers
+        
     
 
 def make_fl_conditional(fc, fl):

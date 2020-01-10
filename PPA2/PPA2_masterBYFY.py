@@ -158,9 +158,9 @@ if __name__ == '__main__':
     arcpy.OverwriteOutput = True
 
     # project data
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_urbancore'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_sr51riverXing'
     proj_name =  os.path.basename(project_fc) # os.path.basename(project_fc)
-    project_type = p.ptype_arterial  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
+    project_type = p.ptype_fwy  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
     adt = 17000
     project_speedlim = 30
     pci = 60  # pavement condition index, will be user-entered value
@@ -196,7 +196,8 @@ if __name__ == '__main__':
         else:
             df_year = df_year.rename(columns={0: 'projval_{}'.format(year)})
             out_df = out_df.join(df_year)
-        
+    
+    out_df = utils.join_csv_template(p.project_data_template_csv, out_df)
 
     # get community type and regional level data
     df_aggvals = pd.read_csv(aggvals_csv, index_col = 'Unnamed: 0')
