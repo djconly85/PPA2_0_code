@@ -2,23 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="17e4acb0-29b3-4667-b3ba-79aaa1f4d2fd" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/PPA2/PPA2_masterBYFY_2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/PPA2/PPA2_masterBYFY_XLS2PDF.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/PPA2/ProjectValCSVs/TEST_makePDF_fromExcel.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/AggValCSVs/Agg_ppa_vals12192019_1250working.csv" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/AggValCSVs/Agg_ppa_vals12192019_1250working.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_SEConnector_12172019_1517.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_SEConnector_12172019_1629.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_SEConnector_12172019_MarkNeededAddns.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_SEConnector_12202019_1450.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_offNPMRDSNet_12172019_1055.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_sr51riverXing_12202019_1524.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_sr51riverXing_12202019_1535.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_xmult_strt_12302019_1716.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/complete_street_score.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/complete_street_score.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/get_line_overlap.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/get_line_overlap.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/get_lutype_acres.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/get_lutype_acres.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/PPA2_masterBYFY.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/PPA2_masterBYFY.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_urbancore_01072020_1527EXCEL.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/ProjectValCSVs/PPA_test_project_urbancore_01072020_1527EXCEL.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/collisions.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/collisions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/landuse_buff_calcs.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/landuse_buff_calcs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/landuse_buff_calcs_wfutyr.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/PPA2/ppa_input_params.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/ppa_input_params.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PPA2/ppa_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/ppa_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/urbanization_metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/urbanization_metrics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/project_data_template.csv" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/project_data_template.csv" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -53,17 +47,17 @@
     <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/PPA2/intersection_density.py" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\Testing" />
-      <recent name="Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2" />
-      <recent name="Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\Testing\archived" />
-      <recent name="Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\old param files" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2" />
       <recent name="Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code" />
       <recent name="Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PrepDataInputs" />
       <recent name="Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\Testing" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\Testing" />
+      <recent name="Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2" />
+      <recent name="Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\Testing\archived" />
+      <recent name="Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\old param files" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -78,7 +72,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.PPA2_masterBYFY">
+  <component name="RunManager" selected="Python.TEST_makePDF_fromExcel">
     <configuration name="PPA2_masterBYFY" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="PPA2_0_code" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -100,7 +94,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="get_line_overlap" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="TEST_makePDF_fromExcel" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="PPA2_0_code" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -108,11 +102,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/PPA2" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/PPA2/ProjectValCSVs" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/PPA2/get_line_overlap.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/PPA2/ProjectValCSVs/TEST_makePDF_fromExcel.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -186,11 +180,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.TEST_makePDF_fromExcel" />
         <item itemvalue="Python.PPA2_masterBYFY" />
         <item itemvalue="Python.urbanization_metrics" />
         <item itemvalue="Python.link_occup_data" />
         <item itemvalue="Python.get_lutype_acres_working" />
-        <item itemvalue="Python.get_line_overlap" />
       </list>
     </recent_temporary>
   </component>
@@ -293,16 +287,6 @@
           <url>file://$PROJECT_DIR$/PPA2/mix_index_for_project.py</url>
           <line>14</line>
           <option name="timeStamp" value="3" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/PostProcessing/ReplicaDataSummary_latest.py</url>
-          <line>7</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/PPA2/PPA2_masterBYFY_2.py</url>
-          <line>11</line>
-          <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

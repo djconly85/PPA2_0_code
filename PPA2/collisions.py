@@ -110,11 +110,12 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
 
     colln_rate_per_vmt = avg_ann_collisions / ann_proj_vmt * 100000000 if ann_proj_vmt > 0 else 0
     fatalcolln_per_vmt = avg_ann_fatalcolln / ann_proj_vmt * 100000000 if ann_proj_vmt > 0 else 0
+    pct_fatal_collns = avg_ann_fatalcolln / avg_ann_collisions if ann_proj_vmt > 0 else 0
 
     out_dict = {"TOT_COLLISNS": total_collns, "TOT_COLLISNS_PER_100MVMT": colln_rate_per_vmt,
                 "FATAL_COLLISNS": fatal_collns, "FATAL_COLLISNS_PER_100MVMT": fatalcolln_per_vmt,
-                "BIKEPED_COLLISNS": bikeped_collns, "BIKEPED_COLLISNS_PER_CLMILE": bikeped_colln_clmile,
-                "PCT_BIKEPED_COLLISNS": pct_bikeped_collns}
+                "PCT_FATAL_COLLISNS": pct_fatal_collns, "BIKEPED_COLLISNS": bikeped_collns, 
+                "BIKEPED_COLLISNS_PER_CLMILE": bikeped_colln_clmile, "PCT_BIKEPED_COLLISNS": pct_bikeped_collns}
 
     return out_dict
 

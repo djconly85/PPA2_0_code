@@ -11,19 +11,17 @@ import arcpy
 import pandas as pd
 
 import ppa_input_params as p
-
-def make_fl_conditional(fc, fl):
-    if arcpy.Exists(fl):
-        arcpy.Delete_management(fl)
-    arcpy.MakeFeatureLayer_management(fc, fl)
+import ppa_utils as utils
 
 def point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field=None, case_excs_list=[]):
     arcpy.AddMessage("aggregating land use data...")
-    fl_parcel = "fl_parcel"
-    fl_project = "fl_project"
+    
+    scratch_gdb = arcpy.env.scratchGDB
+    fl_parcel = "{}/fl_parcel".format(scratch_gdb)
+    fl_project = "{}/fl_project".format(scratch_gdb)
 
-    make_fl_conditional(fc_pclpt, fl_parcel)
-    make_fl_conditional(fc_project, fl_project)
+    utils.make_fl_conditional(fc_pclpt, fl_parcel)
+    utils.make_fl_conditional(fc_project, fl_project)
 
     buff_dist = 0 if project_type == p.ptype_area_agg else buffdist
     arcpy.SelectLayerByLocation_management(fl_parcel, "WITHIN_A_DISTANCE", fl_project, buff_dist)
@@ -91,7 +89,7 @@ if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
     # input fc of parcel data--must be points!
-    in_pcl_pt_fc = p.parcel_pt_fc
+    in_pcl_pt_fc = 'parcel_data_pts_2016_2' # p.parcel_pt_fc_yr(2016)
     value_fields = ['POP_TOT', 'EMPTOT', 'EMPIND', 'PT_TOT_RES', 'SOV_TOT_RES', 'HOV_TOT_RES', 'TRN_TOT_RES',
                     'BIK_TOT_RES', 'WLK_TOT_RES']
 
@@ -110,5 +108,7 @@ if __name__ == '__main__':
     #         out_dict2[v] = 0
 
     print(point_sum_density(in_pcl_pt_fc, project_fc, ptype, ['EMPTOT', 'DU_TOT'], 2640))
+    
+    print(point_sum(in_pcl_pt_fc, project_fc, ptype, ['EMPTOT', 'DU_TOT'], 2640))
 
     #ej_data_arterial = {v: output_dict.pop(k) for k, v in ej_flag_dict.items() if output_dict.get(k) is not None}

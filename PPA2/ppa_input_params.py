@@ -27,9 +27,6 @@ def parcel_poly_fc_yr(in_year=2016):
 def model_links_fc(in_year=2016):
     return "model_links_{}".format(in_year)
 
-parcel_pt_fc = parcel_pt_fc_yr(2016) # parcel point data
-parcel_pt_fc_fyr = parcel_pt_fc_yr(2040)
-parcel_poly_fc = 'parcel_data_polys_2016'
 
 # input CSV of community type and regional values for indicated metrics; used to compare how project scores compared to 
 # "typical" values for the region and for the community type in which the project lies.

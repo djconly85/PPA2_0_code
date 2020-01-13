@@ -9,6 +9,9 @@
 # Copyright:   (c) SACOG
 # Python Version: 3.x
 # --------------------------------
+import win32com.client
+
+import openpyxl
 import pandas as pd
 import arcpy
 
@@ -41,6 +44,7 @@ def rename_dict_keys(dict_in, new_key_dict):
             dict_out[v] = 0
     return dict_out
 
+
 def join_csv_template(template_csv, in_df):
     '''takes in template CSV, left joins to desired output dataframe, ensure that
     output CSV has same rows every time, even if data frame that you're joining doesn't
@@ -51,4 +55,35 @@ def join_csv_template(template_csv, in_df):
     df_out = df_template.join(in_df)
     
     return df_out
+
+
+def overwrite_df_to_xlsx(in_df, xlsx_template, xlsx_out, tab_name, start_row=0, start_col=0):
+    '''Writes pandas dataframe <in_df_ to <tab_name> sheet of <xlsx_template> excel workbook.'''
+
+    df_records = in_df.to_records()
+    out_header_list = [list(in_df.columns)]  # get header row for output
+    out_data_list = [list(i) for i in df_records]  # get output data rows
+
+    comb_out_list = out_header_list + out_data_list
+
+    wb = openpyxl.load_workbook(xlsx_template)
+    ws = wb[tab_name]
+    for i, row in enumerate(comb_out_list):
+        for j, val in enumerate(row):
+            cell = ws.cell(row=(start_row + (i + 1)), column=(start_col + (j + 1)))
+            if (cell):
+                cell.value = val
+    wb.save(xlsx_out)
+
+
+def excel2pdf(in_xlsx, out_pdf):
+
+    excel_app_obj = win32com.client.Dispatch("Excel.Application")
+    excel_app_obj.Visible = False
+
+    wb = excel_app_obj.Workbooks.Open(in_xlsx)
+    ws_index_list = [2, 3]  # say you want to print these sheets
+
+    wb.WorkSheets(ws_index_list).Select()
+    wb.ActiveSheet.ExportAsFixedFormat(0, out_pdf)
 
