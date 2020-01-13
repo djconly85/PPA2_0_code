@@ -50,7 +50,7 @@ def get_proj_ctype(in_project_fc, commtypes_fc):
 
 def get_singleyr_data(fc_project, projtyp, adt, posted_speedlim, out_dict={}):
     
-    pcl_pt_fc = 'parcel_data_pts_2016_2'  # p.parcel_pt_fc_yr(2016)
+    pcl_pt_fc = p.parcel_pt_fc_yr(2016)
     pcl_poly_fc = p.parcel_poly_fc_yr(2016)
     
     accdata = acc.get_acc_data(fc_project, p.accdata_fc, projtyp, get_ej=False)
@@ -109,7 +109,7 @@ def get_multiyear_data(project_fc, project_type, base_df, analysis_year):
     ilut_val_fields = [p.col_pop_ilut, p.col_du, p.col_emptot, p.col_k12_enr, p.col_empind, p.col_persntrip_res] \
                   + p.ilut_ptrip_mode_fields    
 
-    fc_pcl_pt = 'parcel_data_pts_2016_2'  # p.parcel_pt_fc_yr(year)
+    fc_pcl_pt = p.parcel_pt_fc_yr(year)
     fc_pcl_poly = p.parcel_poly_fc_yr(year)
     fc_modelhwylinks = p.model_links_fc(year)
 
@@ -162,17 +162,12 @@ if __name__ == '__main__':
     arcpy.OverwriteOutput = True
 
     # project data
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_urbancore'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_sr51riverXing'
     proj_name =  os.path.basename(project_fc) # os.path.basename(project_fc)
-    project_type = p.ptype_arterial  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
+    project_type = p.ptype_fwy  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
     adt = 17000
     project_speedlim = 30
     pci = 60  # pavement condition index, will be user-entered value
-    
-    # CSV of aggregate values by community type and for whole region
-    aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals01022020_1004.csv"
-    
-    xl_template = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ProjectValCSVs\PPA_TemplateTEST.xlsx"
 
     # =======================BEGIN SCRIPT==============================================================
     analysis_years = [2016, 2040]  # which years will be used.
@@ -180,7 +175,6 @@ if __name__ == '__main__':
     
     output_xl = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ProjectValCSVs\PPA_{}_{}.xlsx'.format(
         os.path.basename(project_fc), time_sufx)
-    xl_import_tab = 'import' #excel workbook tab to which this script's output dataframe will be written to.
     
     report_pdf = r'C:\Users\dconly\Documents\ReportLabPythonTutorials\PDF_output\PPA_{}_{}.pdf'.format(
         os.path.basename(project_fc), time_sufx)
@@ -208,10 +202,10 @@ if __name__ == '__main__':
             df_year = df_year.rename(columns={0: 'projval_{}'.format(year)})
             out_df = out_df.join(df_year)
     
-    out_df = utils.join_csv_template(p.project_data_template_csv, out_df)
+    out_df = utils.join_csv_template(p.template_csv, out_df)
 
     # get community type and regional level data
-    df_aggvals = pd.read_csv(aggvals_csv, index_col = 'Unnamed: 0')
+    df_aggvals = pd.read_csv(p.aggvals_csv, index_col = 'Unnamed: 0')
     col_aggvals_year = 'year'
     cols_ctype_reg = [project_ctype, 'REGION']
     
@@ -223,8 +217,8 @@ if __name__ == '__main__':
         out_df = out_df.join(df_agg_yr)
         
     arcpy.AddMessage("Writing to XLSX and making PDF report...")
-    utils.overwrite_df_to_xlsx(out_df, xl_template, output_xl, xl_import_tab)
-    utils.excel2pdf(output_xl, report_pdf)
+    utils.overwrite_df_to_xlsx(out_df, p.template_xlsx, output_xl, p.xlsx_import_sheet)
+    utils.excel2pdf(output_xl, report_pdf, p.sheets_to_pdf)
     
     arcpy.AddMessage("success!")
 

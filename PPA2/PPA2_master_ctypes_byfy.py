@@ -27,23 +27,25 @@ import transit_svc_measure as trn_svc
 
 def get_poly_avg(input_poly_fc):
     # as of 11/26/2019, each of these outputs are dictionaries
+    pcl_pt_data = p.parcel_pt_fc_yr()
+    
     accdata = acc.get_acc_data(input_poly_fc, p.accdata_fc, p.ptype_area_agg, get_ej=False)
     collision_data = coll.get_collision_data(input_poly_fc, p.ptype_area_agg, p.collisions_fc, 0)
-    mix_data = mixidx.get_mix_idx(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg)
+    mix_data = mixidx.get_mix_idx(pcl_pt_data, input_poly_fc, p.ptype_area_agg)
     intsecn_dens = intsxn.intersection_density(input_poly_fc, p.intersections_base_fc, p.ptype_area_agg)
     bikeway_covg = bufnet.get_bikeway_mileage_share(input_poly_fc, p.ptype_area_agg)
     tran_stop_density = trn_svc.transit_svc_density(input_poly_fc, p.trn_svc_fc, p.ptype_area_agg)
 
-    emp_ind_wtot = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, [p.col_empind, p.col_emptot], 0)
+    emp_ind_wtot = lubuff.point_sum(pcl_pt_data, input_poly_fc, p.ptype_area_agg, [p.col_empind, p.col_emptot], 0)
     emp_ind_pct = {'EMPIND_jobshare': emp_ind_wtot[p.col_empind] / emp_ind_wtot[p.col_emptot] \
                    if emp_ind_wtot[p.col_emptot] > 0 else 0}
 
-    pop_x_ej = lubuff.point_sum(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, [p.col_pop_ilut], 0, p.col_ej_ind)
+    pop_x_ej = lubuff.point_sum(pcl_pt_data, input_poly_fc, p.ptype_area_agg, [p.col_pop_ilut], 0, p.col_ej_ind)
     pop_tot = sum(pop_x_ej.values())
     key_yes_ej = max(list(pop_x_ej.keys()))
     pct_pop_ej = {'Pct_PopEJArea': pop_x_ej[key_yes_ej] / pop_tot if pop_tot > 0 else 0}
 
-    job_pop_dens = lubuff.point_sum_density(p.parcel_pt_fc, input_poly_fc, p.ptype_area_agg, \
+    job_pop_dens = lubuff.point_sum_density(pcl_pt_data, input_poly_fc, p.ptype_area_agg, \
                                             [p.col_du, p.col_emptot], 0)
     total_dens = {"job_du_perNetAcre": sum(job_pop_dens.values())}
 
@@ -55,6 +57,7 @@ def get_poly_avg(input_poly_fc):
     return out_dict
 
 def poly_avg_futyears(input_poly_fc, data_year): #IDEALLY could make this part of get_poly_avg as single function with variable number of input args
+    pcl_pt_data = p.parcel_pt_fc_yr(data_year)
     mix_data = mixidx.get_mix_idx(p.parcel_pt_fc_yr(data_year), input_poly_fc, p.ptype_area_agg)    
     return mix_data
 

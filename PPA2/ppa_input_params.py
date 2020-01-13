@@ -30,16 +30,23 @@ def model_links_fc(in_year=2016):
 
 # input CSV of community type and regional values for indicated metrics; used to compare how project scores compared to 
 # "typical" values for the region and for the community type in which the project lies.
-aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals01022020_1004.csv"
-
-#template csv for project-level output metrics
-project_data_template_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\project_data_template.csv"
+aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals01132020_0954.csv"
 
 # project type
 ptype_fwy = 'Freeway'
 ptype_arterial = 'Arterial'
 ptype_sgr = 'Complete Street or State of Good Repair'
 ptype_area_agg = 'AreaAvg' # e.g., regional average, community type avg
+
+
+# ===================================OUTPUT TEMPLATE FILES=========================================================
+template_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\project_data_template.csv"
+
+template_xlsx = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ProjectValCSVs\PPA_TemplateTEST.xlsx'
+xlsx_import_sheet = 'import'
+
+sheets_to_pdf = ['charts_pg1', 'charts_pg2']
+dir_pdf_output = r'C:\Users\dconly\Documents\ReportLabPythonTutorials\PDF_output'
 
 # ===================================CONVERSION FACTORS=========================================================
 ft2acre = 43560 # convert square feet to acres

@@ -59,9 +59,17 @@ def join_csv_template(template_csv, in_df):
 
 def overwrite_df_to_xlsx(in_df, xlsx_template, xlsx_out, tab_name, start_row=0, start_col=0):
     '''Writes pandas dataframe <in_df_ to <tab_name> sheet of <xlsx_template> excel workbook.'''
+    
+    
+    #first, load the template's import tab (where raw data will be updated whenever script is run) to pandas df
+    template_df = pd.read_excel(xlsx_template, sheet_name=tab_name)
 
-    df_records = in_df.to_records()
+    in_df = in_df.reset_index()
+    df_records = in_df.to_records(index=False)
+    
+    # get header row for output
     out_header_list = [list(in_df.columns)]  # get header row for output
+    
     out_data_list = [list(i) for i in df_records]  # get output data rows
 
     comb_out_list = out_header_list + out_data_list
@@ -76,13 +84,20 @@ def overwrite_df_to_xlsx(in_df, xlsx_template, xlsx_out, tab_name, start_row=0, 
     wb.save(xlsx_out)
 
 
-def excel2pdf(in_xlsx, out_pdf):
+def excel2pdf(in_xlsx, out_pdf, sheets_to_pdf_list):
 
-    excel_app_obj = win32com.client.Dispatch("Excel.Application")
-    excel_app_obj.Visible = False
+    excel_app_obj = win32com.client.Dispatch("Excel.Application")  # creates object for interacting with Excel files
+    
+    # Settings so that the targeted Excel template workbook does not visibly open when you activate it.
+    excel_app_obj.Visible = False 
+    excel_app_obj.ScreenUpdating = False
+    excel_app_obj.DisplayAlerts = False
+    excel_app_obj.EnableEvents = False
 
-    wb = excel_app_obj.Workbooks.Open(in_xlsx)
-    ws_index_list = [2, 3]  # say you want to print these sheets
+    wb = excel_app_obj.Workbooks.Open(in_xlsx)  # open a specific Excel workbook (XLSX file)
+    
+    # indicate which sheets you want to open
+    ws_index_list = sheets_to_pdf_list  # ws_index_list = [2, 3]  # say you want to print these sheets
 
     wb.WorkSheets(ws_index_list).Select()
     wb.ActiveSheet.ExportAsFixedFormat(0, out_pdf)
