@@ -149,6 +149,22 @@ def simplify_outputs(in_df, proj_len_col):
         outcols = outcols_max + outcols_sec
 
         return in_df[outcols].to_dict('records')
+    
+def make_df(in_dict):
+    re_dirn = re.compile("(.*BOUND).*") # retrieve direction
+    re_metric = re.compile(".*BOUND(.*)") # retrieve name of metric
+    
+    df = pd.DataFrame.from_dict(in_dict, orient='index')
+    
+    col_metric = 'metric'
+    col_direction = 'direction'
+    
+    df[col_direction] = df.index.map(lambda x: re.match(re_dirn, x).group(1))
+    df[col_metric] = df.index.map(lambda x: re.match(re_metric, x).group(1))
+    
+    df_out = df.pivot(index=col_metric, columns=col_direction, values=0 )
+    
+    return df_out
 
 
 def get_npmrds_data(fc_projline, str_project_type):
@@ -198,7 +214,7 @@ if __name__ == '__main__':
     workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
     arcpy.env.workspace = workspace
 
-    project_line = "test_project_offNPMRDSNet" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
+    project_line = "test_project_causeway_fwy" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
     proj_type = p.ptype_fwy # arcpy.GetParameterAsText(2) #"Freeway"
 
     test_dict = get_npmrds_data(project_line, proj_type)

@@ -1,3 +1,5 @@
+import os
+
 # ========================================INPUT DATA LAYERS=====================================================
 fgdb = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb' #for now, is reference only. individual scripts explicitly indicate workspace and file locations
 
@@ -46,7 +48,18 @@ template_xlsx = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Pr
 xlsx_import_sheet = 'import'
 
 sheets_to_pdf = ['charts_pg1', 'charts_pg2']
-dir_pdf_output = r'C:\Users\dconly\Documents\ReportLabPythonTutorials\PDF_output'
+dir_pdf_output = r'C:\TEMP_OUTPUT'
+
+
+# map image data
+imgtyp = 'png' # image type file extension (png, jpeg, etc.)
+imgfolder = r'C:\TEMP_OUTPUT\Testing\SampleMapImg'
+
+# {<image file name>: [<sheet to put image on>, <row>, <col>]}
+map_imgs_dict = {'test_map1'.format(imgtyp): [sheets_to_pdf[0], 49, "A"], 
+                 'test_map2'.format(imgtyp): [sheets_to_pdf[0], 67, "A"]}
+                 
+map_imgs_dict = {os.path.join(imgfolder, '{}.{}'.format(k, imgtyp)): v for k, v in map_imgs_dict.items()}
 
 # ===================================CONVERSION FACTORS=========================================================
 ft2acre = 43560 # convert square feet to acres

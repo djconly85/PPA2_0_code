@@ -8,21 +8,53 @@ import os
 import datetime as dt
 
 import pandas as pd
+from openpyxl import load_workbook
 import arcpy
 
 import ppa_input_params as p
-import ppa_utils as utils
-import bigdata_tripshed as tripshed
+import PPA2_masterBYFY_tripshed as tripshed
 
 
-def make_tripdata_df(in_files, data_cols):
+def overwrite_df_to_xlsx(in_df, xlsx_template, xlsx_out, tab_name, start_row=0, start_col=0):
+    
+    df_records = in_df.to_records()
+    out_header_list = [list(in_df.columns)]  # get header row for output
+    out_data_list = [list(i) for i in df_records]  # get output data rows
+    
+    comb_out_list = out_header_list + out_data_list
+    
+    wb = load_workbook(xlsx_template)
+    ws = wb[tab_name]
+    for i, row in enumerate(comb_out_list):
+        if i > 0:
+            for j, val in enumerate(row):
+                cell = ws.cell(row = (start_row + (i + 1)), column = (start_col + (j + 1)))
+                if(cell):
+                    cell.value = val
+    wb.save(xlsx_out)
+    
+
+def make_fl_conditional(fc, fl):
+    if arcpy.Exists(fl):
+        arcpy.Delete_management(fl)
+    arcpy.MakeFeatureLayer_management(fc, fl)
+    
+
+def esri_field_exists(in_tbl, field_name):
+    fields = [f.name for f in arcpy.ListFields(in_tbl)]
+    if field_name in fields:
+        return True
+    else:
+        return False
+
+def make_tripdata_df(in_files):
     # if single CSV, read in to pandas df; if multiple CSVs, read sequentially and append together into single df
     if len(in_files) == 1:
         out_df = pd.read_csv(in_files[0])
     else:
         out_df = pd.read_csv(in_files[0])
         for file in in_files[1:]:
-            out_df2 = pd.read_csv(file, usecols=data_cols)
+            out_df2 = pd.read_csv(file)
             out_df = out_df.append(out_df2)
     
     return out_df
@@ -89,7 +121,7 @@ def create_tripshed_poly(in_poly_fc, out_poly_fc, poly_id_field, in_df, df_groub
     
     #make copy of base input poly fc that only has features whose IDs are in the dataframe
     fl_input_polys = 'fl_input_polys'
-    utils.make_fl_conditional(in_poly_fc, fl_input_polys)
+    make_fl_conditional(in_poly_fc, fl_input_polys)
     
     df_ids = tuple(in_df[df_grouby_field])
     
@@ -113,7 +145,7 @@ def create_tripshed_poly(in_poly_fc, out_poly_fc, poly_id_field, in_df, df_groub
         fdtype_esri = dtype_conv_dict[fdtype_numpy]
         
         # add a field, if needed, to the polygon feature class for the values being added
-        if utils.esri_field_exists(out_poly_fc, field):
+        if esri_field_exists(out_poly_fc, field):
             pass
         else:
             arcpy.AddField_management(out_poly_fc, field, fdtype_esri)
@@ -127,17 +159,16 @@ def create_tripshed_poly(in_poly_fc, out_poly_fc, poly_id_field, in_df, df_groub
                 else:
                     row[1] = fld_dict[join_id]
                     cur.updateRow(row)
-    
 
 
 # get PPA buffer data for trip shed
-def make_trip_shed_report(in_tripdata_files, trip_data_fields, tripdata_val_field, tripdata_agg_fxn, tripdata_groupby_field,
-                   in_poly_fc, out_poly_fc, poly_id_field, analysis_years, tripdata_case_fields, run_full_report=False):
+def make_trip_shed_report(in_tripdata_files, tripdata_val_field, tripdata_agg_fxn, tripdata_groupby_field,
+                   in_poly_fc, out_poly_fc, poly_id_field, analysis_years, tripdata_case_fields):
 
     df_col_trip_pct = 'pct_of_trips'
     
     # import CSV trip data into dataframe
-    df_tripdata = make_tripdata_df(in_tripdata_files, trip_data_fields)
+    df_tripdata = make_tripdata_df(in_tripdata_files)
     
     # get splits of trips by mode and trips by purpose
     df_linktripsummary = summarize_tripdf(df_tripdata, tripdata_case_fields[0], tripdata_val_field, tripdata_agg_fxn)
@@ -151,8 +182,7 @@ def make_trip_shed_report(in_tripdata_files, trip_data_fields, tripdata_val_fiel
                                        tripdata_groupby_field, [])
 
     # filter out block groups that don't meet inclusion criteria (remove polys that have few trips, but keep enough polys to capture X percent of all trips)
-    #e.g., setting cutoff=0.9 means that, in descending order of trip production, block groups will be included until 90% of trips are accounted for.
-    df_outdata = filter_cumulpct(df_groupd_tripdata, df_col_trip_pct, 0.9)
+    df_outdata = filter_cumulpct(df_groupd_tripdata, df_col_trip_pct, 0.8)
 
 
     # make new polygon feature class with trip data
@@ -160,28 +190,25 @@ def make_trip_shed_report(in_tripdata_files, trip_data_fields, tripdata_val_fiel
     print("created polygon feature class {}.".format(out_poly_fc))
     
     # get PPA buffer data for trip shed
-    if run_full_report:
-        print("\nsummarizing PPA metrics for trip shed polygon...")
-        df_tsheddata = tripshed.get_tripshed_data(out_poly_fc, p.ptype_area_agg, analysis_years, p.aggvals_csv, base_dict={})
-    
-        return df_tsheddata, df_linktripsummary
-    else:
-        return 'trip shed report not run', 'trip shed report not run'
+    print("summarizing PPA metrics for trip shed polygon...")
+    df_tsheddata = tripshed.get_tripshed_data(out_poly_fc, p.ptype_area_agg, analysis_years, p.aggvals_csv, base_dict={})
+
+    return df_tsheddata, df_linktripsummary
 
 if __name__ == '__main__':
     
     # ------------------USER INPUTS----------------------------------------
     
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
-    dir_tripdata = r'C:\TEMP_OUTPUT\ReplicaDownloads\SR51_AmRiver'
+    dir_tripdata = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica\ReplicaDownloads'
     
     #community-type and region-level values for comparison to project-level values
-    aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals01132020_0954.csv"
+    aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals01022020_1004.csv"
     
     proj_name = input('Enter project name (numbers, letters, and underscores only): ')
     
-    tripdata_files = ['trips_list_SR51AmRiverNB_Mon.zip',
-                      'trips_list_SR51AmRiverSB_Mon.zip']  # os.listdir(r'C:\TEMP_OUTPUT\ReplicaDownloads\SR51_AmRiver')
+    tripdata_files = ['yolo_80causeway_thu_0000_1159.zip',
+                      'yolo_80causeway_thu_1200_2359.zip']
     
     csvcol_bgid = 'origin_blockgroup_id'  # Replica/big data block group ID column
     csvcol_mode = 'trip_primary_mode'  # Replica/big data trip mode column
@@ -197,9 +224,7 @@ if __name__ == '__main__':
     years = [2016, 2040]
     
     xlsx_template = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica\Replica_Summary_Template.xlsx"
-    xlsx_out_dir = r"C:\TEMP_OUTPUT\ReplicaTripShed"
-    
-    run_full_shed_report = False
+    xlsx_out_dir = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica"
 
     #------------RUN SCRIPT------------------------------------
     timesufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
@@ -207,38 +232,22 @@ if __name__ == '__main__':
     
     xlsx_out = '{}_TripShedAnalysis_{}.xlsx'.format(proj_name, timesufx)
     xlsx_out = os.path.join(xlsx_out_dir, xlsx_out)
-    
-    #excel workbook tabs that have output fields you want to preserve. You'll left join these to output data dfs
-    ws_tshed_data = 'df_tshed_data'
-    ws_trip_modes = 'df_trip_modes'
-    ws_trip_purposes = 'df_trip_purposes'
 
     fc_tripshed_out = "TripShed_{}{}".format(proj_name, timesufx)
     
-    trip_data_fields = ['travel_purpose', 'origin_blockgroup_id', 'destination_blockgroup_id', 
-                        'trip_primary_mode', 'trip_start_time'] #fields to use from Replica trip data CSVs
+    df_tshed_data, link_trip_summary = make_trip_shed_report(tripdata_files, csvcol_valfield, val_aggn_type, csvcol_bgid,
+                   fc_bg_in, fc_tripshed_out, fc_poly_id_field, years, tripdata_case_fields=[csvcol_mode, csvcol_purpose])
     
-    df_tshed_data, link_trip_summary = make_trip_shed_report(tripdata_files, trip_data_fields, csvcol_valfield, val_aggn_type, csvcol_bgid,
-                   fc_bg_in, fc_tripshed_out, fc_poly_id_field, years, [csvcol_mode, csvcol_purpose], run_full_shed_report)
+    output_csv = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ProjectValCSVs\PPA_TripShed_{}_{}.csv'.format(
+        proj_name, timesufx)
     
-    if run_full_shed_report:
-        df_trip_modes = link_trip_summary.loc[link_trip_summary['category'] == csvcol_mode]
-        df_trip_purposes = link_trip_summary.loc[link_trip_summary['category'] == csvcol_purpose]
-        
-        df_tshed_data_out = utils.join_xl_import_template(xlsx_template, ws_tshed_data, df_tshed_data)
-        df_trip_modes_out = utils.join_xl_import_template(xlsx_template, ws_trip_modes, df_trip_modes)
-        df_trip_purposes_out = utils.join_xl_import_template(xlsx_template, ws_trip_purposes, df_trip_purposes)
-        
-        # output_csv = os.path.join(xlsx_out_dir, 'PPA_TripShed_{}_{}.csv'.format(
-        #     proj_name, timesufx)
-        # df_tshed_data.to_csv(output_csv)  # probably not necessary to output to CSV if outputting to Excel.
-        
+    df_tshed_data.to_csv(output_csv)
+    print("Success! Output file is {}".format(output_csv))
     
-        utils.overwrite_df_to_xlsx(df_tshed_data_out, xlsx_template, xlsx_out, ws_tshed_data, start_row=0, start_col=0)
-        utils.overwrite_df_to_xlsx(df_trip_modes_out, xlsx_out, xlsx_out, ws_trip_modes, start_row=0, start_col=0)
-        utils.overwrite_df_to_xlsx(df_trip_purposes_out, xlsx_out, xlsx_out, ws_trip_purposes, start_row=0, start_col=0)
-        
-        print("Success! Output Excel file is {}".format(xlsx_out))
+    dfs_tabs_dict = {'df_tshed_data': df_tshed_data, 'link_trip_summary': link_trip_summary}
+    
+    overwrite_df_to_xlsx(df_tshed_data, xlsx_template, xlsx_out, 'df_tshed_data', start_row=0, start_col=0)
+    overwrite_df_to_xlsx(link_trip_summary, xlsx_out, xlsx_out, 'link_trip_summary', start_row=0, start_col=0)
     
     
     

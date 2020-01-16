@@ -17,39 +17,33 @@ import pandas as pd
 
 import ppa_input_params as p
 import accessibility_calcs as acc
-# import collisions as coll
-# import complete_street_score as cs
-# import get_buff_netmiles as bnmi
-# import get_line_overlap as linex
 import get_lutype_acres as luac
-# import get_truck_data_fwy as truck_fwy
-# import intersection_density as intsxn
 import landuse_buff_calcs as lu_pt_buff
-# import link_occup_data as link_occ
 import mix_index_for_project as mixidx
-# import npmrds_data_conflation as npmrds
-# import transit_svc_measure as trnsvc
 import urbanization_metrics as urbn
 import ppa_utils as utils
     
 
-def get_singleyr_data(fc_tripshedpoly, projtyp, out_dict_base={}):
+def get_singleyr_data(fc_tripshedpoly, projtyp, analysis_year, out_dict_base={}):
+    fc_pcl_pt = p.parcel_pt_fc_yr(analysis_year)
+    fc_pcl_poly = p.parcel_poly_fc_yr(analysis_year)
+    
     print("getting accessibility data for base...")
     accdata = acc.get_acc_data(fc_tripshedpoly, p.accdata_fc, projtyp, get_ej=False)
         
     print("getting ag acreage data for base...")
-    ag_acres = luac.get_lutype_acreage(fc_tripshedpoly, projtyp, p.parcel_poly_fc, p.lutype_ag)
+    ag_acres = luac.get_lutype_acreage(fc_tripshedpoly, projtyp, fc_pcl_poly, p.lutype_ag)
     
     # total job + du density (base year only, for state-of-good-repair proj eval only)
     print("getting ILUT data for base...")
-    job_du_dens = lu_pt_buff.point_sum_density(p.parcel_pt_fc, fc_tripshedpoly, projtyp, 
+    job_du_dens = lu_pt_buff.point_sum_density(fc_pcl_pt, fc_tripshedpoly, projtyp, 
                                                [p.col_emptot, p.col_du], p.ilut_sum_buffdist)
     comb_du_dens = sum(list(job_du_dens.values()))
     job_du_dens['job_du_perNetAcre'] = comb_du_dens
 
     # get EJ data
     print("getting EJ data for base...")
-    ej_data = lu_pt_buff.point_sum(p.parcel_pt_fc, fc_tripshedpoly, projtyp, [p.col_pop_ilut],
+    ej_data = lu_pt_buff.point_sum(fc_pcl_pt, fc_tripshedpoly, projtyp, [p.col_pop_ilut],
                                             p.ilut_sum_buffdist, p.col_ej_ind, case_excs_list=[])
     
     ej_flag_dict = {0: "Pop_NonEJArea", 1: "Pop_EJArea"}  # rename keys from 0/1 to more human-readable names
@@ -116,7 +110,7 @@ def get_multiyear_data(fc_tripshedpoly, projtyp, base_df, analysis_year):
 def get_tripshed_data(fc_tripshed, project_type, analysis_years, csv_aggvals, base_dict={}):
 
     # metrics that only have base year value
-    outdf_base = get_singleyr_data(fc_tripshed, project_type, base_dict)
+    outdf_base = get_singleyr_data(fc_tripshed, project_type, analysis_years[0], base_dict)
     
     # outputs that use both base year and future year values
     for year in analysis_years:
@@ -164,12 +158,12 @@ if __name__ == '__main__':
     # =======================BEGIN SCRIPT==============================================================
     analysis_years = [2016, 2040]  # which years will be used.
     time_sufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
-    output_csv = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ProjectValCSVs\PPA_TripShed_{}_{}.csv'.format(
+    output_csv = r'C:\TEMP_OUTPUT\ReplicaTripShed\PPA_TripShed_{}_{}.csv'.format(
         os.path.basename(tripshed_fc), time_sufx)
 
     out_dict_base = {"project_name": proj_name, "project_type": project_type, 'project_aadt': adt}
 
-    out_df = get_tripshed_data(tripshed_fc, project_type, analysis_years, aggvals_csv, base_dict={})
+    out_df = get_tripshed_data(tripshed_fc, project_type, analysis_years, p.aggvals_csv, base_dict={})
 
     out_df.to_csv(output_csv)
     print("success!")

@@ -162,21 +162,21 @@ if __name__ == '__main__':
     arcpy.OverwriteOutput = True
 
     # project data
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_sr51riverXing'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_causeway_fwy'
     proj_name =  os.path.basename(project_fc) # os.path.basename(project_fc)
     project_type = p.ptype_fwy  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
-    adt = 17000
-    project_speedlim = 30
+    adt = 60000
+    project_speedlim = 65
     pci = 60  # pavement condition index, will be user-entered value
 
     # =======================BEGIN SCRIPT==============================================================
     analysis_years = [2016, 2040]  # which years will be used.
     time_sufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
     
-    output_xl = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ProjectValCSVs\PPA_{}_{}.xlsx'.format(
+    output_xl = r'C:\TEMP_OUTPUT\PPA_{}_{}.xlsx'.format(
         os.path.basename(project_fc), time_sufx)
     
-    report_pdf = r'C:\Users\dconly\Documents\ReportLabPythonTutorials\PDF_output\PPA_{}_{}.pdf'.format(
+    report_pdf = r'C:\TEMP_OUTPUT\PPA_{}_{}.pdf'.format(
         os.path.basename(project_fc), time_sufx)
 
     project_ctype = get_proj_ctype(project_fc, p.comm_types_fc)
@@ -202,7 +202,7 @@ if __name__ == '__main__':
             df_year = df_year.rename(columns={0: 'projval_{}'.format(year)})
             out_df = out_df.join(df_year)
     
-    out_df = utils.join_csv_template(p.template_csv, out_df)
+    out_df = utils.join_xl_import_template(p.template_xlsx, p.xlsx_import_sheet, out_df)
 
     # get community type and regional level data
     df_aggvals = pd.read_csv(p.aggvals_csv, index_col = 'Unnamed: 0')
@@ -217,8 +217,12 @@ if __name__ == '__main__':
         out_df = out_df.join(df_agg_yr)
         
     arcpy.AddMessage("Writing to XLSX and making PDF report...")
-    utils.overwrite_df_to_xlsx(out_df, p.template_xlsx, output_xl, p.xlsx_import_sheet)
-    utils.excel2pdf(output_xl, report_pdf, p.sheets_to_pdf)
+    
+    out_report = utils.Publish(out_df, p.template_xlsx, p.xlsx_import_sheet, output_xl, p.map_imgs_dict)
+    out_report.make_new_excel()
+    
+    # utils.overwrite_df_to_xlsx(out_df, p.template_xlsx, output_xl, p.xlsx_import_sheet)
+    # utils.excel2pdf(output_xl, report_pdf, p.sheets_to_pdf)
     
     arcpy.AddMessage("success!")
 
