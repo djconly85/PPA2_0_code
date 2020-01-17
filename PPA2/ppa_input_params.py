@@ -6,7 +6,7 @@ fgdb = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb' #for now, is reference only. 
 # input feature classes
 region_fc = 'sacog_region'
 fc_speed_data = 'npmrds_metrics_v7'  # r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\npmrds_metrics_v6_wtruck" #npmrds speed data
-accdata_fc = 'Sugar_access_data_latest' # sugar accessibility polygon data
+accdata_fc = 'Sugar_access_data_10072019_3backup' # sugar accessibility polygon data
 collisions_fc = 'Collisions2014to2018fwytag' # collision point data
 trn_svc_fc = 'transit_stoplocn_w_eventcount_2016' # transit stop event data; point file
 freight_route_fc = 'STAATruckRoutes' # STAA truck route lines
@@ -19,7 +19,7 @@ reg_bikeway_fc = 'BikeRte_C1_C2_C4_2017'
 
 # layers with multiple potential year values (e.g. base, various future years, etc)
 def parcel_pt_fc_yr(in_year=2016):
-    return "parcel_data_pts_{}".format(in_year)
+    return "parcel_data_pts_{}_2".format(in_year)
 
 
 def parcel_poly_fc_yr(in_year=2016):
@@ -44,10 +44,11 @@ ptype_area_agg = 'AreaAvg' # e.g., regional average, community type avg
 # ===================================OUTPUT TEMPLATE FILES=========================================================
 template_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\project_data_template.csv"
 
-template_xlsx = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ProjectValCSVs\PPA_TemplateTEST.xlsx'
+template_xlsx_arterial = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate\PPA_Template_ArterialExp.xlsx"
+
 xlsx_import_sheet = 'import'
 
-sheets_to_pdf = ['charts_pg1', 'charts_pg2']
+sheets_to_pdf = ['TitlePg', 'ReduceVMT', 'ReduceCongestion']
 dir_pdf_output = r'C:\TEMP_OUTPUT'
 
 

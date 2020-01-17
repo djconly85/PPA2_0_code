@@ -162,9 +162,9 @@ if __name__ == '__main__':
     arcpy.OverwriteOutput = True
 
     # project data
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_causeway_fwy'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
     proj_name =  os.path.basename(project_fc) # os.path.basename(project_fc)
-    project_type = p.ptype_fwy  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
+    project_type = p.ptype_arterial  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
     adt = 60000
     project_speedlim = 65
     pci = 60  # pavement condition index, will be user-entered value
@@ -189,6 +189,7 @@ if __name__ == '__main__':
     # ---------------------------------------------------------------------------------------------------------
     # outputs that use both base year and future year values
 
+    template_xl = p.template_xlsx_arterial
     for year in analysis_years:
         df_year = get_multiyear_data(project_fc, project_type, outdf_base, year)
         # if it's base year, then append values to bottom of outdf_base,
@@ -202,24 +203,29 @@ if __name__ == '__main__':
             df_year = df_year.rename(columns={0: 'projval_{}'.format(year)})
             out_df = out_df.join(df_year)
     
-    out_df = utils.join_xl_import_template(p.template_xlsx, p.xlsx_import_sheet, out_df)
+    out_df = utils.join_xl_import_template(template_xl, p.xlsx_import_sheet, out_df)
 
     # get community type and regional level data
     df_aggvals = pd.read_csv(p.aggvals_csv, index_col = 'Unnamed: 0')
     col_aggvals_year = 'year'
-    cols_ctype_reg = [project_ctype, 'REGION']
+    region_headname = 'REGION'
+    cols_ctype_reg = [project_ctype, region_headname]
+    aggval_headers = {col: 'CommunityType' for col in df_aggvals.columns if col != region_headname}
     
     for year in analysis_years:
         df_agg_yr = df_aggvals[df_aggvals[col_aggvals_year] == year]  # filter to specific year
         df_agg_yr = df_agg_yr[cols_ctype_reg]  # only include community types for community types that project is in
+        df_agg_yr = df_agg_yr.rename(columns={project_ctype: 'CommunityType'})
         df_agg_yr = df_agg_yr.rename(columns={col:'{}_{}'.format(col, year) for col in list(df_agg_yr.columns)})
         
         out_df = out_df.join(df_agg_yr)
         
     arcpy.AddMessage("Writing to XLSX and making PDF report...")
     
-    out_report = utils.Publish(out_df, p.template_xlsx, p.xlsx_import_sheet, output_xl, p.map_imgs_dict)
-    out_report.make_new_excel()
+    out_report = utils.Publish(out_df, template_xl, p.xlsx_import_sheet, output_xl, p.sheets_to_pdf, 
+                               p.map_imgs_dict, proj_name)
+    out_report.make_pdf()
+    
     
     # utils.overwrite_df_to_xlsx(out_df, p.template_xlsx, output_xl, p.xlsx_import_sheet)
     # utils.excel2pdf(output_xl, report_pdf, p.sheets_to_pdf)

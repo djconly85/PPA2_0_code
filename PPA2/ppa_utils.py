@@ -17,6 +17,7 @@ import datetime as dt
 
 import openpyxl
 from openpyxl.drawing.image import Image
+import xlwings as xw
 import pandas as pd
 import arcpy
 
@@ -78,13 +79,17 @@ def join_xl_import_template(template_xlsx, template_sheet, in_df):
 
 
 class Publish(object):
-    def __init__(self, in_df, xl_template, import_tab, xl_out, map_img_dict=None, proj_name='UnnamedProject'):
+    def __init__(self, in_df, xl_template, import_tab, xl_out, xlsheets_to_pdf=None, map_img_dict=None, 
+                 proj_name='UnnamedProject'):
         self.in_df = in_df
         self.import_tab = import_tab
         self.xl_out = xl_out
         self.map_img_dict = map_img_dict  # {<image file name>: [<sheet to put image on>, <row>, <col>]}
-        self.xl_workbook = openpyxl.load_workbook(xl_template)
+        self.xl_template = xl_template
+        self.xl_workbook = openpyxl.load_workbook(self.xl_template)
         self.time_sufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
+        
+        self.xlsheets_to_pdf = xlsheets_to_pdf
         self.pdf_out = os.path.join(p.dir_pdf_output, '{}_{}.pdf'.format(proj_name, self.time_sufx ))
 
     def overwrite_df_to_xlsx(self, unused=0, start_row=0, start_col=0):  # why does there need to be an argument?
@@ -132,9 +137,17 @@ class Publish(object):
         # self.make_new_excel(self)
         
         # 1/16/2020 - waiting for Z to make stable, online-friendly version of this function
+        xw.App.visible = False
         
-        pass
+        if not os.path.exists(self.xl_out):
+            self.make_new_excel(self)
+        
+        wb = xw.Book(self.xl_out)
             
+        for s in self.xlsheets_to_pdf:
+            out_sheet = wb.sheets[s]
+            pdf_out = os.path.join(p.dir_pdf_output, '{}{}_{}.pdf'.format(proj_name, s, self.time_sufx))
+            out_sheet.api.ExportAsFixedFormat(0, pdf_out)
 
 
 
