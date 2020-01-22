@@ -48,6 +48,16 @@ def get_proj_ctype(in_project_fc, commtypes_fc):
     
     return proj_ctype
 
+def get_proj_len(in_project_fc):
+    tot_len = 0
+    
+    with arcpy.da.SearchCursor(in_project_fc, "SHAPE@LENGTH") as cur:
+        for row in cur:
+            tot_len += row[0]
+            
+    len_mi = tot_len / p.ft2mile
+    return len_mi
+
 def get_singleyr_data(fc_project, projtyp, adt, posted_speedlim, out_dict={}):
     
     pcl_pt_fc = p.parcel_pt_fc_yr(2016)
@@ -94,6 +104,7 @@ def get_singleyr_data(fc_project, projtyp, adt, posted_speedlim, out_dict={}):
     
     accdata_ej = acc.get_acc_data(fc_project, p.accdata_fc, projtyp, get_ej=True)  # EJ accessibility data
     ej_data.update(accdata_ej)
+    
 
     # for base dict, add items that only have a base year value (no future year values)
     for d in [accdata, collision_data, complete_street_score, truck_route_pct, pct_adt_truck, ag_acres, intersxn_data,
@@ -147,7 +158,7 @@ def get_multiyear_data(project_fc, project_type, base_df, analysis_year):
 
     # combine into dict
     for d in [ilut_buff_vals, job_du_tot, veh_occ_data, mix_index_data, housing_mix_data, nat_resources_data]:
-        year_dict.update(d)
+        year_dict.update(d) 
 
     # make dict into dataframe
     df_year_out = pd.DataFrame.from_dict(year_dict, orient='index')
@@ -159,16 +170,16 @@ def get_multiyear_data(project_fc, project_type, base_df, analysis_year):
 if __name__ == '__main__':
     # =====================================USER/TOOLBOX INPUTS===============================================
     # project data
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
-    proj_name =  os.path.basename(project_fc) # os.path.basename(project_fc)
-    project_type = p.ptype_arterial  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
+    project_fc = arcpy.GetParameterAsText(0) # r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
+    proj_name = arcpy.GetParameterAsText(1)  # os.path.basename(project_fc) # os.path.basename(project_fc)
+    project_type = arcpy.GetParameterAsText(2)  # p.ptype_arterial  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
     performance_outcomes = ['ReduceVMT', 'Multimodal', 'ReduceCongestion'] # what you want to include in PDF version of report
-    adt = 60000
-    project_speedlim = 65
-    pci = 60  # pavement condition index, will be user-entered value
+    adt = int(arcpy.GetParameterAsText(3))
+    project_speedlim = int(arcpy.GetParameterAsText(4))
+    pci = int(arcpy.GetParameterAsText(5))  # pavement condition index, will be user-entered value
     
     #TEST to make sure the options for performance outcomes are based on which project type
-    outcome_options = utils.return_perf_outcomes_options(project_type)
+    # outcome_options = utils.return_perf_outcomes_options(project_type)
     # print(outcome_options)
 
     # =======================BEGIN SCRIPT==============================================================
@@ -184,9 +195,12 @@ if __name__ == '__main__':
     report_pdf = r'C:\TEMP_OUTPUT\PPA_{}_{}.pdf'.format(
         os.path.basename(project_fc), time_sufx)
 
+    proj_len_mi = get_proj_len(project_fc)
+    
     project_ctype = get_proj_ctype(project_fc, p.comm_types_fc)
+    
     out_dict_base = {"project_name": proj_name, "project_type": project_type, 'project_aadt': adt, 'project_pci': pci,
-                'project_speedlim': project_speedlim, "project_communtype": project_ctype}
+                'project_speedlim': project_speedlim, "project_cline_len": proj_len_mi, "project_communtype": project_ctype}
 
     # metrics that only have base year value ------------------------------------
     outdf_base = get_singleyr_data(project_fc, project_type, adt, project_speedlim, out_dict_base)

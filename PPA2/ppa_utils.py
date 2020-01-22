@@ -52,6 +52,19 @@ def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
     return out_df
 
 
+def return_perf_outcomes_options(project_type):
+    arcpy.AddMessage(project_type)
+    xlsx = p.type_template_dict[project_type]
+    xlsx_path = os.path.join(p.template_dir, xlsx)
+    
+    wb = openpyxl.load_workbook(xlsx_path)
+    sheets = wb.sheetnames
+    
+    # values in this list will be the potential performance outcomes from which users can choose
+    perf_outcomes = [s for s in sheets if s not in p.sheets_all_reports] 
+    return perf_outcomes
+    
+    
 def rename_dict_keys(dict_in, new_key_dict):
     '''if dict in = {0:1} and dict out supposed to be {'zero':1}, this function renames the key accordingly per
     the new_key_dict (which for this example would be {0:'zero'}'''
@@ -79,18 +92,23 @@ def join_xl_import_template(template_xlsx, template_sheet, in_df):
 
 
 class Publish(object):
-    def __init__(self, in_df, xl_template, import_tab, xl_out, xlsheets_to_pdf=None, map_img_dict=None, 
+    def __init__(self, in_df, xl_template, import_tab, xl_out, xlsheets_to_pdf=None, map_key_csv=None, 
                  proj_name='UnnamedProject'):
         self.in_df = in_df
         self.import_tab = import_tab
         self.xl_out = xl_out
-        self.map_img_dict = map_img_dict  # {<image file name>: [<sheet to put image on>, <row>, <col>]}
+        self.map_key_csv = map_key_csv  # {<image file name>: [<sheet to put image on>, <row>, <col>]}
         self.xl_template = xl_template
         self.xl_workbook = openpyxl.load_workbook(self.xl_template)
+        self.proj_name = proj_name
+        
         self.time_sufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
         
+        self.sheets_all_rpts = p.sheets_all_report
         self.xlsheets_to_pdf = xlsheets_to_pdf
+        self.pdf_dir = p.dir_pdf_output
         self.pdf_out = os.path.join(p.dir_pdf_output, '{}_{}.pdf'.format(proj_name, self.time_sufx ))
+
 
     def overwrite_df_to_xlsx(self, unused=0, start_row=0, start_col=0):  # why does there need to be an argument?
         '''Writes pandas dataframe <in_df_ to <tab_name> sheet of <xlsx_template> excel workbook.'''
@@ -123,14 +141,27 @@ class Publish(object):
         self.overwrite_df_to_xlsx(self) # write data to import tab
         
         # insert map images at appropriate locations
-        if self.map_img_dict:
-            for imgfile, location_info in self.map_img_dict.items():
-                sheetname = location_info[0]
-                imgrow = location_info[1]
-                imgcol = location_info[2]
-                self.insert_image_xlsx(sheetname, imgrow, imgcol, imgfile)
+        if self.map_key_csv:
+            bookname = os.path.basename(self.xl_template)
+            mapkey = pd.read_csv(self.map_key_csv)
+            mapkey_dict_list = mapkey.loc[mapkey['Report'] == bookname] \
+                .to_dict(orient='records') # filter master table to only get tabs for workbook corresponding to specified project type
+            
+            for i in mapkey_dict_list:
+                imgdir = i['MapImgDir']
+                imgfile = i['MapImgFile']
+                
+                if isinstance(imgfile, str):  # if there is an imgfile...
+                    imgfilepath = os.path.join(imgdir, imgfile)
+                
+                    sheet = i['Tab']
+                    row = i['RowNum']
+                    col = i['ColNum']
+                    
+                    self.insert_image_xlsx(sheet, row, col, imgfilepath)
             
         self.xl_workbook.save(self.xl_out)
+        self.xl_workbook.close()
         
     def make_pdf(self):
         arcpy.AddMessage("Publishing to PDF...")
@@ -140,14 +171,17 @@ class Publish(object):
         xw.App.visible = False
         
         if not os.path.exists(self.xl_out):
-            self.make_new_excel(self)
+            self.make_new_excel()
         
         wb = xw.Book(self.xl_out)
+        out_sheets = self.sheets_all_rpts + self.xlsheets_to_pdf
             
-        for s in self.xlsheets_to_pdf:
+        for s in out_sheets:
             out_sheet = wb.sheets[s]
-            pdf_out = os.path.join(p.dir_pdf_output, '{}{}_{}.pdf'.format(proj_name, s, self.time_sufx))
+            pdf_out = os.path.join(p.dir_pdf_output, '{}{}_{}.pdf'.format(self.proj_name, s, self.time_sufx))
             out_sheet.api.ExportAsFixedFormat(0, pdf_out)
+        
+        wb.close()
 
 
 

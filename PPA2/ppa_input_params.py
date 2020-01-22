@@ -1,4 +1,3 @@
-import os
 
 # ========================================INPUT DATA LAYERS=====================================================
 fgdb = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb' #for now, is reference only. individual scripts explicitly indicate workspace and file locations
@@ -7,7 +6,7 @@ fgdb = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb' #for now, is reference only. 
 region_fc = 'sacog_region'
 fc_speed_data = 'npmrds_metrics_v7'  # r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\npmrds_metrics_v6_wtruck" #npmrds speed data
 accdata_fc = 'Sugar_access_data_10072019_3backup' # sugar accessibility polygon data
-collisions_fc = 'Collisions2014to2018fwytag' # collision point data
+collisions_fc = 'Collisions2014to2018fwytag_1' # collision point data
 trn_svc_fc = 'transit_stoplocn_w_eventcount_2016' # transit stop event data; point file
 freight_route_fc = 'STAATruckRoutes' # STAA truck route lines
 intersections_base_fc = 'intersections_2016'
@@ -19,7 +18,7 @@ reg_bikeway_fc = 'BikeRte_C1_C2_C4_2017'
 
 # layers with multiple potential year values (e.g. base, various future years, etc)
 def parcel_pt_fc_yr(in_year=2016):
-    return "parcel_data_pts_{}_2".format(in_year)
+    return "parcel_data_pts_{}".format(in_year)
 
 
 def parcel_poly_fc_yr(in_year=2016):
@@ -36,31 +35,35 @@ aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggV
 
 # project type
 ptype_fwy = 'Freeway'
-ptype_arterial = 'Arterial'
+ptype_arterial = 'Arterial or Transit Expansion'
 ptype_sgr = 'Complete Street or State of Good Repair'
+pytpe_commdesign = "Community Design"
 ptype_area_agg = 'AreaAvg' # e.g., regional average, community type avg
 
 
-# ===================================OUTPUT TEMPLATE FILES=========================================================
-template_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\project_data_template.csv"
+# ===================================OUTPUT TEMPLATE DATA=========================================================
+template_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate\output_rows_template.csv"
 
-template_xlsx_arterial = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate\PPA_Template_ArterialExp.xlsx"
+template_dir = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate'
+
+template_xlsx_arterial = "PPA_Template_ArterialExp.xlsx"
+template_xlsx_sgr = "hold1.xlsx"
+template_xlsx_fwy = "hold2.xlsx"
+template_xlsx_commdesgn = "hold3.xlsx" 
+
+# dict corresponding project type to correct XLSX template
+type_template_dict = {ptype_arterial: template_xlsx_arterial,
+                      ptype_sgr: template_xlsx_sgr,
+                      ptype_fwy: template_xlsx_fwy,
+                      pytpe_commdesign: template_xlsx_commdesgn}
+
 
 xlsx_import_sheet = 'import'
+sheets_all_reports = ['TitlePg']
 
-sheets_to_pdf = ['TitlePg', 'ReduceVMT', 'ReduceCongestion']
+map_list_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate\map_report_key.csv"
+
 dir_pdf_output = r'C:\TEMP_OUTPUT'
-
-
-# map image data
-imgtyp = 'png' # image type file extension (png, jpeg, etc.)
-imgfolder = r'C:\TEMP_OUTPUT\Testing\SampleMapImg'
-
-# {<image file name>: [<sheet to put image on>, <row>, <col>]}
-map_imgs_dict = {'test_map1'.format(imgtyp): [sheets_to_pdf[0], 49, "A"], 
-                 'test_map2'.format(imgtyp): [sheets_to_pdf[0], 67, "A"]}
-                 
-map_imgs_dict = {os.path.join(imgfolder, '{}.{}'.format(k, imgtyp)): v for k, v in map_imgs_dict.items()}
 
 # ===================================CONVERSION FACTORS=========================================================
 ft2acre = 43560 # convert square feet to acres
