@@ -13,7 +13,7 @@
 # import gc # python garbage collector
 import os
 import datetime as dt
-
+import gc
 
 import openpyxl
 from openpyxl.drawing.image import Image
@@ -22,6 +22,18 @@ import pandas as pd
 import arcpy
 
 import ppa_input_params as p
+
+
+def trace():
+    import traceback, inspect
+    tb = sys.exc_info()[2]
+    tbinfo = traceback.format_tb(tb)[0]
+    # script name + line number
+    line = tbinfo.split(", ")[1]
+    filename = inspect.getfile(inspect.currentframe())
+    # Get Python syntax error
+    synerror = traceback.format_exc().splitlines()[-1]
+    return line, filename, synerror
 
 
 def make_fl_conditional(fc, fl):
@@ -164,24 +176,33 @@ class Publish(object):
         self.xl_workbook.close()
         
     def make_pdf(self):
-        arcpy.AddMessage("Publishing to PDF...")
-        # self.make_new_excel(self)
-        
-        # 1/16/2020 - waiting for Z to make stable, online-friendly version of this function
-        xw.App.visible = False
-        
-        if not os.path.exists(self.xl_out):
-            self.make_new_excel()
-        
-        wb = xw.Book(self.xl_out)
-        out_sheets = self.sheets_all_rpts + self.xlsheets_to_pdf
+        wb = None
+        try:
+            arcpy.AddMessage("Publishing to PDF...")
+            # self.make_new_excel(self)
             
-        for s in out_sheets:
-            out_sheet = wb.sheets[s]
-            pdf_out = os.path.join(p.dir_pdf_output, '{}{}_{}.pdf'.format(self.proj_name, s, self.time_sufx))
-            out_sheet.api.ExportAsFixedFormat(0, pdf_out)
-        
-        wb.close()
+            # 1/16/2020 - waiting for Z to make stable, online-friendly version of this function
+            xw.App.visible = False
+            
+            if not os.path.exists(self.xl_out):
+                self.make_new_excel()
+            
+            wb = xw.Book(self.xl_out)
+            out_sheets = self.sheets_all_rpts + self.xlsheets_to_pdf
+                
+            for s in out_sheets:
+                out_sheet = wb.sheets[s]
+                pdf_out = os.path.join(p.dir_pdf_output, '{}{}_{}.pdf'.format(self.proj_name, s, self.time_sufx))
+                out_sheet.api.ExportAsFixedFormat(0, pdf_out)
+            
+            # wb.close()  # if error in the above for loop, then it never reaches this line and wb never closes.
+        except:
+            msg = "{}".format(trace())
+            arcpy.AddMessage(msg)
+        finally: # always runs, even if 'try' runs successfully.
+            if wb != None:  # only closes wb object if it was instantiated.
+                wb.close()
+            gc.collect()
 
 
 
