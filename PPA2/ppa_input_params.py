@@ -42,7 +42,7 @@ ptype_area_agg = 'AreaAvg' # e.g., regional average, community type avg
 
 
 # ===================================OUTPUT TEMPLATE DATA=========================================================
-template_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate\output_rows_template.csv"
+# template_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate\output_rows_template.csv"
 
 template_dir = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate'
 

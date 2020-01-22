@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
     # =======================BEGIN SCRIPT==============================================================
     arcpy.OverwriteOutput = True
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    arcpy.env.workspace = p.fgdb
     
     analysis_years = [2016, 2040]  # which years will be used.
     time_sufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
