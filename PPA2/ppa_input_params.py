@@ -49,7 +49,7 @@ template_dir = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Exc
 template_xlsx_arterial = "PPA_Template_ArterialExp.xlsx"
 template_xlsx_sgr = "hold1.xlsx"
 template_xlsx_fwy = "hold2.xlsx"
-template_xlsx_commdesgn = "hold3.xlsx" 
+template_xlsx_commdesgn = "PPA_Template_CommDesign.xlsx" 
 
 # dict corresponding project type to correct XLSX template
 type_template_dict = {ptype_arterial: template_xlsx_arterial,
@@ -57,9 +57,25 @@ type_template_dict = {ptype_arterial: template_xlsx_arterial,
                       ptype_fwy: template_xlsx_fwy,
                       pytpe_commdesign: template_xlsx_commdesgn}
 
+# dict to correspond user-friendly names of outcomes to each outcome's tab name
+# dict contains performance outcomes for all project types except community design,
+# whose report always has all performance outcomes.
+perf_outcomes_dict = {'Reduce VMT': '1ReduceVMT', 
+                      'Reduce Congestion': '2ReduceCongestion',
+                      'Encourage Multimodal Travel': '3Multimodal',
+                      'Promote Economic Prosperity': '4EconProsperity',
+                      'Improve Freight Mobility': '5Freight',
+                      'Make a Safer Transportation System': '6Safety',
+                      'Promote Complete Streets and State of Good Repair': '7SGR',
+                      'Further Socioeconomic Equity': '8SocioEconEquity'
+                      }
+
+# sheet names for performance outcomes in community design project type
+perf_outcomes_commdesign = ['1TranspoChoice', '2CompactDev', '3MixedUseDev', '4HousingChoice', '5UseExistingAssets', '6NaturalRsrcePreservn']
+
 
 xlsx_import_sheet = 'import'
-sheets_all_reports = ['TitlePg']
+sheets_all_reports = ['0TitlePg']
 
 map_list_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate\map_report_key.csv"
 

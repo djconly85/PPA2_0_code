@@ -3,7 +3,8 @@
 # Name:calc_mix_index_sacog.py
 # Purpose: calculate the mix index for PPA, with emphasis on measuring how
 #          conducive the land use mix is to replacing drive trips with walk
-   #        trips due to daily needs like retail, schools, etc. being within walk distance           
+   #        trips due to daily needs like retail, schools, etc. being within walk 
+#            or short drive distance. Default is based on 1mi buffer around project.        
 
 # Author: Darren Conly
 # Last Updated: 11/2019
@@ -15,7 +16,6 @@
 import time
 
 import pandas as pd
-import swifter
 import arcpy
 
 import ppa_input_params as p
@@ -77,7 +77,7 @@ def calc_mix_index(in_df, params_df, hh_col, lu_factor_cols, mix_idx_col):
         # if no HH, set ratio col = -1
         in_df.fillna(-1)
         
-    in_df[mix_idx_col] = in_df.swifter.apply(lambda x: get_wtd_idx(x, lu_facs, params_df), axis = 1)
+    in_df[mix_idx_col] = in_df.apply(lambda x: get_wtd_idx(x, lu_facs, params_df), axis = 1)
     
     return in_df
 

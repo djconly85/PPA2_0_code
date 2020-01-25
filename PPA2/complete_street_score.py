@@ -28,7 +28,7 @@ def complete_streets_idx(fc_pclpt, fc_project, project_type, posted_speedlim, tr
     lu_fac_cols = [p.col_area_ac, p.col_k12_enr, p.col_emptot, p.col_du]
     lu_vals_cols = [p.col_k12_enr, p.col_emptot, p.col_du]
 
-    #get sums of the lu_fac_cols within project buffer area
+    # get sums of the lu_fac_cols within project buffer area
     lu_vals_dict = lubuff.point_sum(fc_pclpt, fc_project, project_type, lu_fac_cols, p.cs_buffdist)
 
     #dens_score = (student_dens + trn_svc_dens + job_dens + du_dens)

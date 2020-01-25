@@ -19,6 +19,10 @@ def point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_fie
     scratch_gdb = arcpy.env.scratchGDB
     fl_parcel = "{}/fl_parcel".format(scratch_gdb)
     fl_project = "{}/fl_project".format(scratch_gdb)
+    
+    # troubleshooting messages
+    # arcpy.AddMessage(arcpy.env.workspace)
+    # arcpy.AddMessage("parcel point file exists? {}".format(arcpy.Exists(fc_pclpt)))
 
     utils.make_fl_conditional(fc_pclpt, fl_parcel)
     utils.make_fl_conditional(fc_project, fl_project)

@@ -12,6 +12,7 @@
 # import win32com.client
 # import gc # python garbage collector
 import os
+import sys
 import datetime as dt
 import gc
 
@@ -21,7 +22,7 @@ import xlwings as xw
 import pandas as pd
 import arcpy
 
-import ppa_input_params as p
+import ppa_input_params as params
 
 
 def trace():
@@ -66,14 +67,14 @@ def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
 
 def return_perf_outcomes_options(project_type):
     arcpy.AddMessage(project_type)
-    xlsx = p.type_template_dict[project_type]
-    xlsx_path = os.path.join(p.template_dir, xlsx)
+    xlsx = params.type_template_dict[project_type]
+    xlsx_path = os.path.join(params.template_dir, xlsx)
     
     wb = openpyxl.load_workbook(xlsx_path)
     sheets = wb.sheetnames
     
     # values in this list will be the potential performance outcomes from which users can choose
-    perf_outcomes = [s for s in sheets if s not in p.sheets_all_reports] 
+    perf_outcomes = [s for s in sheets if s not in params.sheets_all_reports] 
     return perf_outcomes
     
     
@@ -104,22 +105,23 @@ def join_xl_import_template(template_xlsx, template_sheet, in_df):
 
 
 class Publish(object):
-    def __init__(self, in_df, xl_template, import_tab, xl_out, xlsheets_to_pdf=None, map_key_csv=None, 
+    def __init__(self, in_df, xl_template, import_tab, xl_out, dir_pdf_output, xlsheets_to_pdf=None, map_key_csv=None, 
                  proj_name='UnnamedProject'):
+        # params from input arguments
         self.in_df = in_df
+        self.xl_template = xl_template
         self.import_tab = import_tab
         self.xl_out = xl_out
+        self.pdf_dir = dir_pdf_output
+        self.xlsheets_to_pdf = xlsheets_to_pdf
         self.map_key_csv = map_key_csv  # {<image file name>: [<sheet to put image on>, <row>, <col>]}
-        self.xl_template = xl_template
-        self.xl_workbook = openpyxl.load_workbook(self.xl_template)
         self.proj_name = proj_name
         
+        # params that are derived or imported from ppa_input_params.py
+        self.xl_workbook = openpyxl.load_workbook(self.xl_template)
         self.time_sufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
-        
-        self.sheets_all_rpts = p.sheets_all_report
-        self.xlsheets_to_pdf = xlsheets_to_pdf
-        self.pdf_dir = p.dir_pdf_output
-        self.pdf_out = os.path.join(p.dir_pdf_output, '{}_{}.pdf'.format(proj_name, self.time_sufx ))
+        self.sheets_all_rpts = params.sheets_all_reports
+        # self.pdf_out = os.path.join(dir_pdf_output, '{}_{}.pdf'.format(proj_name, self.time_sufx ))
 
 
     def overwrite_df_to_xlsx(self, unused=0, start_row=0, start_col=0):  # why does there need to be an argument?
@@ -181,7 +183,6 @@ class Publish(object):
             arcpy.AddMessage("Publishing to PDF...")
             # self.make_new_excel(self)
             
-            # 1/16/2020 - waiting for Z to make stable, online-friendly version of this function
             xw.App.visible = False
             
             if not os.path.exists(self.xl_out):
@@ -192,7 +193,7 @@ class Publish(object):
                 
             for s in out_sheets:
                 out_sheet = wb.sheets[s]
-                pdf_out = os.path.join(p.dir_pdf_output, '{}{}_{}.pdf'.format(self.proj_name, s, self.time_sufx))
+                pdf_out = os.path.join(self.pdf_dir, '{}{}_{}.pdf'.format(self.proj_name, s, self.time_sufx))
                 out_sheet.api.ExportAsFixedFormat(0, pdf_out)
             
             # wb.close()  # if error in the above for loop, then it never reaches this line and wb never closes.
@@ -203,10 +204,13 @@ class Publish(object):
             if wb != None:  # only closes wb object if it was instantiated.
                 wb.close()
             gc.collect()
+            
+        # NEXT STEPS: stitch the multiple PDFs in order into single PDF
 
 
 
 """
+    #os.pdfg
 def insert_image_xlsx(xl_workbook, sheet_name, rownum, col_letter, img_file):
     ws = xl_workbook[sheet_name]
     cell = '{}{}'.format(col_letter, rownum) # will be where upper left corner of image placed

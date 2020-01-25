@@ -173,25 +173,24 @@ if __name__ == '__main__':
     project_fc = arcpy.GetParameterAsText(0) # r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
     proj_name = arcpy.GetParameterAsText(1)  # os.path.basename(project_fc) # os.path.basename(project_fc)
     project_type = arcpy.GetParameterAsText(2)  # p.ptype_arterial  # p.ptype_fwy, p.ptype_arterial, or p.ptype_sgr
-    performance_outcomes =  arcpy.GetParameterAsText(3) # ['Reduce VMT', 'Reduce Congestion', 'Encourage Non-SOV Travel']
-    adt = int(arcpy.GetParameterAsText(4)) # avg daily traffic; user-entered value
-    project_speedlim = int(arcpy.GetParameterAsText(5)) #posted speed limit; user-entered value
-    pci = int(arcpy.GetParameterAsText(6))  # pavement condition index, will be user-entered value
-    output_dir = arcpy.GetParameterAsText(7)  # r'C:\TEMP_OUTPUT'
+    performance_outcomes = ['ReduceVMT', 'Multimodal', 'ReduceCongestion'] # what you want to include in PDF version of report
+    adt = int(arcpy.GetParameterAsText(3))
+    project_speedlim = int(arcpy.GetParameterAsText(4))
+    pci = int(arcpy.GetParameterAsText(5))  # pavement condition index, will be user-entered value
+    
+    #TEST to make sure the options for performance outcomes are based on which project type
+    # outcome_options = utils.return_perf_outcomes_options(project_type)
+    # print(outcome_options)
 
     # =======================BEGIN SCRIPT==============================================================
-    start_time = dt.datetime.now()
-    
     arcpy.OverwriteOutput = True
     arcpy.env.workspace = p.fgdb
     
     analysis_years = [2016, 2040]  # which years will be used.
     time_sufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
     
-    template_xl = os.path.join(p.template_dir, p.type_template_dict[project_type])
-    
-    output_xl = 'PPA_{}_{}.xlsx'.format(os.path.basename(proj_name), time_sufx)
-    output_xl_path = os.path.join(output_dir, output_xl)
+    output_xl = r'C:\TEMP_OUTPUT\PPA_{}_{}.xlsx'.format(
+        os.path.basename(proj_name), time_sufx)
 
     proj_len_mi = get_proj_len(project_fc)
     
@@ -205,6 +204,8 @@ if __name__ == '__main__':
 
     # ---------------------------------------------------------------------------------------------------------
     # outputs that use both base year and future year values
+
+    template_xl = os.path.join(p.template_dir, p.template_xlsx_arterial)
     for year in analysis_years:
         df_year = get_multiyear_data(project_fc, project_type, outdf_base, year)
         # if it's base year, then append values to bottom of outdf_base,
@@ -237,26 +238,10 @@ if __name__ == '__main__':
         
     arcpy.AddMessage("Writing to XLSX and making PDF report...")
     
-    # format performance outcomes into readable list for rest of script--if input was through argis toolbox
-    performance_outcomes = [outcome.strip("'") for outcome in performance_outcomes.split(';')]
-    
-    
-    if project_type == p.pytpe_commdesign:
-        # for community design report, user does not choose which performance outcomes to include. all are included.
-        performance_outcome_sheets = p.perf_outcomes_commdesign
-    else:
-        #convert user-entered perf outcomes to the corresponding excel sheet names
-        performance_outcome_sheets = [p.perf_outcomes_dict[outcome] for outcome in performance_outcomes]
-    
-    
-    out_report = utils.Publish(out_df, template_xl, p.xlsx_import_sheet, output_xl_path, output_dir, performance_outcome_sheets, 
-                               None, proj_name)
+    out_report = utils.Publish(out_df, template_xl, p.xlsx_import_sheet, output_xl, performance_outcomes, 
+                               p.map_list_csv, proj_name)
     out_report.make_pdf()
     
-    end_time = dt.datetime.now()
-    delta = end_time - start_time
-    mins_and_secs = divmod(delta.seconds, 60)
-    
-    arcpy.AddMessage("Success! Tool completed in {} minutes, {} seconds.".format(mins_and_secs[0], mins_and_secs[1]))
+    arcpy.AddMessage("success!")
 
 
