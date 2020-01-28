@@ -1,6 +1,6 @@
 # --------------------------------
 # Name: accessibility_calcs.py
-# Purpose: PPA accessibility metrics
+# Purpose: PPA accessibility metrics using Sugar-access polygons (default is census block groups)
 #
 #
 # Author: Darren Conly
@@ -16,6 +16,10 @@ import ppa_utils as utils
 
 
 def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
+    '''Calculate average accessibility to selected destination types for all
+    polygons that either intersect the project line or are within a community type polygon.
+    Average accessibility is weighted by each polygon's population.'''
+    
     arcpy.AddMessage("calculating accessibility metrics...")
 
     fl_accdata = "fl_accdata"
@@ -35,7 +39,7 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
     # get pop-weighted accessibility values for all accessibility columns
 
     out_dict = {}
-    if get_ej:
+    if get_ej: # if for enviro justice population, weight by population for EJ polygons only.
         for col in params.acc_cols_ej:
             col_wtd = "{}_wtd".format(col)
             col_ej_pop = "{}_EJ".format(params.col_pop)

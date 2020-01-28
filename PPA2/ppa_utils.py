@@ -9,8 +9,7 @@
 # Copyright:   (c) SACOG
 # Python Version: 3.x
 # --------------------------------
-# import win32com.client
-# import gc # python garbage collector
+
 import os
 import sys
 import datetime as dt

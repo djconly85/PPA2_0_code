@@ -1,10 +1,10 @@
 # --------------------------------
 # Name:collisions.py
-# Purpose: calculate collision data for PPA tool.
+# Purpose: calculate collision data for PPA tool based on geocoded TIMS data (tims.berkeley.edu)
 #
 #
 # Author: Darren Conly
-# Last Updated: <date>
+# Last Updated: 1/31/2020
 # Updated by: <name>
 # Copyright:   (c) SACOG
 # Python Version: 3.x
@@ -18,6 +18,10 @@ import ppa_utils as utils
 # for aggregate, polygon-based avgs (e.g., community type, whole region), use model for VMT; for
 # project, the VMT will be based on combo of project length and user-entered ADT for project
 def get_model_link_sums(fc_polygon, fc_model_links):
+    '''For all travel model highway links that have their center within a polygon (e.g. buffer
+    around a project line, or a community type, or a trip shed), sum the values for user-specified
+    metrics. E.g. daily VMT for all selected intersectin model links, total lane miles on intersecting
+    links, etc.'''
 
     fl_polygon = "fl_polygon"
     fl_model_links = "fl_model_links"
@@ -37,8 +41,11 @@ def get_model_link_sums(fc_polygon, fc_model_links):
     out_dict = {col: df_linkdata[col].sum() for col in output_data_cols}
     return out_dict
 
-# get centerline miles within project area or aggregation geography (community type, entire region, etc)
+
 def get_centerline_miles(selection_poly_fc, centerline_fc):
+    '''Calculate centerline miles for all road links whose center is within a polygon,
+    such as a buffer around a road segment, or community type, trip shed, etc.'''
+    
     fl_selection_poly = "fl_selection_poly"
     fl_centerline = "fl_centerline"
 
@@ -56,7 +63,14 @@ def get_centerline_miles(selection_poly_fc, centerline_fc):
 
 
 def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
-
+    '''Inputs:
+        fc_project = project line around which a buffer will be drawn for selecting collision locations
+        project_type = whether it's a freeway project, arterial project, etc. Or if it is a 
+        community design project.
+        
+        With user-entered ADT (avg daily traffic) and a point layer of collision locations, function calculates
+        several key safety metrics including total collisions, collisions/100M VMT, percent bike/ped collisions, etc.'''
+        
     arcpy.AddMessage("Aggregating collision data...")
     fc_model_links = params.model_links_fc()
     

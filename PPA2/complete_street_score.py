@@ -1,9 +1,7 @@
 # --------------------------------
 # Name: complete_street_score.py
-# Purpose: Calculate complete street index (CSI) for project
-#           CSI = (students/acre + daily transit vehicle stops/acre + BY jobs/acre + BY du/acre)
-#                  * (1-(posted speed limit - threshold speed limit)*speed penalty factor)
-#
+# Purpose: Calculate complete street index (CSI) for project, which is proxy 
+#       to describe how beneficial complete streets treatments would be for the project segment.
 #
 # Author: Darren Conly
 # Last Updated: <date>
@@ -19,6 +17,10 @@ import transit_svc_measure as ts
 
 
 def complete_streets_idx(fc_pclpt, fc_project, project_type, posted_speedlim, transit_event_fc):
+    '''Calculate complete street index (CSI) for project
+        CSI = (students/acre + daily transit vehicle stops/acre + BY jobs/acre + BY du/acre) * (1-(posted speed limit - threshold speed limit)*speed penalty factor)
+        '''
+    
     arcpy.AddMessage("getting complete street score...")
 
     # get transit service density around project

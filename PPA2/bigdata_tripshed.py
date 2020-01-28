@@ -1,7 +1,7 @@
 # --------------------------------
 # Name: PPA2_masterTest.py
-# Purpose: get values for the "trip shed" for freeway projects.
-#
+# Purpose: get values for the "trip shed" for freeway projects based on trip table
+#       estimated by "big data" model such as Google Replica, Streetlight, etc.
 #
 # Author: Darren Conly
 # Last Updated: <date>
