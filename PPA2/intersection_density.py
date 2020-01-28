@@ -11,7 +11,7 @@
 # --------------------------------
 import arcpy
 
-import ppa_input_params as p
+import ppa_input_params as params
 import ppa_utils as utils
 
 def get_poly_area(poly_fl):
@@ -20,7 +20,7 @@ def get_poly_area(poly_fl):
         for row in cur:
             buff_area_ft2 += row[0]
 
-    buff_acre = buff_area_ft2 / p.ft2acre  # convert from ft2 to acres. may need to adjust for projection-related issues. See PPA1 for more info
+    buff_acre = buff_area_ft2 / params.ft2acre  # convert from ft2 to acres. may need to adjust for projection-related issues. See PPA1 for more info
     return buff_acre
 
 
@@ -35,12 +35,12 @@ def intersection_density(fc_project, fc_intersxns, project_type):
 
     # analysis area. If project is line or point, then it's a buffer around the line/point.
     # If it's a polygon (e.g. ctype or region), then no buffer and analysis area is that within the input polygon
-    if project_type == p.ptype_area_agg:
+    if project_type == params.ptype_area_agg:
         fc_buff = fc_project
     else:
-        p.intersxn_dens_buff
+        params.intersxn_dens_buff
         fc_buff = r"memory\temp_buff_qmi"
-        arcpy.Buffer_analysis(fl_project, fc_buff, p.intersxn_dens_buff)
+        arcpy.Buffer_analysis(fl_project, fc_buff, params.intersxn_dens_buff)
 
     fl_buff = "fl_buff"
     utils.make_fl_conditional(fc_buff, fl_buff)
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
     proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_STAA_partialOverlap'
     intersxns_fc = 'intersections_2016'
-    proj_type = p.ptype_sgr
+    proj_type = params.ptype_sgr
 
     output = intersection_density(proj_line_fc, intersxns_fc, proj_type)
     print(output)

@@ -1,3 +1,4 @@
+import arcpy
 
 # ========================================INPUT DATA LAYERS=====================================================
 fgdb = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb' #for now, is reference only. individual scripts explicitly indicate workspace and file locations
@@ -79,7 +80,13 @@ sheets_all_reports = ['0TitlePg']
 
 map_list_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate\map_report_key.csv"
 
-dir_pdf_output = r'C:\TEMP_OUTPUT'
+# scratch_folder = arcpy.env.scratchFolder # scratch folder on WIN10-MODEL-2 desktop is 'C:\Users\dconly\AppData\Local\Temp\scratch'
+
+
+# # These folders will be created on the fly during each PPA tool run. They will then be deleted too.
+# dir_pdf_output = r'{}\Reports'.format(scratch_folder)  # r'C\TEMP_OUTPUT'
+# map_img_dir = r'{}\MapImg'.format(scratch_folder) # where map images are stored
+
 
 # ===================================CONVERSION FACTORS=========================================================
 ft2acre = 43560 # convert square feet to acres

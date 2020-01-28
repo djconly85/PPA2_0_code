@@ -22,7 +22,7 @@ import arcpy
 #from arcgis.features import SpatialDataFrame
 import pandas as pd
 
-import ppa_input_params as p
+import ppa_input_params as params
 import ppa_utils as utils
 
 arcpy.env.overwriteOutput = True
@@ -176,26 +176,26 @@ def get_npmrds_data(fc_projline, str_project_type):
 
     # make feature layer from speed data feature class
     fl_speed_data = "fl_speed_data"
-    arcpy.MakeFeatureLayer_management(p.fc_speed_data, fl_speed_data)
+    arcpy.MakeFeatureLayer_management(params.fc_speed_data, fl_speed_data)
 
     # make flat-ended buffers around TMCs that intersect project
-    arcpy.SelectLayerByLocation_management(fl_speed_data, "WITHIN_A_DISTANCE", fl_projline, p.tmc_select_srchdist, "NEW_SELECTION")
+    arcpy.SelectLayerByLocation_management(fl_speed_data, "WITHIN_A_DISTANCE", fl_projline, params.tmc_select_srchdist, "NEW_SELECTION")
     if str_project_type == 'Freeway':
-        sql = "{} IN {}".format(p.col_roadtype, p.roadtypes_fwy)
+        sql = "{} IN {}".format(params.col_roadtype, params.roadtypes_fwy)
         arcpy.SelectLayerByAttribute_management(fl_speed_data, "SUBSET_SELECTION", sql)
     else:
-        sql = "{} NOT IN {}".format(p.col_roadtype, p.roadtypes_fwy)
+        sql = "{} NOT IN {}".format(params.col_roadtype, params.roadtypes_fwy)
         arcpy.SelectLayerByAttribute_management(fl_speed_data, "SUBSET_SELECTION", sql)
 
     # create temporar buffer layer, flat-tipped, around TMCs; will be used to split project lines
     temp_tmcbuff = "TEMP_tmcbuff_4projsplit"
     fl_tmc_buff = "fl_tmc_buff"
-    arcpy.Buffer_analysis(fl_speed_data, temp_tmcbuff, p.tmc_buff_dist_ft, "FULL", "FLAT")
+    arcpy.Buffer_analysis(fl_speed_data, temp_tmcbuff, params.tmc_buff_dist_ft, "FULL", "FLAT")
     arcpy.MakeFeatureLayer_management(temp_tmcbuff, fl_tmc_buff)
 
     # get "full" table with data for all directions
-    projdata_df = conflate_tmc2projline(fl_projline, p.directions_tmc, p.col_tmcdir,
-                                        fl_tmc_buff, p.flds_speed_data)
+    projdata_df = conflate_tmc2projline(fl_projline, params.directions_tmc, params.col_tmcdir,
+                                        fl_tmc_buff, params.flds_speed_data)
 
     # trim down table to only include outputs for directions that are "on the segment",
     # i.e., that have most overlap with segment
@@ -215,7 +215,7 @@ if __name__ == '__main__':
     arcpy.env.workspace = workspace
 
     project_line = "test_project_causeway_fwy" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
-    proj_type = p.ptype_fwy # arcpy.GetParameterAsText(2) #"Freeway"
+    proj_type = params.ptype_fwy # arcpy.GetParameterAsText(2) #"Freeway"
 
     test_dict = get_npmrds_data(project_line, proj_type)
     print(test_dict)

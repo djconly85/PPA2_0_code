@@ -228,7 +228,7 @@ if __name__ == '__main__':
     arcpy.AddMessage("Writing to XLSX and making PDF report...")
     
     out_report = utils.Publish(out_df, template_xl, p.xlsx_import_sheet, output_xl, performance_outcomes, 
-                               p.map_list_csv, proj_name)
+                               None, proj_name) #map_key_csv can be p.map_list_csv instead of None
     out_report.make_pdf()
     
     

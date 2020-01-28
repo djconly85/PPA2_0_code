@@ -10,7 +10,7 @@ Get following numbers within 0.5mi of project area:
 import arcpy
 import pandas as pd
 
-import ppa_input_params as p
+import ppa_input_params as params
 import ppa_utils as utils
 
 def point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field=None, case_excs_list=[]):
@@ -27,7 +27,7 @@ def point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_fie
     utils.make_fl_conditional(fc_pclpt, fl_parcel)
     utils.make_fl_conditional(fc_project, fl_project)
 
-    buff_dist = 0 if project_type == p.ptype_area_agg else buffdist
+    buff_dist = 0 if project_type == params.ptype_area_agg else buffdist
     arcpy.SelectLayerByLocation_management(fl_parcel, "WITHIN_A_DISTANCE", fl_project, buff_dist)
 
     # If there are no points in the buffer (e.g., no collisions on segment, no parcels, etc.),
@@ -64,8 +64,8 @@ def point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_fie
 def point_sum_density(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field=None, case_excs_list=[]):
 
     # make sure you calculate the area for normalizing
-    if p.col_area_ac not in val_fields:
-        val_fields.append(p.col_area_ac)
+    if params.col_area_ac not in val_fields:
+        val_fields.append(params.col_area_ac)
 
     #get values (e.g. total pop, total jobs, etc.)
     dict_vals = point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field, case_excs_list)
@@ -79,10 +79,10 @@ def point_sum_density(fc_pclpt, fc_project, project_type, val_fields, buffdist, 
     area_unit = "NetPclAcre"
     dict_out = {}
     for valfield, val in dict_vals.items():
-        if valfield == p.col_area_ac:
+        if valfield == params.col_area_ac:
             continue
         else:
-            val_density = dict_vals[valfield] / dict_vals[p.col_area_ac]
+            val_density = dict_vals[valfield] / dict_vals[params.col_area_ac]
             dict_out_key = "{}_{}".format(valfield, area_unit)
             dict_out[dict_out_key] = val_density
 
@@ -93,13 +93,13 @@ if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
     # input fc of parcel data--must be points!
-    in_pcl_pt_fc = 'parcel_data_pts_2016_2' # p.parcel_pt_fc_yr(2016)
+    in_pcl_pt_fc = params.parcel_pt_fc_yr(2016)
     value_fields = ['POP_TOT', 'EMPTOT', 'EMPIND', 'PT_TOT_RES', 'SOV_TOT_RES', 'HOV_TOT_RES', 'TRN_TOT_RES',
                     'BIK_TOT_RES', 'WLK_TOT_RES']
 
     # input line project for basing spatial selection
     project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
-    ptype = p.ptype_arterial
+    ptype = params.ptype_arterial
 
     # point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, case_excs_list=[])
     # output_dict = point_sum(in_pcl_pt_fc, project_fc, ptype, ['POP_TOT'], 2640, case_field='EJ_2018', case_excs_list=[])

@@ -14,7 +14,7 @@ import datetime as dt
 import arcpy
 import pandas as pd
 
-import ppa_input_params as p
+import ppa_input_params as params
 import accessibility_calcs as acc
 import collisions as coll
 import get_buff_netmiles as bufnet
@@ -27,26 +27,26 @@ import transit_svc_measure as trn_svc
 
 def get_poly_avg(input_poly_fc):
     # as of 11/26/2019, each of these outputs are dictionaries
-    pcl_pt_data = p.parcel_pt_fc_yr()
+    pcl_pt_data = params.parcel_pt_fc_yr()
     
-    accdata = acc.get_acc_data(input_poly_fc, p.accdata_fc, p.ptype_area_agg, get_ej=False)
-    collision_data = coll.get_collision_data(input_poly_fc, p.ptype_area_agg, p.collisions_fc, 0)
-    mix_data = mixidx.get_mix_idx(pcl_pt_data, input_poly_fc, p.ptype_area_agg)
-    intsecn_dens = intsxn.intersection_density(input_poly_fc, p.intersections_base_fc, p.ptype_area_agg)
-    bikeway_covg = bufnet.get_bikeway_mileage_share(input_poly_fc, p.ptype_area_agg)
-    tran_stop_density = trn_svc.transit_svc_density(input_poly_fc, p.trn_svc_fc, p.ptype_area_agg)
+    accdata = acc.get_acc_data(input_poly_fc, params.accdata_fc, params.ptype_area_agg, get_ej=False)
+    collision_data = coll.get_collision_data(input_poly_fc, params.ptype_area_agg, params.collisions_fc, 0)
+    mix_data = mixidx.get_mix_idx(pcl_pt_data, input_poly_fc, params.ptype_area_agg)
+    intsecn_dens = intsxn.intersection_density(input_poly_fc, params.intersections_base_fc, params.ptype_area_agg)
+    bikeway_covg = bufnet.get_bikeway_mileage_share(input_poly_fc, params.ptype_area_agg)
+    tran_stop_density = trn_svc.transit_svc_density(input_poly_fc, params.trn_svc_fc, params.ptype_area_agg)
 
-    emp_ind_wtot = lubuff.point_sum(pcl_pt_data, input_poly_fc, p.ptype_area_agg, [p.col_empind, p.col_emptot], 0)
-    emp_ind_pct = {'EMPIND_jobshare': emp_ind_wtot[p.col_empind] / emp_ind_wtot[p.col_emptot] \
-                   if emp_ind_wtot[p.col_emptot] > 0 else 0}
+    emp_ind_wtot = lubuff.point_sum(pcl_pt_data, input_poly_fc, params.ptype_area_agg, [params.col_empind, params.col_emptot], 0)
+    emp_ind_pct = {'EMPIND_jobshare': emp_ind_wtot[params.col_empind] / emp_ind_wtot[params.col_emptot] \
+                   if emp_ind_wtot[params.col_emptot] > 0 else 0}
 
-    pop_x_ej = lubuff.point_sum(pcl_pt_data, input_poly_fc, p.ptype_area_agg, [p.col_pop_ilut], 0, p.col_ej_ind)
+    pop_x_ej = lubuff.point_sum(pcl_pt_data, input_poly_fc, params.ptype_area_agg, [params.col_pop_ilut], 0, params.col_ej_ind)
     pop_tot = sum(pop_x_ej.values())
     key_yes_ej = max(list(pop_x_ej.keys()))
     pct_pop_ej = {'Pct_PopEJArea': pop_x_ej[key_yes_ej] / pop_tot if pop_tot > 0 else 0}
 
-    job_pop_dens = lubuff.point_sum_density(pcl_pt_data, input_poly_fc, p.ptype_area_agg, \
-                                            [p.col_du, p.col_emptot], 0)
+    job_pop_dens = lubuff.point_sum_density(pcl_pt_data, input_poly_fc, params.ptype_area_agg, \
+                                            [params.col_du, params.col_emptot], 0)
     total_dens = {"job_du_perNetAcre": sum(job_pop_dens.values())}
 
     out_dict = {}
@@ -57,8 +57,8 @@ def get_poly_avg(input_poly_fc):
     return out_dict
 
 def poly_avg_futyears(input_poly_fc, data_year): #IDEALLY could make this part of get_poly_avg as single function with variable number of input args
-    pcl_pt_data = p.parcel_pt_fc_yr(data_year)
-    mix_data = mixidx.get_mix_idx(p.parcel_pt_fc_yr(data_year), input_poly_fc, p.ptype_area_agg)    
+    pcl_pt_data = params.parcel_pt_fc_yr(data_year)
+    mix_data = mixidx.get_mix_idx(params.parcel_pt_fc_yr(data_year), input_poly_fc, params.ptype_area_agg)    
     return mix_data
 
 def get_ppa_agg_data(fc_poly_in, poly_id_field, year_base, year_analysis, test_run=False):
@@ -137,7 +137,7 @@ if __name__ == '__main__':
     future_year = 2040
     
     # fc of community type polygons
-    ctype_fc = p.comm_types_fc
+    ctype_fc = params.comm_types_fc
     output_csv = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals{}.csv'.format(time_sufx)
     
     test_run = False
@@ -147,16 +147,16 @@ if __name__ == '__main__':
     
     # table with fields: poly ID, data values for base year for each ID, but not entire region
     print("getting community type aggregate values")
-    df_base_ctypes = get_ppa_agg_data(ctype_fc, p.col_ctype, base_year, base_year, test_run)
-    df_future_ctypes = get_ppa_agg_data(ctype_fc, p.col_ctype, base_year, future_year, test_run)
+    df_base_ctypes = get_ppa_agg_data(ctype_fc, params.col_ctype, base_year, base_year, test_run)
+    df_future_ctypes = get_ppa_agg_data(ctype_fc, params.col_ctype, base_year, future_year, test_run)
 
     print("getting regional aggregate values")
     col_region = 'REGION'
     col_year = 'year'
     col_poly_id = 1 # for region feature class, assume only one feature, and this is its OBJECTID column value
     
-    df_base_region = get_ppa_agg_data(p.region_fc, "OBJECTID", base_year, base_year, test_run)
-    df_future_region = get_ppa_agg_data(p.region_fc, "OBJECTID", base_year, future_year, test_run)
+    df_base_region = get_ppa_agg_data(params.region_fc, "OBJECTID", base_year, base_year, test_run)
+    df_future_region = get_ppa_agg_data(params.region_fc, "OBJECTID", base_year, future_year, test_run)
 
     df_base_region = df_base_region.rename(columns={col_poly_id: col_region})
     df_future_region = df_future_region.rename(columns={col_poly_id: col_region})
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     # for now, don't do FY mix index for region because base-year region LU mix is the basis for the
     # mix index values. If you want to get regional mix index for FY you'd need
     # to recalculate for the future year.
-    # fy_out_dict[region] = poly_avg_futyears(p.region_fc, future_year)
+    # fy_out_dict[region] = poly_avg_futyears(params.region_fc, future_year)
     
 
 

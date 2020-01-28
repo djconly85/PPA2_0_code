@@ -13,17 +13,17 @@
 import arcpy
 
 import ppa_utils as utils
-import ppa_input_params as p
+import ppa_input_params as params
 
 
 def netmiles_in_buffer(fc_project, fc_network, project_type):
 
     # if project is polygon, then use polygon. If line or point, then make polygon as buffer around line/point.
-    if project_type == p.ptype_area_agg:
+    if project_type == params.ptype_area_agg:
         fc_poly_buff = fc_project
     else:
         fc_poly_buff = r"memory\temp_buff_qmi"
-        arcpy.Buffer_analysis(fc_project, fc_poly_buff, p.bikeway_buff)
+        arcpy.Buffer_analysis(fc_project, fc_poly_buff, params.bikeway_buff)
 
     fl_poly = "fl_buff"
     if not arcpy.Exists(fl_poly):
@@ -50,8 +50,8 @@ def netmiles_in_buffer(fc_project, fc_network, project_type):
 def get_bikeway_mileage_share(project_fc, proj_type):
     arcpy.AddMessage("calculating share of centerline miles near project that are bikeways...")
 
-    centerline_miles = netmiles_in_buffer(project_fc, p.reg_centerline_fc, proj_type)
-    bikeway_miles = netmiles_in_buffer(project_fc, p.reg_bikeway_fc, proj_type)
+    centerline_miles = netmiles_in_buffer(project_fc, params.reg_centerline_fc, proj_type)
+    bikeway_miles = netmiles_in_buffer(project_fc, params.reg_bikeway_fc, proj_type)
 
     share_bikeways = bikeway_miles / centerline_miles
 
@@ -63,6 +63,6 @@ if __name__ == '__main__':
 
     project = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_urbancore'
 
-    test_dict = get_bikeway_mileage_share(project, p.ptype_sgr)
+    test_dict = get_bikeway_mileage_share(project, params.ptype_sgr)
 
     print(test_dict)

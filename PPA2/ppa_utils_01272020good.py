@@ -105,13 +105,14 @@ def join_xl_import_template(template_xlsx, template_sheet, in_df):
 
 
 class Publish(object):
-    def __init__(self, in_df, xl_template, import_tab, xl_out, xlsheets_to_pdf=None, map_key_csv=None, 
+    def __init__(self, in_df, xl_template, import_tab, xl_out, dir_pdf_output, xlsheets_to_pdf=None, map_key_csv=None, 
                  proj_name='UnnamedProject'):
         # params from input arguments
         self.in_df = in_df
         self.xl_template = xl_template
         self.import_tab = import_tab
         self.xl_out = xl_out
+        self.pdf_dir = dir_pdf_output
         self.xlsheets_to_pdf = xlsheets_to_pdf
         self.map_key_csv = map_key_csv  # {<image file name>: [<sheet to put image on>, <row>, <col>]}
         self.proj_name = proj_name
@@ -120,12 +121,7 @@ class Publish(object):
         self.xl_workbook = openpyxl.load_workbook(self.xl_template)
         self.time_sufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
         self.sheets_all_rpts = params.sheets_all_reports
-        self.project_folder = os.path.join(arcpy.env.scratchFolder, '{}_{}'.format(self.proj_name, self.time_sufx))
-        self.xl_out_path = os.path.join(self.project_folder, self.xl_out)
-        
-        if not os.path.exists(self.project_folder):
-            os.mkdir(self.project_folder)
-        arcpy.AddMessage("output folder - {}".format(self.project_folder))
+        self.scratch_folder = arcpy.env.scratchFolder
 
 
     def overwrite_df_to_xlsx(self, unused=0, start_row=0, start_col=0):  # why does there need to be an argument?
@@ -159,8 +155,6 @@ class Publish(object):
         self.overwrite_df_to_xlsx(self) # write data to import tab
         
         # insert map images at appropriate locations
-        # NEED TEMP FOLDER FOR MAP IMAGES TO WRITE TO, WITHIN SCRATCH GDB, THEN CALL IMGS FROM THIS FOLDER
-        
         if self.map_key_csv:
             bookname = os.path.basename(self.xl_template)
             mapkey = pd.read_csv(self.map_key_csv)
@@ -179,8 +173,8 @@ class Publish(object):
                     col = i['ColNum']
                     
                     self.insert_image_xlsx(sheet, row, col, imgfilepath)
-        
-        self.xl_workbook.save(self.xl_out_path)
+            
+        self.xl_workbook.save(self.xl_out)
         self.xl_workbook.close()
         
     def make_pdf(self):
@@ -188,23 +182,17 @@ class Publish(object):
         try:
             arcpy.AddMessage("Publishing to PDF...")
             
-            # create needed output directories for PDF files
-            dir_pdf = os.path.join(self.project_folder, 'SeparatedPDFs'.format(self.proj_name, self.time_sufx))
-            if not os.path.exists(dir_pdf):
-                os.mkdir(dir_pdf)
-
-            # make excel workbook with project outputs
             xw.App.visible = False
-            if not os.path.exists(self.xl_out_path):
+            
+            if not os.path.exists(self.xl_out):
                 self.make_new_excel()
             
-            wb = xw.Book(self.xl_out_path)
+            wb = xw.Book(self.xl_out)
             out_sheets = self.sheets_all_rpts + self.xlsheets_to_pdf
                 
-            # write user-specified sheets to PDFs
             for s in out_sheets:
                 out_sheet = wb.sheets[s]
-                pdf_out = os.path.join(dir_pdf, '{}{}_{}.pdf'.format(self.proj_name, s, self.time_sufx))
+                pdf_out = os.path.join(self.pdf_dir, '{}{}_{}.pdf'.format(self.proj_name, s, self.time_sufx))
                 out_sheet.api.ExportAsFixedFormat(0, pdf_out)
             
             # wb.close()  # if error in the above for loop, then it never reaches this line and wb never closes.
@@ -216,8 +204,7 @@ class Publish(object):
                 wb.close()
             gc.collect()
             
-        # NEXT STEPS: stitch the multiple PDFs in order into single PDF, with combined PDF in main project folder
-            # THEN want to delete temporary map image and single PDF foldes
+        # NEXT STEPS: stitch the multiple PDFs in order into single PDF
 
 
 

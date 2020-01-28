@@ -4,12 +4,12 @@
 import arcpy
 import pandas as pd
 
-import ppa_input_params as p
+import ppa_input_params as params
 import npmrds_data_conflation as ndc
 
 def get_wtdavg_truckdata(in_df, col_name):
-    len_cols = ['{}_calc_len'.format(dirn) for dirn in p.directions_tmc]
-    val_cols = ['{}{}'.format(dirn, col_name) for dirn in p.directions_tmc]
+    len_cols = ['{}_calc_len'.format(dirn) for dirn in params.directions_tmc]
+    val_cols = ['{}{}'.format(dirn, col_name) for dirn in params.directions_tmc]
 
     wtd_dict = dict(zip(len_cols, val_cols))
 
@@ -35,28 +35,28 @@ def get_tmc_truck_data(fc_projline, str_project_type):
 
     # make feature layer from speed data feature class
     fl_speed_data = "fl_speed_data"
-    arcpy.MakeFeatureLayer_management(p.fc_speed_data, fl_speed_data)
+    arcpy.MakeFeatureLayer_management(params.fc_speed_data, fl_speed_data)
 
     # make flat-ended buffers around TMCs that intersect project
-    arcpy.SelectLayerByLocation_management(fl_speed_data, "WITHIN_A_DISTANCE", fl_projline, p.tmc_select_srchdist, "NEW_SELECTION")
+    arcpy.SelectLayerByLocation_management(fl_speed_data, "WITHIN_A_DISTANCE", fl_projline, params.tmc_select_srchdist, "NEW_SELECTION")
     if str_project_type == 'Freeway':
-        sql = "{} IN {}".format(p.col_roadtype, p.roadtypes_fwy)
+        sql = "{} IN {}".format(params.col_roadtype, params.roadtypes_fwy)
         arcpy.SelectLayerByAttribute_management(fl_speed_data, "SUBSET_SELECTION", sql)
     else:
-        sql = "{} NOT IN {}".format(p.col_roadtype, p.roadtypes_fwy)
+        sql = "{} NOT IN {}".format(params.col_roadtype, params.roadtypes_fwy)
         arcpy.SelectLayerByAttribute_management(fl_speed_data, "SUBSET_SELECTION", sql)
 
     # create temporar buffer layer, flat-tipped, around TMCs; will be used to split project lines
     temp_tmcbuff = "TEMP_tmcbuff_4projsplit"
     fl_tmc_buff = "fl_tmc_buff"
-    arcpy.Buffer_analysis(fl_speed_data, temp_tmcbuff, p.tmc_buff_dist_ft, "FULL", "FLAT")
+    arcpy.Buffer_analysis(fl_speed_data, temp_tmcbuff, params.tmc_buff_dist_ft, "FULL", "FLAT")
     arcpy.MakeFeatureLayer_management(temp_tmcbuff, fl_tmc_buff)
 
     # get "full" table with data for all directions
-    projdata_df = ndc.conflate_tmc2projline(fl_projline, p.directions_tmc, p.col_tmcdir, fl_tmc_buff, p.flds_truck_data)
+    projdata_df = ndc.conflate_tmc2projline(fl_projline, params.directions_tmc, params.col_tmcdir, fl_tmc_buff, params.flds_truck_data)
 
     out_dict = {}
-    for col in p.flds_truck_data:
+    for col in params.flds_truck_data:
         output_val = get_wtdavg_truckdata(projdata_df, col)
         out_dict["{}_proj".format(col)] = output_val
         
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
     arcpy.env.workspace = workspace
 
-    project_line = r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\testproj_causeway_fwy"  # arcpy.GetParameterAsText(0)
+    project_line = r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_causeway_fwy"  # arcpy.GetParameterAsText(0)
     proj_type = "Freeway"  # arcpy.GetParameterAsText(2) #"Freeway"
 
     # make feature layers of NPMRDS and project line

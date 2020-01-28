@@ -13,7 +13,7 @@
 import arcpy
 
 import get_lutype_acres as luta
-import ppa_input_params as p
+import ppa_input_params as params
 
 # get list of ctypes that a project passes through. "infill" if ctype = is established or corridor; greenfield if not
 def projarea_infill_status(fc_project, comm_types_fc):
@@ -25,17 +25,17 @@ def projarea_infill_status(fc_project, comm_types_fc):
     proj_len_infill = 0
     proj_len_greenfield = 0
 
-    with arcpy.da.SearchCursor(temp_intersect_fc, [p.col_ctype, "SHAPE@LENGTH"]) as cur:
+    with arcpy.da.SearchCursor(temp_intersect_fc, [params.col_ctype, "SHAPE@LENGTH"]) as cur:
         for row in cur:
-            if row[0] in p.ctypes_infill:
+            if row[0] in params.ctypes_infill:
                 proj_len_infill += row[1]
             else:
                 proj_len_greenfield += row[1]
 
     pct_infill = proj_len_infill / (proj_len_infill + proj_len_greenfield)
-    if pct_infill >= p.threshold_val:
+    if pct_infill >= params.threshold_val:
         category = "Infill project"
-    elif pct_infill < (1-p.threshold_val):
+    elif pct_infill < (1-params.threshold_val):
         category = "Greenfield project"
     else:
         category = "Project spans both infill and greenfield areas"
@@ -45,7 +45,7 @@ def projarea_infill_status(fc_project, comm_types_fc):
 
 def nat_resources(fc_project, projtyp, fc_pcl_poly, year=2016):  # NOTE - this is year dependent!
     nat_resource_ac = 0
-    for lutype in p.lutypes_nat_resources:
+    for lutype in params.lutypes_nat_resources:
         lutype_ac_dict = luta.get_lutype_acreage(fc_project, projtyp, fc_pcl_poly, lutype)
         nat_resource_ac += lutype_ac_dict['net_{}_acres'.format(lutype)]
 
@@ -56,15 +56,15 @@ if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
     # input fc of parcel data--must be polygons!
-    in_pcl_base_fc = p.parcel_poly_fc
+    in_pcl_base_fc = params.parcel_pt_fc_yr(in_year=2016)
     # in_pcl_future_tbl =
     # in_ctypes_fc =
 
     # input line project for basing spatial selection
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_offNPMRDSNet'
+    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_xmult_strt'
 
-    # infill_status_dict = projarea_infill_status(project_fc, p.comm_types_fc)
+    # infill_status_dict = projarea_infill_status(project_fc, params.comm_types_fc)
     # print(infill_status_dict)
 
-    nat_resources_dict = nat_resources(project_fc, p.parcel_poly_fc)
+    nat_resources_dict = nat_resources(project_fc, params.ptype_arterial, in_pcl_base_fc)
     print(nat_resources_dict)

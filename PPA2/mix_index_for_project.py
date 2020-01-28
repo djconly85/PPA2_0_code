@@ -18,7 +18,7 @@ import time
 import pandas as pd
 import arcpy
 
-import ppa_input_params as p
+import ppa_input_params as params
 import ppa_utils as utils
 
 # =============FUNCTIONS=============================================
@@ -91,25 +91,25 @@ def get_mix_idx(fc_parcel, fc_project, project_type):
     utils.make_fl_conditional(fc_parcel, fl_parcel)
     utils.make_fl_conditional(fc_project, fl_project)
 
-    in_cols = [p.col_parcelid, p.col_hh, p.col_k12_enr, p.col_emptot, p.col_empfood,
-               p.col_empret, p.col_empsvc, p.col_area_ac, p.col_lutype]
+    in_cols = [params.col_parcelid, params.col_hh, params.col_k12_enr, params.col_emptot, params.col_empfood,
+               params.col_empret, params.col_empsvc, params.col_area_ac, params.col_lutype]
 
-    lu_fac_cols = [p.col_k12_enr, p.col_emptot, p.col_empfood, p.col_empret, p.col_empsvc, p.col_parkac]
+    lu_fac_cols = [params.col_k12_enr, params.col_emptot, params.col_empfood, params.col_empret, params.col_empsvc, params.col_parkac]
     # make parcel feature layer
 
-    buffer_dist = 0 if project_type == p.ptype_area_agg else p.mix_index_buffdist
+    buffer_dist = 0 if project_type == params.ptype_area_agg else params.mix_index_buffdist
     arcpy.SelectLayerByLocation_management(fl_parcel, "WITHIN_A_DISTANCE", fl_project, buffer_dist, "NEW_SELECTION")
 
-    summ_df = make_summary_df(fl_parcel, in_cols, lu_fac_cols, p.col_hh, p.park_calc_dict)
+    summ_df = make_summary_df(fl_parcel, in_cols, lu_fac_cols, params.col_hh, params.park_calc_dict)
 
-    out_df = calc_mix_index(summ_df, p.params_df, p.col_hh, lu_fac_cols, p.mix_idx_col)
+    out_df = calc_mix_index(summ_df, params.params_df, params.col_hh, lu_fac_cols, params.mix_idx_col)
 
     # if you want to make CSV.
     #out_df[[col_hh, mix_idx_col]].to_csv(out_csv, index = False)
     #print("Done! Output CSV: {}".format(out_csv))
 
-    out_val = out_df[p.mix_idx_col][0]
-    return {p.mix_idx_col: out_val}
+    out_val = out_df[params.mix_idx_col][0]
+    return {params.mix_idx_col: out_val}
 
 # ===============================SCRIPT=================================================
 
@@ -119,14 +119,14 @@ if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
     
     # input fc of parcel data--must be points!
-    in_pcl_pt_fc = "parcel_data_pts_2016"
+    in_pcl_pt_fc = params.parcel_pt_fc_yr(in_year=2016)
 
     # input line project for basing spatial selection
     project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_urbancore'
 
-    buff_dist_ft = p.mix_index_buffdist  # distance in feet--MIGHT NEED TO BE ADJUSTED FOR WGS 84--SEE OLD TOOL FOR HOW THIS WAS RESOLVED
+    buff_dist_ft = params.mix_index_buffdist  # distance in feet--MIGHT NEED TO BE ADJUSTED FOR WGS 84--SEE OLD TOOL FOR HOW THIS WAS RESOLVED
 
-    out_dict = get_mix_idx(in_pcl_pt_fc, project_fc, p.ptype_arterial)
+    out_dict = get_mix_idx(in_pcl_pt_fc, project_fc, params.ptype_arterial)
 
     print(out_dict)
     

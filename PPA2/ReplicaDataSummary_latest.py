@@ -10,7 +10,7 @@ import datetime as dt
 import pandas as pd
 import arcpy
 
-import ppa_input_params as p
+import ppa_input_params as params
 import ppa_utils as utils
 import bigdata_tripshed as tripshed
 
@@ -162,7 +162,7 @@ def make_trip_shed_report(in_tripdata_files, trip_data_fields, tripdata_val_fiel
     # get PPA buffer data for trip shed
     if run_full_report:
         print("\nsummarizing PPA metrics for trip shed polygon...")
-        df_tsheddata = tripshed.get_tripshed_data(out_poly_fc, p.ptype_area_agg, analysis_years, p.aggvals_csv, base_dict={})
+        df_tsheddata = tripshed.get_tripshed_data(out_poly_fc, params.ptype_area_agg, analysis_years, params.aggvals_csv, base_dict={})
     
         return df_tsheddata, df_linktripsummary
     else:
