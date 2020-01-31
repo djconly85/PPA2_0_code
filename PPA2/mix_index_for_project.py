@@ -86,8 +86,11 @@ def get_mix_idx(fc_parcel, fc_project, project_type):
     fl_parcel = "fl_parcel"
     fl_project = "fl_project"
 
-    utils.make_fl_conditional(fc_parcel, fl_parcel)
-    utils.make_fl_conditional(fc_project, fl_project)
+    if arcpy.Exists(fl_parcel): arcpy.Delete_management(fl_parcel)
+    arcpy.MakeFeatureLayer_management(fc_parcel, fl_parcel)
+    
+    if arcpy.Exists(fl_project): arcpy.Delete_management(fl_project)
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
 
     in_cols = [params.col_parcelid, params.col_hh, params.col_k12_enr, params.col_emptot, params.col_empfood,
                params.col_empret, params.col_empsvc, params.col_area_ac, params.col_lutype]
@@ -111,7 +114,7 @@ def get_mix_idx(fc_parcel, fc_project, project_type):
 
 # ===============================SCRIPT=================================================
 
-
+'''
 if __name__ == '__main__':
     
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
@@ -128,5 +131,5 @@ if __name__ == '__main__':
 
     print(out_dict)
     
-    
+ '''   
 

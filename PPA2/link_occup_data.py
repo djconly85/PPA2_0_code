@@ -78,7 +78,7 @@ def get_linkoccup_data(fc_project, project_type, fc_model_links):
 
     return out_dict
 
-
+'''
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
@@ -89,3 +89,4 @@ if __name__ == '__main__':
     output = get_linkoccup_data(proj_line_fc, proj_type, model_link_fc)
 
     print(output)
+    '''

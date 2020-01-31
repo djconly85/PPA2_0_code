@@ -62,7 +62,7 @@ def get_tmc_truck_data(fc_projline, str_project_type):
         
     return out_dict
 
-
+'''
 if __name__ == '__main__':
 
     workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
@@ -75,3 +75,5 @@ if __name__ == '__main__':
 
     output_dict = get_tmc_truck_data(project_line, proj_type)
     print(output_dict)
+    
+    '''

@@ -13,8 +13,6 @@
 import arcpy
 
 import ppa_input_params as params
-import ppa_utils as utils
-
 
 def get_lutype_acreage(fc_project, projtyp, fc_poly_parcels, lutype):
     arcpy.AddMessage("Estimating {} acres near project...".format(lutype))
@@ -22,13 +20,11 @@ def get_lutype_acreage(fc_project, projtyp, fc_poly_parcels, lutype):
     fl_parcels = "fl_parcel"
     fl_project = "fl_project"
 
-    for fc, fl in {fc_project: fl_project, fc_poly_parcels: fl_parcels}.items():
-        utils.make_fl_conditional(fc, fl)
-        # if arcpy.Exists(fl):
-        #     arcpy.Delete_management(fl)
-        #     arcpy.MakeFeatureLayer_management(fc, fl)
-        # else:
-        #     arcpy.MakeFeatureLayer_management(fc, fl)
+    if arcpy.Exists(fl_parcels): arcpy.Delete_management(fl_parcels)
+    arcpy.MakeFeatureLayer_management(fc_poly_parcels, fl_parcels)
+    
+    if arcpy.Exists(fl_project): arcpy.Delete_management(fl_project)
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
 
     # create temporary buffer IF the input project fc is a line. If it's a polygon, then don't make separate buffer
     if projtyp == params.ptype_area_agg:
@@ -84,6 +80,7 @@ def get_lutype_acreage(fc_project, projtyp, fc_poly_parcels, lutype):
             'pct_{}_inbuff'.format(lutype): pct_lutype}
 
 
+'''
 if __name__ == '__main__':
     import ppa_input_params as p
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
@@ -96,4 +93,4 @@ if __name__ == '__main__':
     print(out_pcl_data)
 
     # NOT 11/22/2019 - THIS IS GETTING AS PCT OF BUFFER AREA, NOT DEVELOPABLE ON-PARCEL ACRES! SHOULD FIX
-
+'''

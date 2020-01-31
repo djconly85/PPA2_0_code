@@ -208,6 +208,8 @@ def get_npmrds_data(fc_projline, str_project_type):
 
 
 # =====================RUN SCRIPT===========================
+    
+'''
 if __name__ == '__main__':
     start_time = time.time()
     
@@ -223,7 +225,7 @@ if __name__ == '__main__':
     elapsed_time = round((time.time() - start_time)/60, 1)
     print("Success! Time elapsed: {} minutes".format(elapsed_time))    
     
+'''
 
-        
     
 

@@ -25,8 +25,12 @@ def get_model_link_sums(fc_polygon, fc_model_links):
 
     fl_polygon = "fl_polygon"
     fl_model_links = "fl_model_links"
-    utils.make_fl_conditional(fc_polygon, fl_polygon)
-    utils.make_fl_conditional(fc_model_links, fl_model_links)
+    
+    if arcpy.Exists(fl_polygon): arcpy.Delete_management(fl_polygon)
+    arcpy.MakeFeatureLayer_management(fc_polygon, fl_polygon)
+    
+    if arcpy.Exists(fl_model_links): arcpy.Delete_management(fl_model_links)
+    arcpy.MakeFeatureLayer_management(fc_model_links, fl_model_links)
 
     # select model links whose centroid is within the polygon area
     arcpy.SelectLayerByLocation_management(fl_model_links, "HAVE_THEIR_CENTER_IN", fl_polygon)
@@ -48,9 +52,12 @@ def get_centerline_miles(selection_poly_fc, centerline_fc):
     
     fl_selection_poly = "fl_selection_poly"
     fl_centerline = "fl_centerline"
-
-    utils.make_fl_conditional(selection_poly_fc, fl_selection_poly)
-    utils.make_fl_conditional(centerline_fc, fl_centerline)
+    
+    if arcpy.Exists(fl_selection_poly): arcpy.Delete_management(fl_selection_poly)
+    arcpy.MakeFeatureLayer_management(selection_poly_fc, fl_selection_poly)
+    
+    if arcpy.Exists(fl_centerline): arcpy.Delete_management(fl_centerline)
+    arcpy.MakeFeatureLayer_management(centerline_fc, fl_centerline)
 
     arcpy.SelectLayerByLocation_management(fl_centerline, "HAVE_THEIR_CENTER_IN", fl_selection_poly)
 
@@ -76,9 +83,12 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
     
     fl_project = 'proj_fl'
     fl_colln_pts = 'collision_fl'
-
-    utils.make_fl_conditional(fc_project, fl_project)
-    utils.make_fl_conditional(fc_colln_pts, fl_colln_pts)
+    
+    if arcpy.Exists(fl_project): arcpy.Delete_management(fl_project)
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
+    
+    if arcpy.Exists(fl_colln_pts): arcpy.Delete_management(fl_colln_pts)
+    arcpy.MakeFeatureLayer_management(fc_colln_pts, fl_colln_pts)
 
     # if for project segment, get annual VMT for project segment based on user input and segment length
     df_projlen = utils.esri_object_to_df(fl_project, ["SHAPE@LENGTH"])
@@ -133,7 +143,7 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
 
     return out_dict
 
-
+'''
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
@@ -149,3 +159,4 @@ if __name__ == '__main__':
     output = get_collision_data(proj_line_fc, proj_type, collision_fc, proj_weekday_adt)
 
     print(output)
+    '''

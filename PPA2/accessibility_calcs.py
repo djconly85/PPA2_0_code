@@ -25,8 +25,11 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
     fl_accdata = "fl_accdata"
     fl_project = "fl_project"
 
-    utils.make_fl_conditional(fc_project, fl_project)
-    utils.make_fl_conditional(fc_accdata, fl_accdata)
+    if arcpy.Exists(fl_project): arcpy.Delete_management(fl_project)
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
+
+    if arcpy.Exists(fl_accdata): arcpy.Delete_management(fl_accdata)
+    arcpy.MakeFeatureLayer_management(fc_accdata, fl_accdata)
 
     # select polygons that intersect with the project line
     searchdist = 0 if project_type == params.ptype_area_agg else params.bg_search_dist
@@ -60,7 +63,7 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
 
     return out_dict
 
-
+'''
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
     arcpy.OverwriteOutput = True
@@ -72,4 +75,4 @@ if __name__ == '__main__':
 
     print(out_1)
 
-
+'''

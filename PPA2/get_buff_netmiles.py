@@ -26,8 +26,12 @@ def netmiles_in_buffer(fc_project, fc_network, project_type):
         arcpy.Buffer_analysis(fc_project, fc_poly_buff, params.bikeway_buff)
 
     fl_poly = "fl_buff"
-    if not arcpy.Exists(fl_poly):
-        utils.make_fl_conditional(fc_poly_buff, fl_poly)
+
+    if arcpy.Exists(fl_poly): arcpy.Delete_management(fl_poly)
+    arcpy.MakeFeatureLayer_management(fc_poly_buff, fl_poly)    
+
+    # if not arcpy.Exists(fl_poly):
+    #     utils.make_fl_conditional(fc_poly_buff, fl_poly)
 
     temp_intersect_fc = r"memory\temp_intersect_fc"
 
@@ -57,7 +61,7 @@ def get_bikeway_mileage_share(project_fc, proj_type):
 
     return {"pct_roadmi_bikeways": share_bikeways}
 
-
+'''
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
@@ -66,3 +70,4 @@ if __name__ == '__main__':
     test_dict = get_bikeway_mileage_share(project, params.ptype_sgr)
 
     print(test_dict)
+    '''

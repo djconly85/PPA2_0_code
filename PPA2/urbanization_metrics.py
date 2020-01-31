@@ -51,7 +51,7 @@ def nat_resources(fc_project, projtyp, fc_pcl_poly, year=2016):  # NOTE - this i
 
     return {"nat_resource_acres": nat_resource_ac}
 
-
+'''
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
@@ -68,3 +68,4 @@ if __name__ == '__main__':
 
     nat_resources_dict = nat_resources(project_fc, params.ptype_arterial, in_pcl_base_fc)
     print(nat_resources_dict)
+    '''

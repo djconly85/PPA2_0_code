@@ -41,19 +41,20 @@ def complete_streets_idx(fc_pclpt, fc_project, project_type, posted_speedlim, tr
     out_dict = {'complete_strt_idx': csi}
     return out_dict
 
-if __name__ == '__main__':
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
-    # input fc of parcel data--must be points!
-    in_pcl_pt_fc = "parcel_data_2016_11062019_pts"
-    value_fields = [params.col_area_ac, params.col_k12_enr, params.col_emptot, params.col_du]
-    posted_speedlimit = 30 # mph
-    ptype = params.ptype_fwy
+# if __name__ == '__main__':
+#     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
-    # input line project for basing spatial selection
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg'
-    trnstops_fc = 'transit_stoplocn_w_eventcount_2016'
+#     # input fc of parcel data--must be points!
+#     in_pcl_pt_fc = "parcel_data_2016_11062019_pts"
+#     value_fields = [params.col_area_ac, params.col_k12_enr, params.col_emptot, params.col_du]
+#     posted_speedlimit = 30 # mph
+#     ptype = params.ptype_fwy
+
+#     # input line project for basing spatial selection
+#     project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\NPMRDS_confl_testseg'
+#     trnstops_fc = 'transit_stoplocn_w_eventcount_2016'
 
 
-    output_dict = complete_streets_idx(in_pcl_pt_fc, project_fc, ptype, posted_speedlimit, trnstops_fc)
-    print(output_dict)
+#     output_dict = complete_streets_idx(in_pcl_pt_fc, project_fc, ptype, posted_speedlimit, trnstops_fc)
+#     print(output_dict)

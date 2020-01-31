@@ -12,7 +12,6 @@
 import arcpy
 
 import ppa_input_params as params
-import ppa_utils as utils
 
 
 def get_poly_area(poly_fl):
@@ -30,8 +29,12 @@ def transit_svc_density(fc_project, fc_trnstops, project_type):
     fl_project = "fl_projline"
     fl_trnstops = "fl_trnstp"
 
-    utils.make_fl_conditional(fc_project, fl_project)
-    utils.make_fl_conditional(fc_trnstops, fl_trnstops)
+    if arcpy.Exists(fl_project): arcpy.Delete_management(fl_project)
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
+    
+    if arcpy.Exists(fl_trnstops): arcpy.Delete_management(fl_trnstops)
+    arcpy.MakeFeatureLayer_management(fc_trnstops, fl_trnstops)
+    
     # analysis area. If project is line or point, then it's a buffer around the line/point.
     # If it's a polygon (e.g. ctype or region), then no buffer and analysis area is that within the input polygon
     if project_type == params.ptype_area_agg:
@@ -42,7 +45,9 @@ def transit_svc_density(fc_project, fc_trnstops, project_type):
         arcpy.Buffer_analysis(fl_project, fc_buff, params.trn_buff_dist)
 
     fl_buff = "fl_buff"
-    utils.make_fl_conditional(fc_buff, fl_buff)
+
+    if arcpy.Exists(fl_buff): arcpy.Delete_management(fl_buff)
+    arcpy.MakeFeatureLayer_management(fc_buff, fl_buff)
 
     # calculate buffer area
     buff_acres = get_poly_area(fl_buff)
@@ -61,7 +66,7 @@ def transit_svc_density(fc_project, fc_trnstops, project_type):
 
     return {"TrnVehStop_Acre": trnstops_per_acre}
 
-
+'''
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
@@ -71,3 +76,4 @@ if __name__ == '__main__':
 
     output = transit_svc_density(proj_line_fc, trnstops_fc, ptype)
     print(output)
+'''

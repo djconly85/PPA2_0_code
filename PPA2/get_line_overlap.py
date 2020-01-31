@@ -13,6 +13,7 @@
 
 Sample projects used: CAL20466, SAC25062
 '''
+import os
 import datetime as dt
 import time
 
@@ -108,18 +109,21 @@ def get_line_overlap(fc_projline, fc_network_lines, links_desc):
     arcpy.SelectLayerByLocation_management(fl_network_lines, "WITHIN_A_DISTANCE", fl_projline, SEARCH_DIST_FT, "NEW_SELECTION")
 
     # create temporar buffer layer, flat-tipped, around links; will be used to split project lines
-    temp_linkbuff = "TEMP_linkbuff_4projsplit"
+    temp_linkbuff = os.path.join(arcpy.env.scratchGDB, "TEMP_linkbuff_4projsplit")
     fl_link_buff = "fl_link_buff"
     arcpy.Buffer_analysis(fl_network_lines, temp_linkbuff, LINKBUFF_DIST_FT, "FULL", "FLAT")
     arcpy.MakeFeatureLayer_management(temp_linkbuff, fl_link_buff)
 
     # get dict of data
     projdata_dict = conflate_link2projline(fl_projline, fl_link_buff, links_desc)
+    
+    arcpy.Delete_management(temp_linkbuff)
 
     return projdata_dict
 
 
 # =====================RUN SCRIPT===========================
+    '''
 if __name__ == '__main__':
     start_time = time.time()
 
@@ -143,7 +147,7 @@ if __name__ == '__main__':
     elapsed_time = round((time.time() - start_time)/60, 1)
     print("Success! Time elapsed: {} minutes".format(elapsed_time))    
     
-
+'''
         
     
 

@@ -11,21 +11,18 @@ import arcpy
 import pandas as pd
 
 import ppa_input_params as params
-import ppa_utils as utils
 
 def point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field=None, case_excs_list=[]):
     arcpy.AddMessage("aggregating land use data...")
     
-    scratch_gdb = arcpy.env.scratchGDB
-    fl_parcel = "{}/fl_parcel".format(scratch_gdb)
-    fl_project = "{}/fl_project".format(scratch_gdb)
+    fl_parcel = "fl_parcel"
+    fl_project = "fl_project"
     
-    # troubleshooting messages
-    # arcpy.AddMessage(arcpy.env.workspace)
-    # arcpy.AddMessage("parcel point file exists? {}".format(arcpy.Exists(fc_pclpt)))
-
-    utils.make_fl_conditional(fc_pclpt, fl_parcel)
-    utils.make_fl_conditional(fc_project, fl_project)
+    if arcpy.Exists(fl_parcel): arcpy.Delete_management(fl_parcel)
+    arcpy.MakeFeatureLayer_management(fc_pclpt, fl_parcel)
+    
+    if arcpy.Exists(fl_project): arcpy.Delete_management(fl_project)
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)    
 
     buff_dist = 0 if project_type == params.ptype_area_agg else buffdist
     arcpy.SelectLayerByLocation_management(fl_parcel, "WITHIN_A_DISTANCE", fl_project, buff_dist)
@@ -91,7 +88,7 @@ def point_sum_density(fc_pclpt, fc_project, project_type, val_fields, buffdist, 
 
     return dict_out
 
-
+'''
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
@@ -119,3 +116,4 @@ if __name__ == '__main__':
     print(point_sum(in_pcl_pt_fc, project_fc, ptype, ['EMPTOT', 'DU_TOT', 'GISAc'], 2640))
 
     #ej_data_arterial = {v: output_dict.pop(k) for k, v in ej_flag_dict.items() if output_dict.get(k) is not None}
+'''

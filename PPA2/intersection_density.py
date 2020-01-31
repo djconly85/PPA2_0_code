@@ -30,8 +30,11 @@ def intersection_density(fc_project, fc_intersxns, project_type):
     fl_project = "fl_projline"
     fl_intersxns = "fl_trnstp"
 
-    utils.make_fl_conditional(fc_project, fl_project)
-    utils.make_fl_conditional(fc_intersxns, fl_intersxns)
+    if arcpy.Exists(fl_project): arcpy.Delete_management(fl_project)
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
+    
+    if arcpy.Exists(fl_intersxns): arcpy.Delete_management(fl_intersxns)
+    arcpy.MakeFeatureLayer_management(fc_intersxns, fl_intersxns)
 
     # analysis area. If project is line or point, then it's a buffer around the line/point.
     # If it's a polygon (e.g. ctype or region), then no buffer and analysis area is that within the input polygon
@@ -43,7 +46,9 @@ def intersection_density(fc_project, fc_intersxns, project_type):
         arcpy.Buffer_analysis(fl_project, fc_buff, params.intersxn_dens_buff)
 
     fl_buff = "fl_buff"
-    utils.make_fl_conditional(fc_buff, fl_buff)
+    
+    if arcpy.Exists(fl_buff): arcpy.Delete_management(fl_buff)
+    arcpy.MakeFeatureLayer_management(fc_buff, fl_buff)
 
     buff_acres = get_poly_area(fl_buff)
 
@@ -62,7 +67,7 @@ def intersection_density(fc_project, fc_intersxns, project_type):
 
     return {"Intersxn_34_per_acre": intersxns_per_acre}
 
-
+'''
 if __name__ == '__main__':
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
 
@@ -72,3 +77,4 @@ if __name__ == '__main__':
 
     output = intersection_density(proj_line_fc, intersxns_fc, proj_type)
     print(output)
+'''
