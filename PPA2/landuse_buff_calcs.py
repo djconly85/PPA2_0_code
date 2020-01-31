@@ -63,6 +63,9 @@ def point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_fie
 # entire parcels, not parcels that've been chopped by a buffer boundary
 def point_sum_density(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field=None, case_excs_list=[]):
 
+    # area used in density calculation is land on parcels whose centroid is within the buffer distance. It includes
+    # area of entire parcel, both inside and outside the buffer, not "slices" of parcels that are bisected by buffer boundary.
+    
     # make sure you calculate the area for normalizing
     if params.col_area_ac not in val_fields:
         val_fields.append(params.col_area_ac)
@@ -111,8 +114,8 @@ if __name__ == '__main__':
     #     else:
     #         out_dict2[v] = 0
 
-    print(point_sum_density(in_pcl_pt_fc, project_fc, ptype, ['EMPTOT', 'DU_TOT'], 2640))
+    # print(point_sum_density(in_pcl_pt_fc, project_fc, ptype, ['EMPTOT', 'DU_TOT'], 2640))
     
-    print(point_sum(in_pcl_pt_fc, project_fc, ptype, ['EMPTOT', 'DU_TOT'], 2640))
+    print(point_sum(in_pcl_pt_fc, project_fc, ptype, ['EMPTOT', 'DU_TOT', 'GISAc'], 2640))
 
     #ej_data_arterial = {v: output_dict.pop(k) for k, v in ej_flag_dict.items() if output_dict.get(k) is not None}

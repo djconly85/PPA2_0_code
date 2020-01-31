@@ -13,8 +13,6 @@
 # Python Version: 3.x
 # --------------------------------
 
-import time
-
 import pandas as pd
 import arcpy
 

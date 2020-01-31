@@ -1,5 +1,3 @@
-import arcpy
-
 # ========================================INPUT DATA LAYERS=====================================================
 fgdb = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb' #for now, is reference only. individual scripts explicitly indicate workspace and file locations
 
@@ -32,7 +30,7 @@ def model_links_fc(in_year=2016):
 
 # input CSV of community type and regional values for indicated metrics; used to compare how project scores compared to 
 # "typical" values for the region and for the community type in which the project lies.
-aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals01132020_0954.csv"
+aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\CSV\Agg_ppa_vals01132020_0954.csv"
 
 # project type
 ptype_fwy = 'Freeway'
@@ -45,7 +43,7 @@ ptype_area_agg = 'AreaAvg' # e.g., regional average, community type avg
 # ===================================OUTPUT TEMPLATE DATA=========================================================
 # template_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate\output_rows_template.csv"
 
-template_dir = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate'
+template_dir = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\XLSX'
 
 template_xlsx_arterial = "PPA_Template_ArterialExp.xlsx"
 template_xlsx_sgr = "hold1.xlsx"
@@ -67,8 +65,7 @@ perf_outcomes_dict = {'Reduce VMT': '1ReduceVMT',
                       'Promote Economic Prosperity': '4EconProsperity',
                       'Improve Freight Mobility': '5Freight',
                       'Make a Safer Transportation System': '6Safety',
-                      'Promote Complete Streets and State of Good Repair': '7SGR',
-                      'Further Socioeconomic Equity': '8SocioEconEquity'
+                      'Promote Complete Streets and State of Good Repair': '7SGR'
                       }
 
 # sheet names for performance outcomes in community design project type
@@ -76,9 +73,9 @@ perf_outcomes_commdesign = ['1TranspoChoice', '2CompactDev', '3MixedUseDev', '4H
 
 
 xlsx_import_sheet = 'import'
-sheets_all_reports = ['0TitlePg']
+sheets_all_reports = ['0_0TitlePg', '0_1UsingThisReport','8SocioEconEquity']
 
-map_list_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate\map_report_key.csv"
+map_list_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\CSV\map_report_key.csv"
 
 # scratch_folder = arcpy.env.scratchFolder # scratch folder on WIN10-MODEL-2 desktop is 'C:\Users\dconly\AppData\Local\Temp\scratch'
 

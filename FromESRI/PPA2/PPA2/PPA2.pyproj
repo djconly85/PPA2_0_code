@@ -1,0 +1,67 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>37f37f4d-bd48-491e-90d2-1731ce4ff2ac</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>PPA2_master_projectTOOL.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>PPA2</Name>
+    <RootNamespace>PPA2</RootNamespace>
+    <InterpreterId>Global|VisualStudio|arcpy_arcgis_pro</InterpreterId>
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="accessibility_calcs.py" />
+    <Compile Include="bigdata_tripshed.py" />
+    <Compile Include="collisions.py" />
+    <Compile Include="complete_street_score.py" />
+    <Compile Include="get_buff_netmiles.py" />
+    <Compile Include="get_line_overlap.py" />
+    <Compile Include="get_lutype_acres.py" />
+    <Compile Include="get_truck_data_fwy.py" />
+    <Compile Include="intersection_density.py" />
+    <Compile Include="landuse_buff_calcs.py" />
+    <Compile Include="link_occup_data.py" />
+    <Compile Include="mix_index_for_project.py" />
+    <Compile Include="npmrds_data_conflation.py" />
+    <Compile Include="PPA2.py" />
+    <Compile Include="PPA2_master_ctypes.py" />
+    <Compile Include="PPA2_master_project.py" />
+    <Compile Include="PPA2_master_projectTOOL.py" />
+    <Compile Include="ppa_input_params.py" />
+    <Compile Include="ppa_utils.py" />
+    <Compile Include="ReplicaDataSummary_good01142020.py" />
+    <Compile Include="ReplicaDataSummary_latest.py" />
+    <Compile Include="transit_svc_measure.py" />
+    <Compile Include="urbanization_metrics.py" />
+    <Compile Include="__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|2.7-32" />
+    <InterpreterReference Include="Global|VisualStudio|arcpy_arcgis_pro" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>

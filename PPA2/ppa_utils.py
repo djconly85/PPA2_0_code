@@ -119,12 +119,8 @@ class Publish(object):
         self.xl_workbook = openpyxl.load_workbook(self.xl_template)
         self.time_sufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
         self.sheets_all_rpts = params.sheets_all_reports
-        self.project_folder = os.path.join(arcpy.env.scratchFolder, '{}_{}'.format(self.proj_name, self.time_sufx))
-        self.xl_out_path = os.path.join(self.project_folder, self.xl_out)
-        
-        if not os.path.exists(self.project_folder):
-            os.mkdir(self.project_folder)
-        arcpy.AddMessage("output folder - {}".format(self.project_folder))
+        self.out_folder = arcpy.env.scratchFolder
+        self.xl_out_path = os.path.join(self.out_folder, self.xl_out)
 
 
     def overwrite_df_to_xlsx(self, unused=0, start_row=0, start_col=0):  # why does there need to be an argument?
@@ -184,13 +180,14 @@ class Publish(object):
         
     def make_pdf(self):
         wb = None
+        out_pdf_final_name = "Report{}{}.pdf".format(self.proj_name, self.time_sufx)
+        out_pdf_final = os.path.join(self.out_folder, out_pdf_final_name)
+            
+        if os.path.exists(out_pdf_final):
+            os.remove(out_pdf_final)
+            
         try:
             arcpy.AddMessage("Publishing to PDF...")
-            
-            # create needed output directories for PDF files
-            dir_pdf = os.path.join(self.project_folder, 'SeparatedPDFs'.format(self.proj_name, self.time_sufx))
-            if not os.path.exists(dir_pdf):
-                os.mkdir(dir_pdf)
 
             # make excel workbook with project outputs
             xw.App.visible = False
@@ -199,101 +196,42 @@ class Publish(object):
             
             wb = xw.Book(self.xl_out_path)
             out_sheets = self.sheets_all_rpts + self.xlsheets_to_pdf
-                
+            l_out_pdfs = [] # will be list of output PDF file names, PDFs in this list will be combined. Need list step for sorting by sheet name A-Z
+            
+            pdf_final = arcpy.mp.PDFDocumentCreate(out_pdf_final) # instantiate arcpy PDFDocumentCreate object
+            
+            arcpy.AddMessage(self.out_folder)
             # write user-specified sheets to PDFs
             for s in out_sheets:
                 out_sheet = wb.sheets[s]
-                pdf_out = os.path.join(dir_pdf, '{}{}_{}.pdf'.format(self.proj_name, s, self.time_sufx))
+                pdf_out = os.path.join(self.out_folder, 'Sheet_{}_{}.pdf'.format(s, self.time_sufx))
                 out_sheet.api.ExportAsFixedFormat(0, pdf_out)
+                l_out_pdfs.append(pdf_out)
             
+            l_out_pdfs = sorted(l_out_pdfs) # sort by sheet name so that PDFs append together in correct order.
+            
+            for singlesheet_pdf in l_out_pdfs:
+                pdf_final.appendPages(singlesheet_pdf) # append to master PDF object
+                os.remove(singlesheet_pdf)  # not necessary for online version because scratch folder is temporary
+                
+            pdf_final.saveAndClose()
+            
+            
+            t_returns = (out_pdf_final, self.xl_out_path) # if successful, return output excel and output PDF
             # wb.close()  # if error in the above for loop, then it never reaches this line and wb never closes.
         except:
             msg = "{}".format(trace())
             arcpy.AddMessage(msg)
+            
+            t_returns = (msg) # if fail, return error message
         finally: # always runs, even if 'try' runs successfully.
             if wb != None:  # only closes wb object if it was instantiated.
                 wb.close()
             gc.collect()
             
+        return t_returns
+            
         # NEXT STEPS: stitch the multiple PDFs in order into single PDF, with combined PDF in main project folder
             # THEN want to delete temporary map image and single PDF foldes
 
-
-
-"""
-    #os.pdfg
-def insert_image_xlsx(xl_workbook, sheet_name, rownum, col_letter, img_file):
-    ws = xl_workbook[sheet_name]
-    cell = '{}{}'.format(col_letter, rownum) # will be where upper left corner of image placed
-    img_obj = Image(img_file)
-    ws.add_image(img_obj, cell)
-
-def overwrite_df_to_xlsx(in_df, xl_workbook, tab_name, start_row=0, start_col=0):
-    '''Writes pandas dataframe <in_df_ to <tab_name> sheet of <xlsx_template> excel workbook.'''
-
-    in_df = in_df.reset_index()
-    df_records = in_df.to_records(index=False)
-    
-    # get header row for output
-    out_header_list = [list(in_df.columns)]  # get header row for output
-    
-    out_data_list = [list(i) for i in df_records]  # get output data rows
-
-    comb_out_list = out_header_list + out_data_list
-
-    ws = xl_workbook[tab_name]
-    for i, row in enumerate(comb_out_list):
-        for j, val in enumerate(row):
-            cell = ws.cell(row=(start_row + (i + 1)), column=(start_col + (j + 1)))
-            if (cell):
-                cell.value = val
-"""
-
-
-
-    
-"""  
-def excel2pdf(in_xlsx, out_pdf, sheets_to_pdf_list):
-    '''converts excel to PDF file.
-    sheets_to_pdf_list = list of the sheets in the Excel workbook you want to include in output PDF
-    WARNING - THIS FUNCTION WILL NOT WORK WHEN PUBLISHED AS AN ESRI ONLINE TOOL. ONLY WORKS ON DESKTOP.
-    '''
-    excel_app_obj = win32com.client.Dispatch("Excel.Application")  # creates object for interacting with Excel files
-    
-    # Settings so that the targeted Excel template workbook does not visibly open when you activate it.
-    excel_app_obj.Visible = False 
-    # excel_app_obj.ScreenUpdating = False
-    # excel_app_obj.DisplayAlerts = False
-    # excel_app_obj.EnableEvents = False
-
-    wb = excel_app_obj.Workbooks.Open(in_xlsx)  # open a specific Excel workbook (XLSX file)
-    
-    # indicate which sheets you want to open
-    ws_index_list = sheets_to_pdf_list  # ws_index_list = [2, 3]  # say you want to print these sheets
-
-    wb.Worksheets(ws_index_list).Select()
-    wb.ActiveSheet.ExportAsFixedFormat(0, out_pdf)
-    
-    # close/clean up so that, if you loop through projects, you don't get any errors as a result of unfinished processes.
-    excel_app_obj.Quit()
-    gc.collect()
-"""
-    
-    
-    
-    
-    
-    
-"""
-def join_csv_template(template_csv, in_df):
-    '''takes in template CSV, left joins to desired output dataframe, ensure that
-    output CSV has same rows every time, even if data frame that you're joining doesn't
-    have all records'''
-    df_template = pd.read_csv(template_csv)
-    df_template = df_template.set_index(df_template.columns[0])
-    
-    df_out = df_template.join(in_df)
-    
-    return df_out
-"""
 

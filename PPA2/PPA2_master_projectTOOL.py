@@ -251,8 +251,20 @@ if __name__ == '__main__':
     
     
     out_report = utils.Publish(out_df, template_xl, params.xlsx_import_sheet, output_xl, performance_outcome_sheets, 
-                               params.map_list_csv, proj_name)
-    out_report.make_pdf()
+                                params.map_list_csv, proj_name)
+    
+    outputs = out_report.make_pdf() # returns tuple (output PDF file, output excel file), or if error, tuple is (error msg)
+        
+    if len(outputs) > 1:
+        out_pdf = outputs[0]
+        out_excel = outputs[1]
+    else:
+        arcpy.AddMessage(outputs[0]) #print error message if error.
+        
+
+    # set output params, number sequence must agree with input param number sequence (above)
+    arcpy.SetParameterAsText(8, out_pdf)
+    arcpy.SetParameterAsText(9, out_excel)
     
     end_time = dt.datetime.now()
     delta = end_time - start_time
