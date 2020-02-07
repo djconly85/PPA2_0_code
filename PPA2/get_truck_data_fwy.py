@@ -1,5 +1,17 @@
+#--------------------------------
+# Name:get_truck_data_fwy.py
+# Purpose: Estimate share of traffic on freeways that is trucks; based on Caltrans truck counts.
+#          
+#           
+# Author: Darren Conly
+# Last Updated: 02/2020
+# Updated by: <name>
+# Copyright:   (c) SACOG
+# Python Version: <version>
+#--------------------------------
 
 
+import os
 
 import arcpy
 import pandas as pd
@@ -47,7 +59,9 @@ def get_tmc_truck_data(fc_projline, str_project_type):
         arcpy.SelectLayerByAttribute_management(fl_speed_data, "SUBSET_SELECTION", sql)
 
     # create temporar buffer layer, flat-tipped, around TMCs; will be used to split project lines
-    temp_tmcbuff = "TEMP_tmcbuff_4projsplit"
+    scratch_gdb = arcpy.env.scratchGDB
+        
+    temp_tmcbuff = os.path.join(scratch_gdb, "TEMP_tmcbuff_4projsplit")
     fl_tmc_buff = "fl_tmc_buff"
     arcpy.Buffer_analysis(fl_speed_data, temp_tmcbuff, params.tmc_buff_dist_ft, "FULL", "FLAT")
     arcpy.MakeFeatureLayer_management(temp_tmcbuff, fl_tmc_buff)
@@ -61,6 +75,8 @@ def get_tmc_truck_data(fc_projline, str_project_type):
         out_dict["{}_proj".format(col)] = output_val
         
     return out_dict
+
+    arcpy.Delete_management(temp_tmcbuff)
 
 '''
 if __name__ == '__main__':

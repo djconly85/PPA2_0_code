@@ -188,6 +188,7 @@ class Publish(object):
             
         try:
             arcpy.AddMessage("Publishing to PDF...")
+            arcpy.AddMessage("Excel output file: {}".format(self.xl_out_path))
 
             # make excel workbook with project outputs
             xw.App.visible = False
@@ -195,12 +196,15 @@ class Publish(object):
                 self.make_new_excel()
             
             wb = xw.Book(self.xl_out_path)
+            # arcpy.AddMessage("sheets in book: {}".format(wb.sheets))
+            
             out_sheets = self.sheets_all_rpts + self.xlsheets_to_pdf
+            # arcpy.AddMessage("output sheets: {}".format(out_sheets))
+                
             l_out_pdfs = [] # will be list of output PDF file names, PDFs in this list will be combined. Need list step for sorting by sheet name A-Z
             
             pdf_final = arcpy.mp.PDFDocumentCreate(out_pdf_final) # instantiate arcpy PDFDocumentCreate object
-            
-            arcpy.AddMessage(self.out_folder)
+                
             # write user-specified sheets to PDFs
             for s in out_sheets:
                 out_sheet = wb.sheets[s]
@@ -217,21 +221,21 @@ class Publish(object):
             pdf_final.saveAndClose()
             
             
-            t_returns = (out_pdf_final, self.xl_out_path) # if successful, return output excel and output PDF
+            t_returns = ("ok", out_pdf_final, self.xl_out_path) # if successful, return output excel and output PDF
             # wb.close()  # if error in the above for loop, then it never reaches this line and wb never closes.
         except:
             msg = "{}".format(trace())
             arcpy.AddMessage(msg)
             
-            t_returns = (msg) # if fail, return error message
+            t_returns = ("fail", msg) # if fail, return error message
         finally: # always runs, even if 'try' runs successfully.
             if wb != None:  # only closes wb object if it was instantiated.
                 wb.close()
             gc.collect()
+            arcpy.AddMessage(self.xl_out_path)
             
         return t_returns
-            
-        # NEXT STEPS: stitch the multiple PDFs in order into single PDF, with combined PDF in main project folder
-            # THEN want to delete temporary map image and single PDF foldes
+
+
 
 

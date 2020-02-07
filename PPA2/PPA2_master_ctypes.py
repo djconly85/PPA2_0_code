@@ -47,11 +47,12 @@ def get_poly_avg(input_poly_fc):
 
     job_pop_dens = lubuff.point_sum_density(pcl_pt_data, input_poly_fc, params.ptype_area_agg, \
                                             [params.col_du, params.col_emptot], 0)
-    total_dens = {"job_du_perNetAcre": sum(job_pop_dens.values())}
+        
+    # total_dens = {"job_du_perNetAcre": sum(job_pop_dens.values())}
 
     out_dict = {}
     for d in [accdata, collision_data, mix_data, intsecn_dens, bikeway_covg, tran_stop_density, pct_pop_ej,\
-              emp_ind_pct, total_dens]:
+              emp_ind_pct, job_pop_dens]:
         out_dict.update(d)
 
     return out_dict
@@ -138,7 +139,7 @@ if __name__ == '__main__':
     
     # fc of community type polygons
     ctype_fc = params.comm_types_fc
-    output_csv = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals{}.csv'.format(time_sufx)
+    output_csv = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\CSV\Agg_ppa_vals{}.csv'.format(time_sufx)
     
     test_run = False
     

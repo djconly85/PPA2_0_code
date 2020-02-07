@@ -1,0 +1,526 @@
+Information String	
+platform.uname=uname_result(system='Windows', node='Win10-Model-2', release='10', version='10.0.17763', machine='AMD64', processor='Intel64 Family 6 Model 158 Stepping 9, GenuineIntel')
+socket.getfqdn()=Win10-Model-2.nt-domain.sacog.org
+multiprocessing.cpu_count()=8
+python: C:\Program Files\ArcGIS\Pro\bin\ArcGISPro.exe version:3.6.8 |Anaconda, Inc.| (default, Feb 21 2019, 18:30:04) [MSC v.1916 64 bit (AMD64)]
+0 MDomain: None
+1 MResolution: None
+2 MTolerance: None
+3 S100FeatureCatalogueFile: None
+4 XYDomain: None
+5 XYResolution: None
+6 XYTolerance: None
+7 ZDomain: None
+8 ZResolution: None
+9 ZTolerance: None
+10 addOutputsToMap: False
+11 autoCancelling: True
+12 autoCommit: 1000
+13 baDataSource: None
+14 buildStatsAndRATForTempRaster: True
+15 cartographicCoordinateSystem: None
+16 cartographicPartitions: None
+17 cellSize: MAXOF
+18 cellSizeProjectionMethod: CONVERT_UNITS
+19 coincidentPoints: MEAN
+20 compression: LZ77
+21 configKeyword: None
+22 extent: None
+23 geographicTransformations: None
+24 gpuId: 0
+25 isCancelled: False
+26 maintainAttachments: True
+27 maintainSpatialIndex: False
+28 mask: None
+29 nodata: NONE
+30 outputCoordinateSystem: None
+31 outputMFlag: Same As Input
+32 outputZFlag: Same As Input
+33 outputZValue: None
+34 overwriteOutput: True
+35 packageWorkspace: \\arcserver-svr\D\PPA_v2_SVR\FromESRI
+36 parallelProcessingFactor: None
+37 preserveGlobalIds: False
+38 processingServer: None
+39 processingServerPassword: None
+40 processingServerUser: None
+41 processorType: None
+42 pyramid: PYRAMIDS -1 NEAREST DEFAULT 75 NO_SKIP
+43 qualifiedFieldNames: True
+44 randomGenerator: 0 ACM599
+45 rasterStatistics: STATISTICS 1 1
+46 referenceScale: None
+47 resamplingMethod: NEAREST
+48 scratchFolder: I:\Projects\Darren\PPA_V2_GIS\scratch
+49 scratchGDB: I:\Projects\Darren\PPA_V2_GIS\scratch.gdb
+50 scratchWorkspace: I:\Projects\Darren\PPA_V2_GIS\TestingPPA.gdb
+51 scriptWorkspace: \\arcserver-svr\D\PPA_v2_SVR\FromESRI
+52 snapRaster: None
+53 terrainMemoryUsage: False
+54 tileSize: 128 128
+55 tinSaveVersion: CURRENT
+56 transferDomains: False
+57 transferGDBAttributeProperties: False
+58 workspace: I:\Projects\Darren\PPA_V2_GIS\TestingPPA.gdb
+System's Temp Variable=C:\Users\dconly\AppData\Local\Temp\ArcGISProTemp9044\
+arcpy.env.scratchGDB=I:\Projects\Darren\PPA_V2_GIS\scratch.gdb arcpy.env.scratchFolder=I:\Projects\Darren\PPA_V2_GIS\scratch
+os.environ returns:
+AGSDESKTOPJAVA->C:\Program Files (x86)\ArcGIS\Desktop10.5\
+AGSENGINEJAVA->C:\Program Files (x86)\ArcGIS\Engine10.5\
+ALLUSERSPROFILE->C:\ProgramData
+APPDATA->C:\Users\dconly\AppData\Roaming
+COMMONPROGRAMFILES->C:\Program Files\Common Files
+COMMONPROGRAMFILES(X86)->C:\Program Files (x86)\Common Files
+COMMONPROGRAMW6432->C:\Program Files\Common Files
+COMPUTERNAME->WIN10-MODEL-2
+COMSPEC->C:\WINDOWS\system32\cmd.exe
+DADF_TS_STATBIN->32
+DRIVERDATA->C:\Windows\System32\Drivers\DriverData
+ESRIACTIVEAGOLBINGHIVE->SOFTWARE\ESRI\ArcGIS Online For Pro\SignIn\Bing\
+ESRIACTIVEAGOLKEY->SOFTWARE\ESRI\ArcGIS Online For Pro\
+ESRIACTIVEAGOLOAUTHAPPID->arcgispro
+ESRIACTIVEAGOLOAUTHAPPIDLICENSING->arcgisprodesktop
+ESRIACTIVEAGOLPORTALSETTINGSKEY->SOFTWARE\ESRI\ArcGIS Online For Pro\Portals\
+ESRIACTIVEAGOLSIGNINKEY->SOFTWARE\ESRI\ArcGIS Online For Pro\SignIn\
+ESRIACTIVEAGOLUSERAGENT->ArcGISPro
+ESRIACTIVEEXECUTABLE->ArcGISPro.exe
+ESRIACTIVEINSTALLATION->ArcGISPro2.4
+ESRIACTIVEINSTALLATIONPATH->C:\Program Files\ArcGIS\Pro\bin
+ESRIACTIVEPRODUCT->ArcGISPro
+ESRIAPPLICATIONLANGIDKEY->ARCGISPRO_UILANGID
+ESRIDICTIONARYLANGIDKEY->ARCGISPRO_DICTIONARYLANGID
+ESRIOFFLINEHELPKEY->ArcGIS Pro Help
+ESRIOFFLINEHELPLANGIDKEY->ARCGISPRO_OFFLINEHELPLANGID
+ESRIONLINEHELPLANGIDKEY->ARCGISPRO_ONLINEHELPLANGID
+ESRIWEBHELPSTARTPAGE->pro-app/help
+ESRIWEBHELPURL->https://pro.arcgis.com
+FPS_BROWSER_APP_PROFILE_STRING->Internet Explorer
+FPS_BROWSER_USER_PROFILE_STRING->Default
+HOMEDRIVE->C:
+HOMEPATH->\Users\dconly
+INTEL_LICENSE_FILE->C:\Program Files (x86)\Common Files\Intel\Licenses
+I_MPI_ROOT->C:\Program Files (x86)\Intel\MPI-RT\4.1.1.036\
+LOCALAPPDATA->C:\Users\dconly\AppData\Local
+LOGONSERVER->\\DC2-SVR
+NUMBER_OF_PROCESSORS->8
+ONEDRIVE->C:\Users\dconly\OneDrive - Sacramento Area Council of Governments
+ONEDRIVECOMMERCIAL->C:\Users\dconly\OneDrive - Sacramento Area Council of Governments
+ORIGINAL_TMP->C:\Users\dconly\AppData\Local\Temp\
+OS->Windows_NT
+PATH->C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\Library\bin;C:\Program Files\ArcGIS\Pro\bin;C:\PROGRAM FILES\ARCGIS\PRO\BIN;C:\Program Files (x86)\Intel\MPI-RT\4.1.1.036\em64t\bin;C:\Program Files (x86)\Intel\MPI-RT\4.1.1.036\ia32\bin;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\iCLS\;C:\Program Files\Intel\Intel(R) Management Engine Components\iCLS\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\MySQL\bin;C:\WINDOWS\System32\OpenSSH\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files\Git\cmd;C:\Users\dconly\AppData\Local\Microsoft\WindowsApps;C:\Users\dconly\AppData\Local\GitHubDesktop\bin
+PATHEXT->.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+PROCESSOR_ARCHITECTURE->AMD64
+PROCESSOR_IDENTIFIER->Intel64 Family 6 Model 158 Stepping 9, GenuineIntel
+PROCESSOR_LEVEL->6
+PROCESSOR_REVISION->9e09
+PROGRAMDATA->C:\ProgramData
+PROGRAMFILES->C:\Program Files
+PROGRAMFILES(X86)->C:\Program Files (x86)
+PROGRAMW6432->C:\Program Files
+PSMODULEPATH->C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
+PUBLIC->C:\Users\Public
+SESSIONNAME->Console
+SYSTEMDRIVE->C:
+SYSTEMROOT->C:\WINDOWS
+TEMP->C:\Users\dconly\AppData\Local\Temp\ArcGISProTemp9044\
+TMP->C:\Users\dconly\AppData\Local\Temp\ArcGISProTemp9044\
+USERDNSDOMAIN->NT-DOMAIN.SACOG.ORG
+USERDOMAIN->NT-DOMAIN
+USERDOMAIN_ROAMINGPROFILE->NT-DOMAIN
+USERNAME->dconly
+USERPROFILE->C:\Users\dconly
+WINDIR->C:\WINDOWS
+ESRI_OS_DIR_DONOTUSE->C:\Users\dconly\AppData\Local\Temp\ArcGISProTemp9044\
+ESRI_OS_DATADIR_LOCAL_DONOTUSE->C:\Users\dconly\AppData\Local\
+ESRI_OS_DATADIR_ROAMING_DONOTUSE->C:\Users\dconly\AppData\Roaming\
+ESRI_OS_DATADIR_COMMON_DONOTUSE->C:\ProgramData\
+ARCHOME_USER->c:\program files\arcgis\pro\
+ARCHOME->c:\program files\arcgis\pro\
+PYTHONPATH->C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\DLLs;C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\Lib;C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\Lib\site-packages;c:\program files\arcgis\pro\bin;c:\program files\arcgis\pro\Resources\ArcToolbox\Scripts
+FOR_DISABLE_CONSOLE_CTRL_HANDLER->1
+sys.path:
+0. \\arcserver-svr\D\PPA_v2_SVR\FromESRI
+1. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\DLLs
+2. c:\program files\arcgis\pro\Resources\arcpy
+3. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\Lib
+4. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\Lib\site-packages
+5. c:\program files\arcgis\pro\bin
+6. c:\program files\arcgis\pro\Resources\ArcToolbox\Scripts
+7. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3
+8. C:\Program Files\ArcGIS\Pro\bin
+9. C:\Program Files\ArcGIS\Pro\Resources\ArcPy
+10. C:\Program Files\ArcGIS\Pro\Resources\ArcToolbox\Scripts
+11. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\future-0.17.1-py3.6.egg
+12. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\pytz-2019.2-py3.6.egg
+13. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\win32
+14. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\win32\lib
+15. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\Pythonwin
+16. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\pywin32_ctypes-0.2.0-py3.6.egg
+17. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\sympy-1.4-py3.6.egg
+18. c:\program files\arcgis\pro\Resources\ArcToolbox\Scripts
+19. c:\program files\arcgis\pro\bin
+arcpy.GetInstallInfo():
+LicenseLevel=Advanced
+InstallDir=c:\program files\arcgis\pro\
+Installer=dconly
+ProductName=ArcGISPro
+Version=2.4.3
+SourceDir=C:\Users\dconly\AppData\Local\Microsoft\Windows\INetCache\ArcGISUpdate\ArcGISPro\esrisoftware.esri.com\
+InstallType=N/A
+BuildNumber=19948
+InstallDate=12/18/2019
+InstallTime=16:47:58
+SPNumber=N/A
+SPBuild=N/A
+for line in os.popen('systeminfo'):
+0. 
+1. Host Name:                 WIN10-MODEL-2
+2. OS Name:                   Microsoft Windows 10 Pro
+3. OS Version:                10.0.17763 N/A Build 17763
+4. OS Manufacturer:           Microsoft Corporation
+5. OS Configuration:          Member Workstation
+6. OS Build Type:             Multiprocessor Free
+7. Registered Owner:          N/A
+8. Registered Organization:   N/A
+9. Product ID:                00330-51003-06931-AAOEM
+10. Original Install Date:     8/20/2019, 5:08:16 PM
+11. System Boot Time:          2/3/2020, 8:15:33 AM
+12. System Manufacturer:       Dell Inc.
+13. System Model:              OptiPlex 5050
+14. System Type:               x64-based PC
+15. Processor(s):              1 Processor(s) Installed.
+16.                            [01]: Intel64 Family 6 Model 158 Stepping 9 GenuineIntel ~3600 Mhz
+17. BIOS Version:              Dell Inc. 1.7.9, 1/30/2018
+18. Windows Directory:         C:\WINDOWS
+19. System Directory:          C:\WINDOWS\system32
+20. Boot Device:               \Device\HarddiskVolume5
+21. System Locale:             en-us;English (United States)
+22. Input Locale:              en-us;English (United States)
+23. Time Zone:                 (UTC-08:00) Pacific Time (US & Canada)
+24. Total Physical Memory:     32,632 MB
+25. Available Physical Memory: 23,113 MB
+26. Virtual Memory: Max Size:  37,496 MB
+27. Virtual Memory: Available: 25,675 MB
+28. Virtual Memory: In Use:    11,821 MB
+29. Page File Location(s):     C:\pagefile.sys
+30. Domain:                    nt-domain.sacog.org
+31. Logon Server:              \\DC2-SVR
+32. Hotfix(s):                 2 Hotfix(s) Installed.
+33.                            [01]: KB4512937
+34.                            [02]: KB4512534
+35. Network Card(s):           1 NIC(s) Installed.
+36.                            [01]: Intel(R) Ethernet Connection (5) I219-V
+37.                                  Connection Name: Ethernet
+38.                                  DHCP Enabled:    Yes
+39.                                  DHCP Server:     192.168.0.7
+40.                                  IP address(es)
+41.                                  [01]: 192.168.10.117
+42.                                  [02]: fe80::4939:13af:a890:cc89
+43. Hyper-V Requirements:      VM Monitor Mode Extensions: Yes
+44.                            Virtualization Enabled In Firmware: Yes
+45.                            Second Level Address Translation: Yes
+46.                            Data Execution Prevention Available: Yes
+os.popen('dir'):
+ Volume in drive I is GIS
+ Volume Serial Number is F64C-B3ED
+
+ Directory of I:\Projects\Darren\PPA_V2_GIS
+
+02/03/2020  11:02 AM    <DIR>          .
+02/03/2020  11:02 AM    <DIR>          ..
+01/22/2020  06:54 PM             3,709 .pyHistory
+12/12/2019  05:11 PM    <DIR>          Calc Exp
+12/17/2019  04:31 PM    <DIR>          CSV
+01/24/2020  04:52 PM    <DIR>          DBF
+09/16/2019  02:22 PM           134,249 email_Projects Needing Manual TMC Correction.pdf
+01/27/2020  04:46 PM    <DIR>          ForESRI
+10/29/2019  08:21 AM    <DIR>          IMG
+01/08/2020  05:05 PM    <DIR>          ImportLog
+01/31/2020  12:48 PM    <DIR>          Index
+01/24/2020  09:32 AM    <DIR>          KyleTest
+12/19/2019  02:21 PM    <DIR>          LYR
+01/31/2020  12:48 PM           353,510 PPA_V2.aprx
+02/03/2020  08:37 AM    <DIR>          PPA_V2.gdb
+01/31/2020  02:02 PM           311,808 PPA_V2.tbx
+11/22/2019  12:30 PM     1,059,006,614 PPA_V2GDB_11222019.zip
+12/19/2019  04:51 PM     1,159,517,862 PPA_V2GDB_12192019.zip
+10/25/2019  03:05 PM    <DIR>          Query
+10/02/2019  10:30 AM    <DIR>          RasterFunctionTemplates
+01/24/2020  03:27 PM    <DIR>          Ref
+11/15/2019  08:13 AM    <DIR>          SACSIM Model Data
+01/31/2020  01:50 PM    <DIR>          scratch
+01/31/2020  02:52 PM    <DIR>          scratch.gdb
+01/22/2020  11:07 AM    <DIR>          SHP
+12/20/2019  11:15 AM    <DIR>          Sugar
+09/24/2019  08:49 AM    <DIR>          Temp
+02/03/2020  11:02 AM             9,353 TestingPPA.aprx
+02/03/2020  11:03 AM    <DIR>          TestingPPA.gdb
+02/03/2020  10:36 AM             7,168 TestingPPA.tbx
+10/10/2019  12:13 PM             2,560 winuser@mtp2020.sde
+               9 File(s)  2,219,371,409 bytes
+              22 Dir(s)  280,848,990,208 bytes free
+ 
+Messages
+Start Time: Monday, February 3, 2020 11:03:19 AM
+Running script ListEnvironments...
+You entered: \\arcserver-svr\D\PPA_v2_SVR\PPA_V2.gdb
+platform.uname=uname_result(system='Windows', node='Win10-Model-2', release='10', version='10.0.17763', machine='AMD64', processor='Intel64 Family 6 Model 158 Stepping 9, GenuineIntel')
+socket.getfqdn()=Win10-Model-2.nt-domain.sacog.org
+multiprocessing.cpu_count()=8
+python: C:\Program Files\ArcGIS\Pro\bin\ArcGISPro.exe version:3.6.8 |Anaconda, Inc.| (default, Feb 21 2019, 18:30:04) [MSC v.1916 64 bit (AMD64)]
+0 MDomain: None
+1 MResolution: None
+2 MTolerance: None
+3 S100FeatureCatalogueFile: None
+4 XYDomain: None
+5 XYResolution: None
+6 XYTolerance: None
+7 ZDomain: None
+8 ZResolution: None
+9 ZTolerance: None
+10 addOutputsToMap: False
+11 autoCancelling: True
+12 autoCommit: 1000
+13 baDataSource: None
+14 buildStatsAndRATForTempRaster: True
+15 cartographicCoordinateSystem: None
+16 cartographicPartitions: None
+17 cellSize: MAXOF
+18 cellSizeProjectionMethod: CONVERT_UNITS
+19 coincidentPoints: MEAN
+20 compression: LZ77
+21 configKeyword: None
+22 extent: None
+23 geographicTransformations: None
+24 gpuId: 0
+25 isCancelled: False
+26 maintainAttachments: True
+27 maintainSpatialIndex: False
+28 mask: None
+29 nodata: NONE
+30 outputCoordinateSystem: None
+31 outputMFlag: Same As Input
+32 outputZFlag: Same As Input
+33 outputZValue: None
+34 overwriteOutput: True
+35 packageWorkspace: \\arcserver-svr\D\PPA_v2_SVR\FromESRI
+36 parallelProcessingFactor: None
+37 preserveGlobalIds: False
+38 processingServer: None
+39 processingServerPassword: None
+40 processingServerUser: None
+41 processorType: None
+42 pyramid: PYRAMIDS -1 NEAREST DEFAULT 75 NO_SKIP
+43 qualifiedFieldNames: True
+44 randomGenerator: 0 ACM599
+45 rasterStatistics: STATISTICS 1 1
+46 referenceScale: None
+47 resamplingMethod: NEAREST
+48 scratchFolder: I:\Projects\Darren\PPA_V2_GIS\scratch
+49 scratchGDB: I:\Projects\Darren\PPA_V2_GIS\scratch.gdb
+50 scratchWorkspace: I:\Projects\Darren\PPA_V2_GIS\TestingPPA.gdb
+51 scriptWorkspace: \\arcserver-svr\D\PPA_v2_SVR\FromESRI
+52 snapRaster: None
+53 terrainMemoryUsage: False
+54 tileSize: 128 128
+55 tinSaveVersion: CURRENT
+56 transferDomains: False
+57 transferGDBAttributeProperties: False
+58 workspace: I:\Projects\Darren\PPA_V2_GIS\TestingPPA.gdb
+System's Temp Variable=C:\Users\dconly\AppData\Local\Temp\ArcGISProTemp9044\
+arcpy.env.scratchGDB=I:\Projects\Darren\PPA_V2_GIS\scratch.gdb arcpy.env.scratchFolder=I:\Projects\Darren\PPA_V2_GIS\scratch
+os.environ returns:
+AGSDESKTOPJAVA->C:\Program Files (x86)\ArcGIS\Desktop10.5\
+AGSENGINEJAVA->C:\Program Files (x86)\ArcGIS\Engine10.5\
+ALLUSERSPROFILE->C:\ProgramData
+APPDATA->C:\Users\dconly\AppData\Roaming
+COMMONPROGRAMFILES->C:\Program Files\Common Files
+COMMONPROGRAMFILES(X86)->C:\Program Files (x86)\Common Files
+COMMONPROGRAMW6432->C:\Program Files\Common Files
+COMPUTERNAME->WIN10-MODEL-2
+COMSPEC->C:\WINDOWS\system32\cmd.exe
+DADF_TS_STATBIN->32
+DRIVERDATA->C:\Windows\System32\Drivers\DriverData
+ESRIACTIVEAGOLBINGHIVE->SOFTWARE\ESRI\ArcGIS Online For Pro\SignIn\Bing\
+ESRIACTIVEAGOLKEY->SOFTWARE\ESRI\ArcGIS Online For Pro\
+ESRIACTIVEAGOLOAUTHAPPID->arcgispro
+ESRIACTIVEAGOLOAUTHAPPIDLICENSING->arcgisprodesktop
+ESRIACTIVEAGOLPORTALSETTINGSKEY->SOFTWARE\ESRI\ArcGIS Online For Pro\Portals\
+ESRIACTIVEAGOLSIGNINKEY->SOFTWARE\ESRI\ArcGIS Online For Pro\SignIn\
+ESRIACTIVEAGOLUSERAGENT->ArcGISPro
+ESRIACTIVEEXECUTABLE->ArcGISPro.exe
+ESRIACTIVEINSTALLATION->ArcGISPro2.4
+ESRIACTIVEINSTALLATIONPATH->C:\Program Files\ArcGIS\Pro\bin
+ESRIACTIVEPRODUCT->ArcGISPro
+ESRIAPPLICATIONLANGIDKEY->ARCGISPRO_UILANGID
+ESRIDICTIONARYLANGIDKEY->ARCGISPRO_DICTIONARYLANGID
+ESRIOFFLINEHELPKEY->ArcGIS Pro Help
+ESRIOFFLINEHELPLANGIDKEY->ARCGISPRO_OFFLINEHELPLANGID
+ESRIONLINEHELPLANGIDKEY->ARCGISPRO_ONLINEHELPLANGID
+ESRIWEBHELPSTARTPAGE->pro-app/help
+ESRIWEBHELPURL->https://pro.arcgis.com
+FPS_BROWSER_APP_PROFILE_STRING->Internet Explorer
+FPS_BROWSER_USER_PROFILE_STRING->Default
+HOMEDRIVE->C:
+HOMEPATH->\Users\dconly
+INTEL_LICENSE_FILE->C:\Program Files (x86)\Common Files\Intel\Licenses
+I_MPI_ROOT->C:\Program Files (x86)\Intel\MPI-RT\4.1.1.036\
+LOCALAPPDATA->C:\Users\dconly\AppData\Local
+LOGONSERVER->\\DC2-SVR
+NUMBER_OF_PROCESSORS->8
+ONEDRIVE->C:\Users\dconly\OneDrive - Sacramento Area Council of Governments
+ONEDRIVECOMMERCIAL->C:\Users\dconly\OneDrive - Sacramento Area Council of Governments
+ORIGINAL_TMP->C:\Users\dconly\AppData\Local\Temp\
+OS->Windows_NT
+PATH->C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\Library\bin;C:\Program Files\ArcGIS\Pro\bin;C:\PROGRAM FILES\ARCGIS\PRO\BIN;C:\Program Files (x86)\Intel\MPI-RT\4.1.1.036\em64t\bin;C:\Program Files (x86)\Intel\MPI-RT\4.1.1.036\ia32\bin;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\iCLS\;C:\Program Files\Intel\Intel(R) Management Engine Components\iCLS\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\MySQL\bin;C:\WINDOWS\System32\OpenSSH\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files\Git\cmd;C:\Users\dconly\AppData\Local\Microsoft\WindowsApps;C:\Users\dconly\AppData\Local\GitHubDesktop\bin
+PATHEXT->.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+PROCESSOR_ARCHITECTURE->AMD64
+PROCESSOR_IDENTIFIER->Intel64 Family 6 Model 158 Stepping 9, GenuineIntel
+PROCESSOR_LEVEL->6
+PROCESSOR_REVISION->9e09
+PROGRAMDATA->C:\ProgramData
+PROGRAMFILES->C:\Program Files
+PROGRAMFILES(X86)->C:\Program Files (x86)
+PROGRAMW6432->C:\Program Files
+PSMODULEPATH->C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
+PUBLIC->C:\Users\Public
+SESSIONNAME->Console
+SYSTEMDRIVE->C:
+SYSTEMROOT->C:\WINDOWS
+TEMP->C:\Users\dconly\AppData\Local\Temp\ArcGISProTemp9044\
+TMP->C:\Users\dconly\AppData\Local\Temp\ArcGISProTemp9044\
+USERDNSDOMAIN->NT-DOMAIN.SACOG.ORG
+USERDOMAIN->NT-DOMAIN
+USERDOMAIN_ROAMINGPROFILE->NT-DOMAIN
+USERNAME->dconly
+USERPROFILE->C:\Users\dconly
+WINDIR->C:\WINDOWS
+ESRI_OS_DIR_DONOTUSE->C:\Users\dconly\AppData\Local\Temp\ArcGISProTemp9044\
+ESRI_OS_DATADIR_LOCAL_DONOTUSE->C:\Users\dconly\AppData\Local\
+ESRI_OS_DATADIR_ROAMING_DONOTUSE->C:\Users\dconly\AppData\Roaming\
+ESRI_OS_DATADIR_COMMON_DONOTUSE->C:\ProgramData\
+ARCHOME_USER->c:\program files\arcgis\pro\
+ARCHOME->c:\program files\arcgis\pro\
+PYTHONPATH->C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\DLLs;C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\Lib;C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\Lib\site-packages;c:\program files\arcgis\pro\bin;c:\program files\arcgis\pro\Resources\ArcToolbox\Scripts
+FOR_DISABLE_CONSOLE_CTRL_HANDLER->1
+sys.path:
+0. \\arcserver-svr\D\PPA_v2_SVR\FromESRI
+1. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\DLLs
+2. c:\program files\arcgis\pro\Resources\arcpy
+3. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\Lib
+4. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\Lib\site-packages
+5. c:\program files\arcgis\pro\bin
+6. c:\program files\arcgis\pro\Resources\ArcToolbox\Scripts
+7. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3
+8. C:\Program Files\ArcGIS\Pro\bin
+9. C:\Program Files\ArcGIS\Pro\Resources\ArcPy
+10. C:\Program Files\ArcGIS\Pro\Resources\ArcToolbox\Scripts
+11. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\future-0.17.1-py3.6.egg
+12. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\pytz-2019.2-py3.6.egg
+13. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\win32
+14. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\win32\lib
+15. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\Pythonwin
+16. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\pywin32_ctypes-0.2.0-py3.6.egg
+17. C:\Users\dconly\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3\lib\site-packages\sympy-1.4-py3.6.egg
+18. c:\program files\arcgis\pro\Resources\ArcToolbox\Scripts
+19. c:\program files\arcgis\pro\bin
+arcpy.GetInstallInfo():
+LicenseLevel=Advanced
+InstallDir=c:\program files\arcgis\pro\
+Installer=dconly
+ProductName=ArcGISPro
+Version=2.4.3
+SourceDir=C:\Users\dconly\AppData\Local\Microsoft\Windows\INetCache\ArcGISUpdate\ArcGISPro\esrisoftware.esri.com\
+InstallType=N/A
+BuildNumber=19948
+InstallDate=12/18/2019
+InstallTime=16:47:58
+SPNumber=N/A
+SPBuild=N/A
+for line in os.popen('systeminfo'):
+0.
+1. Host Name:                 WIN10-MODEL-2
+2. OS Name:                   Microsoft Windows 10 Pro
+3. OS Version:                10.0.17763 N/A Build 17763
+4. OS Manufacturer:           Microsoft Corporation
+5. OS Configuration:          Member Workstation
+6. OS Build Type:             Multiprocessor Free
+7. Registered Owner:          N/A
+8. Registered Organization:   N/A
+9. Product ID:                00330-51003-06931-AAOEM
+10. Original Install Date:     8/20/2019, 5:08:16 PM
+11. System Boot Time:          2/3/2020, 8:15:33 AM
+12. System Manufacturer:       Dell Inc.
+13. System Model:              OptiPlex 5050
+14. System Type:               x64-based PC
+15. Processor(s):              1 Processor(s) Installed.
+16.                            [01]: Intel64 Family 6 Model 158 Stepping 9 GenuineIntel ~3600 Mhz
+17. BIOS Version:              Dell Inc. 1.7.9, 1/30/2018
+18. Windows Directory:         C:\WINDOWS
+19. System Directory:          C:\WINDOWS\system32
+20. Boot Device:               \Device\HarddiskVolume5
+21. System Locale:             en-us;English (United States)
+22. Input Locale:              en-us;English (United States)
+23. Time Zone:                 (UTC-08:00) Pacific Time (US & Canada)
+24. Total Physical Memory:     32,632 MB
+25. Available Physical Memory: 23,113 MB
+26. Virtual Memory: Max Size:  37,496 MB
+27. Virtual Memory: Available: 25,675 MB
+28. Virtual Memory: In Use:    11,821 MB
+29. Page File Location(s):     C:\pagefile.sys
+30. Domain:                    nt-domain.sacog.org
+31. Logon Server:              \\DC2-SVR
+32. Hotfix(s):                 2 Hotfix(s) Installed.
+33.                            [01]: KB4512937
+34.                            [02]: KB4512534
+35. Network Card(s):           1 NIC(s) Installed.
+36.                            [01]: Intel(R) Ethernet Connection (5) I219-V
+37.                                  Connection Name: Ethernet
+38.                                  DHCP Enabled:    Yes
+39.                                  DHCP Server:     192.168.0.7
+40.                                  IP address(es)
+41.                                  [01]: 192.168.10.117
+42.                                  [02]: fe80::4939:13af:a890:cc89
+43. Hyper-V Requirements:      VM Monitor Mode Extensions: Yes
+44.                            Virtualization Enabled In Firmware: Yes
+45.                            Second Level Address Translation: Yes
+46.                            Data Execution Prevention Available: Yes
+os.popen('dir'):
+Volume in drive I is GIS
+Volume Serial Number is F64C-B3ED
+Directory of I:\Projects\Darren\PPA_V2_GIS
+02/03/2020  11:02 AM    <DIR>          .
+02/03/2020  11:02 AM    <DIR>          ..
+01/22/2020  06:54 PM             3,709 .pyHistory
+12/12/2019  05:11 PM    <DIR>          Calc Exp
+12/17/2019  04:31 PM    <DIR>          CSV
+01/24/2020  04:52 PM    <DIR>          DBF
+09/16/2019  02:22 PM           134,249 email_Projects Needing Manual TMC Correction.pdf
+01/27/2020  04:46 PM    <DIR>          ForESRI
+10/29/2019  08:21 AM    <DIR>          IMG
+01/08/2020  05:05 PM    <DIR>          ImportLog
+01/31/2020  12:48 PM    <DIR>          Index
+01/24/2020  09:32 AM    <DIR>          KyleTest
+12/19/2019  02:21 PM    <DIR>          LYR
+01/31/2020  12:48 PM           353,510 PPA_V2.aprx
+02/03/2020  08:37 AM    <DIR>          PPA_V2.gdb
+01/31/2020  02:02 PM           311,808 PPA_V2.tbx
+11/22/2019  12:30 PM     1,059,006,614 PPA_V2GDB_11222019.zip
+12/19/2019  04:51 PM     1,159,517,862 PPA_V2GDB_12192019.zip
+10/25/2019  03:05 PM    <DIR>          Query
+10/02/2019  10:30 AM    <DIR>          RasterFunctionTemplates
+01/24/2020  03:27 PM    <DIR>          Ref
+11/15/2019  08:13 AM    <DIR>          SACSIM Model Data
+01/31/2020  01:50 PM    <DIR>          scratch
+01/31/2020  02:52 PM    <DIR>          scratch.gdb
+01/22/2020  11:07 AM    <DIR>          SHP
+12/20/2019  11:15 AM    <DIR>          Sugar
+09/24/2019  08:49 AM    <DIR>          Temp
+02/03/2020  11:02 AM             9,353 TestingPPA.aprx
+02/03/2020  11:03 AM    <DIR>          TestingPPA.gdb
+02/03/2020  10:36 AM             7,168 TestingPPA.tbx
+10/10/2019  12:13 PM             2,560 winuser@mtp2020.sde
+9 File(s)  2,219,371,409 bytes
+22 Dir(s)  280,848,990,208 bytes free
+Completed script ListEnvironments...
+Succeeded at Monday, February 3, 2020 11:03:22 AM (Elapsed Time: 2.82 seconds)

@@ -168,6 +168,7 @@ def get_multiyear_data(project_fc, project_type, base_df, analysis_year):
 
     
 if __name__ == '__main__':
+    arcpy.AddMessage("update 2/4/2020 8:59p")
     # =====================================USER/TOOLBOX INPUTS===============================================
     # project data
     project_fc = arcpy.GetParameterAsText(0) # r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
@@ -251,25 +252,32 @@ if __name__ == '__main__':
     
     
     out_report = utils.Publish(out_df, template_xl, params.xlsx_import_sheet, output_xl, performance_outcome_sheets, 
-                                params.map_list_csv, proj_name)
+                                None, proj_name) #params.map_list_csv
     
-    outputs = out_report.make_pdf() # returns tuple (output PDF file, output excel file), or if error, tuple is (error msg)
+    outputs = out_report.make_pdf() # successful run returns tuple ("ok", output PDF file, output excel file)
+    # if fail, returns tuple ("fail", <error message>)
+
         
-    if len(outputs) > 1:
-        out_pdf = outputs[0]
-        out_excel = outputs[1]
+    if outputs[0] == "ok":
+        out_pdf = outputs[1]
+        out_excel = outputs[2]
+
+        arcpy.SetParameterAsText(8, out_pdf)
+        arcpy.SetParameterAsText(9, out_excel)
+        
+        end_time = dt.datetime.now()
+        delta = end_time - start_time
+        mins_and_secs = divmod(delta.seconds, 60)
+        arcpy.AddMessage("Success! Tool completed in {} minutes, {} seconds.".format(mins_and_secs[0], mins_and_secs[1]))
+        
     else:
-        arcpy.AddMessage(outputs[0]) #print error message if error.
+        arcpy.AddMessage(outputs[1]) #print error message if error.
         
 
     # set output params, number sequence must agree with input param number sequence (above)
-    arcpy.SetParameterAsText(8, out_pdf)
-    arcpy.SetParameterAsText(9, out_excel)
+
+
     
-    end_time = dt.datetime.now()
-    delta = end_time - start_time
-    mins_and_secs = divmod(delta.seconds, 60)
     
-    arcpy.AddMessage("Success! Tool completed in {} minutes, {} seconds.".format(mins_and_secs[0], mins_and_secs[1]))
 
 

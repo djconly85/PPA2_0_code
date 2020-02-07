@@ -53,7 +53,7 @@ def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
         # temporary files
         scratch_gdb = arcpy.env.scratchGDB
         
-        temp_intersctpts = os.path.join(scratch_gdb, "temp_intersectpoints")  # r"{}\temp_intersectpoints".format(scratch_gdb)
+        temp_intersctpts = os.path.join(scratch_gdb, "temp_intersectpoints")   # r"{}\temp_intersectpoints".format(scratch_gdb)
         temp_intrsctpt_singlpt = os.path.join(scratch_gdb, "temp_intrsctpt_singlpt") # converted from multipoint to single point (1 pt per feature)
         temp_splitprojlines = os.path.join(scratch_gdb, "temp_splitprojlines") # fc of project line split up to match TMC buffer extents
         temp_splitproj_w_tmcdata = os.path.join(scratch_gdb, "temp_splitproj_w_tmcdata") # fc of split project lines with TMC data on them
@@ -190,7 +190,9 @@ def get_npmrds_data(fc_projline, str_project_type):
         arcpy.SelectLayerByAttribute_management(fl_speed_data, "SUBSET_SELECTION", sql)
 
     # create temporar buffer layer, flat-tipped, around TMCs; will be used to split project lines
-    temp_tmcbuff = os.path.join(arcpy.env.scratchGDB, "TEMP_linkbuff_4projsplit")
+    scratch_gdb = arcpy.env.scratchGDB
+        
+    temp_tmcbuff = os.path.join(scratch_gdb, "TEMP_tmcbuff_4projsplit")
     fl_tmc_buff = "fl_tmc_buff"
     arcpy.Buffer_analysis(fl_speed_data, temp_tmcbuff, params.tmc_buff_dist_ft, "FULL", "FLAT")
     arcpy.MakeFeatureLayer_management(temp_tmcbuff, fl_tmc_buff)
@@ -211,23 +213,22 @@ def get_npmrds_data(fc_projline, str_project_type):
 
 # =====================RUN SCRIPT===========================
     
-'''
+
 if __name__ == '__main__':
-    start_time = time.time()
     
-    workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
+    workspace = r'\\arcserver-svr\D\PPA_v2_SVR\PPA_V2.gdb'
+    arcpy.AddMessage("script update - 2/4/2020 11:38")
     arcpy.env.workspace = workspace
 
-    project_line = "test_project_causeway_fwy" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
-    proj_type = params.ptype_fwy # arcpy.GetParameterAsText(2) #"Freeway"
+    project_line = arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"
+    proj_type = "Freeway" # arcpy.GetParameterAsText(1) #"Freeway"
 
     test_dict = get_npmrds_data(project_line, proj_type)
-    print(test_dict)
 
-    elapsed_time = round((time.time() - start_time)/60, 1)
-    print("Success! Time elapsed: {} minutes".format(elapsed_time))    
+    arcpy.SetParameterAsText(1, test_dict)
+   
     
-'''
+
 
     
 

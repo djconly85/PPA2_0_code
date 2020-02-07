@@ -30,7 +30,7 @@ def model_links_fc(in_year=2016):
 
 # input CSV of community type and regional values for indicated metrics; used to compare how project scores compared to 
 # "typical" values for the region and for the community type in which the project lies.
-aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\CSV\Agg_ppa_vals01132020_0954.csv"
+aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\CSV\Agg_ppa_vals02042020_0825.csv"
 
 # project type
 ptype_fwy = 'Freeway'
@@ -46,8 +46,8 @@ ptype_area_agg = 'AreaAvg' # e.g., regional average, community type avg
 template_dir = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\XLSX'
 
 template_xlsx_arterial = "PPA_Template_ArterialExp.xlsx"
-template_xlsx_sgr = "hold1.xlsx"
-template_xlsx_fwy = "hold2.xlsx"
+template_xlsx_sgr = "PPA_Template_SGR_CS.xlsx"
+template_xlsx_fwy = "PPA_Template_Freeway.xlsx"
 template_xlsx_commdesgn = "PPA_Template_CommDesign.xlsx" 
 
 # dict corresponding project type to correct XLSX template

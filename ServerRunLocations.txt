@@ -1,0 +1,7 @@
+C:\Program Files\ArcGIS\Server\framework\runtime\ArcGIS\bin\Python\envs\arcgispro-py3
+
+
+To install python modules:
+1 - open CMD as admin
+2 - cd C:\Program Files\ArcGIS\Server\framework\runtime\ArcGIS\bin\Python\envs\arcgispro-py3
+3 - python -m pip install <package name>

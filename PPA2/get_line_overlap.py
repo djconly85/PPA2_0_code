@@ -39,10 +39,12 @@ def conflate_link2projline(fl_proj, fl_links_buffd, links_desc):
             project_len += row[0]
         
     # temporary files
-    temp_intersctpts = "temp_intersectpoints"
-    temp_intrsctpt_singlpt = "temp_intrsctpt_singlpt" # converted from multipoint to single point (1 pt per feature)
-    temp_splitprojlines = "temp_splitprojlines" # fc of project line split up to match link buffer extents
-    temp_splitproj_w_linkdata = "temp_splitproj_w_linkdata" # fc of split project lines with link data on them
+    scratch_gdb = arcpy.env.scratchGDB
+            
+    temp_intersctpts = os.path.join(scratch_gdb, "temp_intersectpoints")  # r"{}\temp_intersectpoints".format(scratch_gdb)
+    temp_intrsctpt_singlpt = os.path.join(scratch_gdb, "temp_intrsctpt_singlpt") # converted from multipoint to single point (1 pt per feature)
+    temp_splitprojlines = os.path.join(scratch_gdb, "temp_splitprojlines") # fc of project line split up to match link buffer extents
+    temp_splitproj_w_linkdata = os.path.join(scratch_gdb, "temp_splitproj_w_linkdata") # fc of split project lines with link data on them
 
     fl_splitprojlines = "fl_splitprojlines"
     fl_splitproj_w_linkdata = "fl_splitproj_w_linkdata"

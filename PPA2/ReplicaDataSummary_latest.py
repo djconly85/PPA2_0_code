@@ -6,6 +6,7 @@ Created on Wed Dec 11 13:46:21 2019
 """
 import os
 import datetime as dt
+import pdb
 
 import pandas as pd
 import arcpy
@@ -105,10 +106,10 @@ class TripShedAnalysis(object):
         agg_fxn = self.tripdata_agg_fxn
         
         df_gb = in_df.groupby(groupby_field)[val_field].agg(agg_fxn)
-        df_gb = pd.DataFrame(df_gb).rename(columns={'{}'.format(val_field): '{}'.format(agg_fxn)})
+        df_gb = pd.DataFrame(df_gb).rename(columns={'{}'.format(val_field): '{}'.format(self.col_tottrips)})
         df_gb['category'] = groupby_field
         
-        df_gb['pct'] = df_gb[agg_fxn] / df_gb[agg_fxn].sum()
+        df_gb['pct'] = df_gb[self.col_tottrips] / df_gb[self.col_tottrips].sum()
         
         df_gb = df_gb.reset_index()
         
@@ -141,6 +142,7 @@ class TripShedAnalysis(object):
         # percentile rank of each poly in terms of how many trips it produces
         # e.g., 100th percentile means the poly makes more trips than any of the other polys
         piv[self.col_trippctlrank] = piv[self.col_tottrips].rank(method='min', pct=True)
+        
     
         return piv
     
@@ -217,7 +219,7 @@ class TripShedAnalysis(object):
                         row[1] = fld_dict[join_id]
                         cur.updateRow(row)
     
-    def tag_if_joined_cursor(fc_in, fields):
+    def tag_if_joined_cursor(self, fc_in, fields):
         with arcpy.da.UpdateCursor(fc_in, fields) as cur:
             for row in cur:
                 if row[0]:
@@ -233,19 +235,24 @@ class TripShedAnalysis(object):
         
         scratch_gdb = arcpy.env.scratchGDB
         
-        
         self.create_raw_tripshed_poly()  # Make trip shed polygon
-        print(raw_tripshed_fc)
-        print(arcpy.Exists(raw_tripshed_fc))
+
         
+        fl_full_poly = 'fl_full_poly'
+        fl_tripshed = 'fl_tripshed'
+        
+        utils.make_fl_conditional(full_poly_fc, fl_full_poly)
+        utils.make_fl_conditional(raw_tripshed_fc, fl_tripshed)
         
         # attribute join raw trip shed FC to full set of polygons FC
-        arcpy.AddJoin_management(full_poly_fc, self.poly_id_field, raw_tripshed_fc, self.poly_id_field)
+        arcpy.AddJoin_management(fl_full_poly, self.poly_id_field, fl_tripshed, self.poly_id_field)
         
         # save joined fc as temp fc to scratch GDB
         temp_joined_fc = 'TEMP_joinedpoly_fc'
-        temp_joined_fc_path = r'{}\{}'.format(scratch_gdb, temp_joined_fc)
-        arcpy.FeatureClassToFeatureClass_conversion(full_poly_fc, scratch_gdb, temp_joined_fc)
+        temp_joined_fc_path = os.path.join(scratch_gdb, temp_joined_fc)
+        
+        if arcpy.Exists(temp_joined_fc_path): arcpy.Delete_management(temp_joined_fc_path)
+        arcpy.FeatureClassToFeatureClass_conversion(fl_full_poly, scratch_gdb, temp_joined_fc)
         
         temp_joined_fl = 'temp_joined_fl'
         utils.make_fl_conditional(temp_joined_fc_path, temp_joined_fl)
@@ -253,6 +260,7 @@ class TripShedAnalysis(object):
         # add field to joined FC indicating 1/0 if it's part of trip shed. default zero. 1 if there's a join match
         fld_tripshedind = "TripShed"
         arcpy.AddField_management(temp_joined_fl, fld_tripshedind, "SHORT")
+        
         
         self.tag_if_joined_cursor(temp_joined_fl, [self.col_tottrips, fld_tripshedind])
         
@@ -264,39 +272,45 @@ class TripShedAnalysis(object):
         
         # subselect where no join match and area < 20,000 ft2 (avoid large rural block groups)
         area_threshold_ft2 = 20000
-        sql1 = "'SHAPE@AREA' <= {} AND {} = 0".format(area_threshold_ft2, fld_tripshedind)
+        fld_shape_area = "Shape_Area"
+        sql1 = "{} <= {} AND {} = 0".format(fld_shape_area, area_threshold_ft2, fld_tripshedind)
+        # pdb.set_trace()
         arcpy.SelectLayerByAttribute_management(temp_joined_fl, "SUBSET_SELECTION", sql1)
             
         # then updated the 1/0 field indicating if it's part of trip shed
         self.tag_if_joined_cursor(temp_joined_fl, [self.col_tottrips, fld_tripshedind])
         
         # new selection of all polygons where trip shed flag = 1, then export that as temporary FC
-        sql2 = "'{}' = 1".format(fld_tripshedind)
+        sql2 = "{} = 1".format(fld_tripshedind)
         arcpy.SelectLayerByAttribute_management(temp_joined_fl, "NEW_SELECTION", sql2)
         
         temp_fc_step2 = "TEMP_joinedpolyfc_step2"
-        temp_fc_step2_path = r'{}\{}'.format(scratch_gdb, temp_fc_step2)
+        temp_fc_step2_path = os.path.join(scratch_gdb, temp_fc_step2)
+        if arcpy.Exists(temp_fc_step2_path): arcpy.Delete_management(temp_fc_step2_path)
         arcpy.FeatureClassToFeatureClass_conversion(full_poly_fc, scratch_gdb, temp_fc_step2)
         
         
         # Union whole region polygon with expanded "step2" trip shed
         temp_union_fc = "TEMP_poly_union_fc"
-        temp_union_fc_path = r'{}\{}'.format(scratch_gdb, temp_union_fc)
+        temp_union_fc_path = os.path.join(scratch_gdb, temp_union_fc)
         temp_union_fl = 'temp_union_fl' 
         
-        arcpy.Union([temp_fc_step2_path, filler_fc], temp_union_fc_path)
+        if arcpy.Exists(temp_union_fc_path): arcpy.Delete_management(temp_union_fc_path)
+        arcpy.Union_analysis([temp_fc_step2_path, filler_fc], temp_union_fc_path)
         utils.make_fl_conditional(temp_union_fc_path, temp_union_fl)
         
         # From union result, select where tripshed joined FID = -1 (parts of the region polygon that fall outside of the tripshed polygon)
         fld_fid = 'FID'
-        sql3 = "'{}' = -1".format(fld_fid)
+        sql3 = "{} = -1".format(fld_fid)
+        pdb.set_trace()
         arcpy.SelectLayerByAttribute_management(temp_union_fl, "NEW_SELECTION", sql3)
         
         # Run singlepart-to-multipart, which makes as separate polygons
         temp_singleprt_polys_fc = "TEMP_singlepart_fillerpolys"
-        temp_singleprt_polys_fc_path = r'{}\{}'.format(scratch_gdb, temp_singleprt_polys_fc)
+        temp_singleprt_polys_fc_path = os.path.join(scratch_gdb, temp_singleprt_polys_fc)
         temp_singleprt_polys_fl = 'temp_singleprt_polys_fl'
         
+        if arcpy.Exists(temp_singleprt_polys_fc_path): arcpy.Delete_management(temp_singleprt_polys_fc_path)
         arcpy.MultipartToSinglepart_management(temp_union_fl, temp_singleprt_polys_fc_path)
         utils.make_fl_conditional(temp_singleprt_polys_fc_path, temp_singleprt_polys_fl)
         
@@ -310,12 +324,13 @@ class TripShedAnalysis(object):
                 
         largest_poly_area = max(values)
         
-        sql = "'{}' < {}".format("SHAPE@AREA", largest_poly_area)
+        sql = "{} < {}".format(fld_shape_area, largest_poly_area)
         arcpy.SelectLayerByAttribute_management(temp_singleprt_polys_fl, "NEW_SELECTION", sql)
         
 
         # Merge the "hole fillers" with the expanded trip shed (i.e., raw trip shed + "share a line segment" polys added to it).
-        # Result will be block group trip shed, with the holes filled in with non-block-group “hole filler” polygons        
+        # Result will be block group trip shed, with the holes filled in with non-block-group “hole filler” polygons       
+        if arcpy.Exists(self.out_poly_fc_filled): arcpy.Delete_management(self.out_poly_fc_filled)
         arcpy.Merge([temp_fc_step2_path, temp_singleprt_polys_fl], self.out_poly_fc_filled)
         
                         
@@ -392,7 +407,7 @@ if __name__ == '__main__':
     dir_tripdata = r'C:\TEMP_OUTPUT\ReplicaDownloads\SR51_AmRiver'
     
     #community-type and region-level values for comparison to project-level values
-    aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\AggValCSVs\Agg_ppa_vals01132020_0954.csv"
+    aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\CSV\Agg_ppa_vals02042020_0825.csv"
     
     proj_name = input('Enter project name (numbers, letters, and underscores only): ')
     

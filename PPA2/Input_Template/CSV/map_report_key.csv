@@ -1,6 +1,16 @@
-Report,Tab,MapImgDir,MapImgFile,RowNum,ColNum
-PPA_Template_ArterialExp.xlsx,0TitlePg,C:\TEMP_OUTPUT\Testing\SampleMapImg,,6,A
-PPA_Template_ArterialExp.xlsx,3Multimodal,C:\TEMP_OUTPUT\Testing\SampleMapImg,,17,A
-PPA_Template_ArterialExp.xlsx,3Multimodal,C:\TEMP_OUTPUT\Testing\SampleMapImg,test_map2.png,56,A
-PPA_Template_ArterialExp.xlsx,5Freight,C:\TEMP_OUTPUT\Testing\SampleMapImg,,9,A
-PPA_Template_ArterialExp.xlsx,6Safety,C:\TEMP_OUTPUT\Testing\SampleMapImg,test_map1.png,12,A
+Report,Tab,MapDesc,MapImgFile,RowNum,ColNum
+PPA_Template_ArterialExp.xlsx,0_0TitlePg,Cover map,,6,A
+PPA_Template_ArterialExp.xlsx,3Multimodal,Bikeways in project area,,17,A
+PPA_Template_ArterialExp.xlsx,3Multimodal,Project area transit heat map,,56,A
+PPA_Template_ArterialExp.xlsx,5Freight,STAA truck routes in project area,,9,A
+PPA_Template_ArterialExp.xlsx,6Safety,Collision heat map of project area,,12,A
+PPA_Template_CommDesign.xlsx,0_0TitlePg,Cover map,,,
+PPA_Template_SGR_CS.xlsx,0_0TitlePg,Cover map,,,
+PPA_Template_SGR_CS.xlsx,3Multimodal,Bikeways in project area,,,
+PPA_Template_SGR_CS.xlsx,3Multimodal,Project area transit heat map,,,
+PPA_Template_SGR_CS.xlsx,5Freight,STAA truck routes in project area,,,
+PPA_Template_SGR_CS.xlsx,6Safety,Collision heat map of project area,,,
+PPA_Template_Freeway.xlsx,0_0TitlePg,Cover map,,,
+PPA_Template_Freeway.xlsx,4EconProsperity,30min drive job access from each BG,,,
+PPA_Template_Freeway.xlsx,4EconProsperity,30min drive edu access from each BG,,,
+PPA_Template_Freeway.xlsx,6Safety,Collision heat map of project area,,,
