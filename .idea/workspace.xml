@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="17e4acb0-29b3-4667-b3ba-79aaa1f4d2fd" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/OutputTemplate/output_csv_allprojtype_v1.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPA2/PPA2_master_project.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/PPA2_master_project.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPA2/ReplicaDataSummary_latest.py" beforeDir="false" afterPath="$PROJECT_DIR$/PPA2/ReplicaDataSummary_latest.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
