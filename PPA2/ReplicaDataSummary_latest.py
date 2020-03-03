@@ -1,14 +1,24 @@
-# -*- coding: utf-8 -*-
 """
-Created on Wed Dec 11 13:46:21 2019
-
-@author: dconly
+Name: ReplicaDataSummary_latest.py
+Purpose: 
+    1 - create GIS polygon representing the "trip shed" for a given project, based on Replica trip data table
+    2 - run PPA ILUT and land use analyses on trip shed polygon, using parcel-level ILUT data
+    3 - Generate summary table of mode split and trip purpose split for trips using the project segment
+        
+          
+Author: Darren Conly
+Last Updated: 3/1/2020
+Updated by: <name>
+Copyright:   (c) SACOG
+Python Version: 3.x
 """
 import os
 import datetime as dt
+import pdb
 
 import pandas as pd
 import arcpy
+import openpyxl
 
 import ppa_utils as utils
 import ppa_input_params as params
@@ -254,6 +264,24 @@ class TripShedAnalysis(object):
                 cur.updateRow(row)
     
     def make_filled_tripshed_poly(self, in_df):
+        '''Fills in gaps in trip shed polygon to ensure area includes empty areas that, if developed,
+        would fall in the link trip shed. 
+        
+        Key steps:
+            1 - create raw trip shed polygon based on whatever poly IDs are within the raw downloaded trip table
+            2 - join this raw polygon set to a "full" poly file (e.g. all block groups in region)
+            3 - tag polys in the trip shed
+            4 - spatial select non-trip-shed polys that share a line segment with trip shed polys
+            5 - from those spatially selected polygons, remove from the selection if they are above a certain area (area_threshold_ft2 variable)
+            6 - For remaining selected non-trip-shed polys, tag them as being in the trip shed
+            7 - Export this expanded set of trip-shed polys to temporary FC
+            8 - Intersect this temporary FC with a "filler" FC that is one feature representing the whole region. This creates a "union FC"
+                with polys that fill in the holes of the expanded poly temp FC
+            9 - Select all but the largest features in the "union FC" and merge them with the expanded trip shed poly FC. This fills in the holes
+                that may still exist in the expanded polyFC. Result is expanded poly FC with no "holes" in the trip shed.
+            '''
+        
+        
         print("filling in gaps in trip shed polygon...")
         full_poly_fc = self.in_poly_fc
         raw_tripshed_fc = self.out_poly_fc_raw
@@ -367,32 +395,39 @@ class TripShedAnalysis(object):
                 arcpy.Delete_management(fc)
             except:
                 continue
+            
+    def overwrite_df_to_xlsx(self, workbk, sheet, in_df, unused=0, start_row=0, start_col=0):  # why does there need to be an argument?
+        '''Writes pandas dataframe <in_df_ to <tab_name> sheet of <xlsx_template> excel workbook.'''
+        in_df = in_df.reset_index()
+        df_records = in_df.to_records(index=False)
         
-        '''        # user-entered params
-        self.in_data_files = in_data_files
-        self.data_fields = data_fields
-        self.tripdata_val_field = tripdata_val_field
-        self.tripdata_agg_fxn = tripdata_agg_fxn
-        self.tripdata_groupby_field = tripdata_groupby_field
-        self.in_poly_fc = in_poly_fc
-        self.out_poly_fc = out_poly_fc
-        self.out_poly_fc_filled = out_poly_fc_filled
-        self.poly_id_field = poly_id_field
-        self.filler_poly_fc = filler_poly_fc
-        self.analysis_years = analysis_years
-        self.tripdata_case_fields = tripdata_case_fields
-        self.run_full_report = run_full_report
+        # get header row for output
+        out_header_list = [list(in_df.columns)]  # get header row for output
         
-        # hard-coded args
-        self.df_col_trip_pct = 'pct_of_trips'
-        self.col_tottrips = 'tot_trips'
-        self.col_trippctlrank = 'trips_pctlrank'
-        self.pct_cutoff = 0.8 # sort by descending percent of trips, then sum until this percent of total trips is added.
+        out_data_list = [list(i) for i in df_records]  # get output data rows
+    
+        comb_out_list = out_header_list + out_data_list
+    
+        ws = workbk[sheet]
+        for i, row in enumerate(comb_out_list):
+            for j, val in enumerate(row):
+                cell = ws.cell(row=(start_row + (i + 1)), column=(start_col + (j + 1)))
+                if (cell):
+                    cell.value = val
         
-        # derived/calculated args
-        self.df_data = self.make_tripdata_df()
-        self.df_grouped_data = self.summarize_tripdf()
-        '''        
+    def join2xl_import_template(self, template_xlsx, template_sheet, in_df, indf_join_col, joincolidx=0):
+        '''takes in import tab of destination Excel sheet, then left joins to desired output dataframe to ensure that
+        output CSV has same rows every time, even if data frame that you're joining doesn't
+        have all records'''
+        df_template = pd.read_excel(template_xlsx, template_sheet)
+        df_template = pd.DataFrame(df_template[df_template.columns[joincolidx]]) # get rid of all columns except for data items column
+        # df_template = df_template.set_index(df_template.columns[joincolidx]) # set data items column to be the index
+        
+        df_out = df_template.merge(in_df, how='left', left_on=df_template.columns[joincolidx], right_on = indf_join_col) \
+            .set_index(df_template.columns[joincolidx])
+        
+        return df_out
+  
     def make_trip_shed_report(self):
         
         
@@ -408,29 +443,38 @@ class TripShedAnalysis(object):
         #e.g., setting cutoff=0.9 means that, in descending order of trip production, block groups will be included until 90% of trips are accounted for.
         df_outdata = self.filter_cumulpct()
     
-        
-        # pdb.set_trace()
         # make new polygon feature class with trip data
         self.make_filled_tripshed_poly(df_outdata)
         
         # get PPA buffer data for trip shed (including all ILUT data, etc.)
-        if self.run_full_report:
+        if self.run_full_report and self.xlsx_template:
             print("\nsummarizing PPA metrics for trip shed polygon...")
             df_tsheddata = tripshed.get_tripshed_data(self.out_poly_fc_filled, params.ptype_area_agg, 
                                                       self.analysis_years, params.aggvals_csv, base_dict={})
+            df_tsheddata = df_tsheddata.reset_index()
+            df_tshed_data_out = self.join2xl_import_template(self.xlsx_template, self.ws_tshed_data, df_tsheddata, df_tsheddata.columns[0])
+            del df_tshed_data_out['index']
 
             df_trip_modes = df_linktripsummary.loc[df_linktripsummary['category'] == csvcol_mode]
+            df_trip_modes_out = self.join2xl_import_template(self.xlsx_template, self.ws_trip_modes, df_trip_modes, csvcol_mode)
+            
             df_trip_purposes = df_linktripsummary.loc[df_linktripsummary['category'] == csvcol_purpose]
+            df_trip_purposes_out = self.join2xl_import_template(self.xlsx_template, self.ws_trip_purposes, df_trip_purposes, csvcol_purpose)
             
-            df_tshed_data_out = utils.join_xl_import_template(self.xlsx_template, self.ws_tshed_data, df_tsheddata)
-            df_trip_modes_out = utils.join_xl_import_template(self.xlsx_template, self.ws_trip_modes, df_trip_modes)
-            df_trip_purposes_out = utils.join_xl_import_template(self.xlsx_template, self.ws_trip_purposes, df_trip_purposes)
             
-            dict_out = {df_tshed_data_out: self.ws_tshed_data, df_trip_modes_out: self.ws_trip_modes, df_trip_purposes_out: self.ws_trip_purposes}
+            # dict_out = {df_tshed_data_out: self.ws_tshed_data, df_trip_modes_out: self.ws_trip_modes, df_trip_purposes_out: self.ws_trip_purposes}
+            dict_out = {self.ws_tshed_data: df_tshed_data_out, self.ws_trip_modes: df_trip_modes_out, self.ws_trip_purposes: df_trip_purposes_out}
+
+            # overwrite the import tab sheets
+            wb = openpyxl.load_workbook(self.xlsx_template)
+            for ws, df in dict_out.items():
+                self.overwrite_df_to_xlsx(wb, ws, df)
             
-            for df, ws in dict_out.items():
-                output = utils.Publish(df, self.xlsx_template, ws, self.xlsx_out, None, None, self.project_name)
-                output.overwrite_df_to_xlsx()
+            #then save as output excel file
+            wb.save(self.xlsx_out)
+            wb.close()
+            
+            print("Success! output Excel Summary - {}".format(self.xlsx_out))
 
         else:
             return 'trip shed report not run'
@@ -441,29 +485,25 @@ if __name__ == '__main__':
     # ------------------USER INPUTS----------------------------------------
     
     arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    
     dir_tripdata = r'C:\TEMP_OUTPUT\ReplicaDownloads'
-    
-    #community-type and region-level values for comparison to project-level values
-    aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\CSV\Agg_ppa_vals02042020_0825.csv"
-    
-    proj_name = input('Enter project name (numbers, letters, and underscores only): ')
-    
     tripdata_files = ['trips_listGrantLineNOJacksonThu.zip']  # os.listdir(r'C:\TEMP_OUTPUT\ReplicaDownloads\SR51_AmRiver')
-    
     csvcol_bgid = 'origin_blockgroup_id'  # Replica/big data block group ID column
     csvcol_mode = 'trip_primary_mode'  # Replica/big data trip mode column
     csvcol_purpose = 'travel_purpose'  # Replica/big data trip purpose column
-    
     csvcol_valfield = 'trip_start_time' # field for which you want to aggregate values
     val_aggn_type = 'count'  # how you want to aggregate the values field (e.g. count of values, sum of values, avg, etc.)
+    
+    #community-type and region-level values for comparison to project-level values
+    aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\CSV\Agg_ppa_vals02042020_0825.csv"
     
     # feature class of polygons to which you'll join data to based on ID field
     fc_bg_in = "BlockGroups2010"
     fc_poly_id_field = "GEOID10"
     
-    fc_filler = 'sacog_region'
+    fc_filler = 'sacog_region' # to fill in "holes" left over in trip shed
     
-    years = [2016, 2040]
+    years = [2016, 2040] # analysis years for ILUT data
     
     xlsx_template = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica\Replica_Summary_Template.xlsx"
     xlsx_out_dir = r"C:\TEMP_OUTPUT\ReplicaTripShed"
@@ -472,6 +512,8 @@ if __name__ == '__main__':
     run_full_shed_report = True
 
     #------------RUN SCRIPT------------------------------------
+    proj_name = input('Enter project name (numbers, letters, and underscores only): ')
+    
     timesufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
     os.chdir(dir_tripdata)
     
@@ -486,9 +528,11 @@ if __name__ == '__main__':
     
     trip_shed = TripShedAnalysis(proj_name, tripdata_files, trip_data_fields, csvcol_valfield, val_aggn_type, csvcol_bgid,
                    fc_bg_in, fc_tripshed_out_raw, fc_tripshed_out_filled, fc_poly_id_field, fc_filler, years, tripdata_case_fields, 
-                   run_full_shed_report)
+                   run_full_shed_report, xlsx_template)
     
     outputs = trip_shed.make_trip_shed_report()
+    
+    
         
     
     
