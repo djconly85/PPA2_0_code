@@ -63,9 +63,9 @@ def get_bikeway_mileage_share(project_fc, proj_type):
 
 '''
 if __name__ == '__main__':
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    arcpy.env.workspace = None
 
-    project = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_urbancore'
+    project = None
 
     test_dict = get_bikeway_mileage_share(project, params.ptype_sgr)
 

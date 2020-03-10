@@ -117,13 +117,13 @@ def get_mix_idx(fc_parcel, fc_project, project_type):
 '''
 if __name__ == '__main__':
     
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    arcpy.env.workspace = None
     
     # input fc of parcel data--must be points!
     in_pcl_pt_fc = params.parcel_pt_fc_yr(in_year=2016)
 
     # input line project for basing spatial selection
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_urbancore'
+    project_fc = None
 
     buff_dist_ft = params.mix_index_buffdist  # distance in feet--MIGHT NEED TO BE ADJUSTED FOR WGS 84--SEE OLD TOOL FOR HOW THIS WAS RESOLVED
 

@@ -69,9 +69,9 @@ def intersection_density(fc_project, fc_intersxns, project_type):
 
 '''
 if __name__ == '__main__':
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    arcpy.env.workspace = None
 
-    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_STAA_partialOverlap'
+    proj_line_fc = None
     intersxns_fc = 'intersections_2016'
     proj_type = params.ptype_sgr
 

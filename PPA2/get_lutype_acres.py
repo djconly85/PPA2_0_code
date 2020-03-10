@@ -83,10 +83,10 @@ def get_lutype_acreage(fc_project, projtyp, fc_poly_parcels, lutype):
 '''
 if __name__ == '__main__':
     import ppa_input_params as p
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    arcpy.env.workspace = None
 
     parcel_featclass = params.parcel_poly_fc  # 'parcel_data_polys_2016'
-    project_featclass = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_sr51riverXing'
+    project_featclass = None
     lutype = 'Agriculture'
 
     out_pcl_data = get_lutype_acreage(project_featclass, parcel_featclass, params.lutype_ag)

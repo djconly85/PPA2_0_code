@@ -142,21 +142,3 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
                 "BIKEPED_COLLISNS_PER_CLMILE": bikeped_colln_clmile, "PCT_BIKEPED_COLLISNS": pct_bikeped_collns}
 
     return out_dict
-
-'''
-if __name__ == '__main__':
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
-
-    # user-entered values
-    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_sr51riverXing'
-    proj_type = params.ptype_fwy # 'Freeway', 'Arterial', 'State of Good Repair'
-    proj_weekday_adt = 16000  # avg daily traffic, will be user-entered value
-    pci = 60 # pavement condition index, will be user-entered value
-
-    # collision data layer
-    collision_fc = params.collisions_fc
-
-    output = get_collision_data(proj_line_fc, proj_type, collision_fc, proj_weekday_adt)
-
-    print(output)
-    '''

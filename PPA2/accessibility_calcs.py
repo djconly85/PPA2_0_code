@@ -63,16 +63,4 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
 
     return out_dict
 
-'''
-if __name__ == '__main__':
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
-    arcpy.OverwriteOutput = True
 
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_sr51riverXing'
-    accdata_fc = 'Sugar_access_data_latest'
-
-    out_1 = get_acc_data(project_fc, accdata_fc, params.ptype_arterial, get_ej=True)
-
-    print(out_1)
-
-'''

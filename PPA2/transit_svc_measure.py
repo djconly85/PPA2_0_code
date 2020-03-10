@@ -68,9 +68,9 @@ def transit_svc_density(fc_project, fc_trnstops, project_type):
 
 '''
 if __name__ == '__main__':
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    arcpy.env.workspace = None
 
-    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_urbancore'
+    proj_line_fc = None
     trnstops_fc = 'transit_stoplocn_w_eventcount_2016'
     ptype = params.ptype_arterial
 

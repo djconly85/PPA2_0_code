@@ -2,7 +2,7 @@
 # Name: utils.py
 # Purpose: Provides general PPA functions that are used throughout various PPA scripts and are not specific to any one PPA script
 #
-# #
+#
 # Author: Darren Conly
 # Last Updated: <date>
 # Updated by: <name>
@@ -11,7 +11,7 @@
 # --------------------------------
 
 import os
-# import pdb
+import pdb
 import sys
 import datetime as dt
 import time
@@ -47,18 +47,6 @@ def make_fl_conditional(fc, fl):
         arcpy.Delete_management(fl)
     arcpy.MakeFeatureLayer_management(fc, fl)
     
-def remove_forbidden_chars(in_str):
-    '''Replaces forbidden characters with acceptable characters'''
-    repldict = {"&":'And','%':'pct','/':'-'}
-    
-    for old, new in repldict:
-        if old in in_str:
-            out_str = in_str.replace(old, new)
-        else:
-            out_str = in_str
-    
-    return out_str
-    
     
 def esri_field_exists(in_tbl, field_name):
     fields = [f.name for f in arcpy.ListFields(in_tbl)]
@@ -85,7 +73,7 @@ def return_perf_outcomes_options(project_type):
     xlsx = params.type_template_dict[project_type]
     xlsx_path = os.path.join(params.template_dir, xlsx)
     
-    wb = openpyxl.load_workbook(xlsx_path)  # openpyxl.load_workbook(xlsx_path, read_only=False, keep_vba=True)
+    wb = openpyxl.load_workbook(xlsx_path)
     sheets = wb.sheetnames
     
     # values in this list will be the potential performance outcomes from which users can choose
@@ -106,45 +94,17 @@ def rename_dict_keys(dict_in, new_key_dict):
 
 
 
-def join_xl_import_template(template_xlsx, template_sheet, in_df, joincolidx=0):
+def join_xl_import_template(template_xlsx, template_sheet, in_df):
     '''takes in import tab of destination Excel sheet, then left joins to desired output dataframe to ensure that
     output CSV has same rows every time, even if data frame that you're joining doesn't
     have all records'''
     df_template = pd.read_excel(template_xlsx, template_sheet)
-    df_template = pd.DataFrame(df_template[df_template.columns[joincolidx]]) # get rid of all columns except for data items column
-    df_template = df_template.set_index(df_template.columns[joincolidx]) # set data items column to be the index
+    df_template = pd.DataFrame(df_template[df_template.columns[0]]) # get rid of all columns except for data items column
+    df_template = df_template.set_index(df_template.columns[0]) # set data items column to be the index
     
     df_out = df_template.join(in_df) # left join the df from import sheet template to the df with data based on index values
     
     return df_out
-
-def append_proj_to_master_fc(project_fc, proj_attributes_dict, master_fc):
-    '''Takes project line and appends it to master line feature class with all lines users have entered'''
-    arcpy.AddMessage("Archiving project line geometry...")
-    #get geometry of user-drawn input line
-    try:
-        fld_shape = "SHAPE@"
-        geoms = []
-        with arcpy.da.SearchCursor(project_fc, fld_shape) as cur:
-            for row in cur:
-                geoms.append(row[0])
-        
-        #make row that will be inserted into master fc
-        new_row = geoms + [v for k, v in proj_attributes_dict.items()]
-        
-        # use insert cursor to add in appropriate project name, etc.
-        fields = [fld_shape] + list(proj_attributes_dict.keys())
-        
-        inscur = arcpy.da.InsertCursor(master_fc, fields)
-        inscur.insertRow(new_row)
-        
-        del inscur
-        
-        msg = "Appended to {} successfully.".format(master_fc)
-        return msg
-    except:
-        msg = trace()
-        return msg
 
 
 class Publish(object):
@@ -157,7 +117,7 @@ class Publish(object):
         self.xl_out = xl_out
         self.xlsheets_to_pdf = xlsheets_to_pdf
         self.proj_name = proj_name
-        self.project_fc = project_fc #remember, this is a feature set!
+        self.project_fc = project_fc
         
         # params that are derived or imported from ppa_input_params.py
         self.xl_template_workbook = openpyxl.load_workbook(self.xl_template)
@@ -168,7 +128,6 @@ class Publish(object):
         self.mapimg_configs_csv = params.mapimg_configs_csv
         self.map_placement_csv = params.map_placement_csv
         self.aprx_path = params.aprx_path
-        self.proj_line_template_fc = os.path.join(params.fgdb, params.proj_line_template_fc)
 
 
     def overwrite_df_to_xlsx(self, unused=0, start_row=0, start_col=0):  # why does there need to be an argument?
@@ -195,7 +154,6 @@ class Publish(object):
         p_map = "MapName" # map that layout and image are derived from
         p_layout = "MapLayout" # layout that will be made into image
         p_where = "SQL" # background data layer (e.g. collision heat layer)
-        p_projline = "ProjLineLayer"
         
         out_config_list = []
         
@@ -204,10 +162,8 @@ class Publish(object):
             for row in reader:
                 v_map = row[p_map]
                 v_layout = row[p_layout]
-                v_projline = row[p_projline]
                 v_where = row[p_where]
-                
-                out_config_row = [v_map, v_layout, v_projline, v_where]
+                out_config_row = [v_map, v_layout, v_where]
                 out_config_list.append(out_config_row)
         
         return out_config_list
@@ -215,76 +171,56 @@ class Publish(object):
 
     class PrintConfig(object):
         '''each PrintConfig object has attributes: map frame, layer name, where clause'''
-        def __init__(self, l_print_config, imgtyp):
+        def __init__(self, l_print_config, project_layer, imgtyp):
             self.MapFrame = l_print_config[0]   # map/mapframe name
             self.Layout = l_print_config[1]   # layout name
             n_elements = len(l_print_config)
             if(n_elements>1):
-                self.Layer = l_print_config[2]    #..layerName used to for zoomto (control ext)
+                self.Layer = project_layer    #..layerName used to for zoomto (control ext)
             else:
                 self.Layer = ""
             if(n_elements>2):
-                self.Where = l_print_config[3]    #..where to get features in the layer.
+                self.Where = l_print_config[2]    #..where to get features in the layer.
             else:
                 self.Where = ""
     
             self.OutputImageName = "{}.{}".format(self.MapFrame, imgtyp)
-            
-    def expandExtent2D(self, ext, ratio):
-        '''Adjust zoom extent for map of project segment
-        ext = input extent object
-        ratio = how you want to change extent. Ratio > 1 zooms away from project line; <1 zooms in to project line
-        '''
-        try:
-            # spref = ext.spatialReference
-            xmin = ext.XMin
-            xmax = ext.XMax
-            ymin = ext.YMin
-            ymax = ext.YMax 
-            width = ext.width
-            height = ext.height
-            dx = (ratio-1.0)*width/2.0 # divided by two so that diff is split evenly between opposite sides, so featur is still center of the extent
-            dy = (ratio-1.0)*height/2.0
-            xxmin = xmin - dx 
-            xxmax = xmax + dx
-            yymin = ymin - dy 
-            yymax = ymax + dy
-            new_ext = arcpy.Extent(xxmin, yymin, xxmax, yymax)
-        except:
-            new_ext = None 
-        return new_ext 
     
     # generates image files from maps
-    def exportMap(self):
+    def exportmap(self):
         arcpy.AddMessage('Generating maps for report...')
         image_format = "jpg"
         arcpy.env.overwriteOutput = True
+        out_images = ""
         try:
             aprx = arcpy.mp.ArcGISProject(self.aprx_path)
             l_print_configs = self.build_configs() # each config list for each image is [map frame name, layout frame name, project line layer name, project feature where clause]
             
             o_print_configs = []
             
+            project = self.project_fc #assigning to variable so no confusion over which class it project_fc belongs to
             for l_print_config in l_print_configs:
-                o_print_config = self.PrintConfig(l_print_config, image_format) #converts list vals into attributes of PrintConfig object ('o')
+                o_print_config = self.PrintConfig(l_print_config, project, image_format) #converts list vals into attributes of PrintConfig object ('o')
                 o_print_configs.append(o_print_config)
             
-
-            #insert process to overwrite display layer and append to master. This will update in all layouts using the display layer
-            arcpy.DeleteFeatures_management(self.proj_line_template_fc) # delete whatever features were in the display layer
-            arcpy.Append_management([self.project_fc], self.proj_line_template_fc) # then replace those features with those from user-drawn line
-
+            pdb.set_trace()
             for print_config in o_print_configs:
-                #only thing needed for this loop is to activate each layout and pan to the desired extent and make image of it.
                 layouts_aprx = [l.name for l in aprx.listLayouts()] # makes sure there's a corresponding layout in the APRX file to the layout in the CSV
                 if print_config.Layout in layouts_aprx:
                     try:
                         lyt = aprx.listLayouts(print_config.Layout)[0]
                         map = aprx.listMaps(print_config.MapFrame)[0]
-                        
-                        if print_config.Layer != "":  # if there's a feat class for project line
-                            
+                        if print_config.Layer != "":  # if there's a layer
                             try:
+                                # somewhere in here, need to insert the layer representing the project line
+                                # https://pro.arcgis.com/en/pro-app/arcpy/mapping/map-class.htm
+                                map_layers = [l.dataSource for l in map.listLayers()]
+                                if print_config.Layer in map_layers:
+                                    map.removeLayer(print_config.Layer)
+                                map.addDataFromPath(print_config.Layer)
+                                arcpy.AddMessage("Added layer {} to map {}".format(print_config.Layer, print_config.MapFrame))
+                                print("Added layer {} to map {}".format(print_config.Layer, print_config.MapFrame))
+                                
                                 lyr = map.listLayers(print_config.Layer)[0] # return layer object--based on layer name, not FC path
                                 fl = "fl{}".format(int(time.clock()))
                                 if arcpy.Exists(fl):
@@ -293,20 +229,17 @@ class Publish(object):
                                     except:
                                         pass 
                                 arcpy.MakeFeatureLayer_management(lyr, fl, where_clause=print_config.Where)  # make feature layer of project line
+                                arcpy.AddMessage("{} {}".format(arcpy.GetCount_management(fl)[0], print_config.Where))
                                 ext = ""
                                 with arcpy.da.SearchCursor(fl, ["Shape@"]) as rows:
                                     for row in rows:
                                         geom = row[0]
                                         ext = geom.extent
-                                        
-                                        ext_ratio = 1.33
-                                        ext_zoom = self.expandExtent2D(ext, ext_ratio)
                                         break
-                                if ext_zoom != "":  # zoom to project line feature
+                                if ext != "":  # zoom to project line feature
                                     mf = lyt.listElements('MAPFRAME_ELEMENT')[0]
-                                    mf.camera.setExtent(ext_zoom)
-                                    mf.panToExtent(ext_zoom)
-
+                                    mf.camera.setExtent(ext)
+                                    mf.panToExtent(ext)
                             except:
                                 msg = "{}, {}".format(arcpy.GetMessages(2), trace())
                                 arcpy.AddMessage(msg)
@@ -319,16 +252,20 @@ class Publish(object):
                             except:
                                 pass 
                         lyt.exportToJPEG(out_file) # after zooming in, export the layout to a JPG
+                        
+                        # make semicolon-delim'd list of output JPEGs
+                        if(out_images==""):
+                            out_images = out_file
+                        else:
+                            out_images = "{};{}".format(out_images, out_file)
                     except:
                         msg = "{}, {}".format(arcpy.GetMessages(2), trace())
                         arcpy.AddMessage(msg)
-                        print(msg)
                 else:
                     continue # if specified layout isn't in APRX project file, skip to next map
-            t_returns = (params.msg_ok,)
+            t_returns = (params.msg_ok, out_images)
         except:
             msg = "{}, {}".format(arcpy.GetMessages(2), trace())
-            print(msg)
             arcpy.AddWarning(msg)
             t_returns = (msg,)
     
@@ -340,62 +277,49 @@ class Publish(object):
         ws.add_image(img_obj, cell)
         
     def make_new_excel(self):
-        try:
-            '''takes excel template > writes new values to import/updates charts, then inserts indicated images at specified locations'''
-            self.overwrite_df_to_xlsx(self) # write data to import tab
-            
-            print("adding images to excel book...")
-            self.exportMap() # generates all needed maps as images in scratch folder
-            
-            print("SUCCESS adding images to excel book...")
-            
-            if self.map_placement_csv:
-                # indicate which sheets and cells to insert maps in, based on config CSV and template XLSX (not output XLSX)
-                # add conditional or try/catch series to skip rows that are missing info (e.g. cell location, img file name, etc.)
-                bookname = os.path.basename(self.xl_template)
-                mapkey = pd.read_csv(self.map_placement_csv)
-                col_mapfile = 'MapImgFile'
-                col_rownum = 'RowNum'
-                col_colletter = 'ColNum'
-                col_sheet = 'Tab'
-                
-                 # filter master config table to only get tabs for workbook corresponding to specified project type
-                # and where there are non-null values. Null values will trigger an error.
-                mapkey_dict_list = mapkey.loc[(mapkey['Report'] == bookname) \
-                                              & (pd.notnull(mapkey[col_mapfile])) \
-                                            & (pd.notnull(mapkey[col_rownum])) \
-                                            & (pd.notnull(mapkey[col_colletter]))] \
-                    .to_dict(orient='records')
-                
-                for i in mapkey_dict_list:
-                    imgfile = i[col_mapfile]
-                    sheet = i[col_sheet]
-                    row = int(i[col_rownum]) # needs to be int value, not float, for openpyxl to use as cell reference
-                    col = i[col_colletter]
-                            
-                    # row is valid only if it has all necessary image attributes (not null values)
-                    valid_row = []  # [list of boolean True/False values. True means the is_valid condition is met]
-                    for i in [imgfile, sheet, row, col]:
-                        is_valid = isinstance(i, str) | (i != math.nan)
-                        valid_row.append(is_valid)
-                    
-                    if pd.Series(valid_row).product() == 1: # run the insert_image function only if valid config values are provided in CSV (i.e., they meet the is_valid condition above)
-                        imgfilepath = os.path.join(self.out_folder, imgfile)
-                        self.insert_image_xlsx(self.xl_template_workbook, sheet, row, col, imgfilepath)
-                    else:
-                        continue # skip to next image if the row has no image specified (i.e., if it's a placeholder row only)
-            
-            self.xl_template_workbook.save(self.xl_out_path)
-            t_returns = (params.msg_ok, self.xl_out_path)
-        except:
-            msg = "{}".format(trace())
-            t_returns = (params.msg_fail, msg)   
-        finally:
-            if self.xl_template_workbook.close() != None:
-                self.xl_template_workbook.close()
-            gc.collect()
+        '''takes excel template > writes new values to import/updates charts, then inserts indicated images at specified locations'''
+        self.overwrite_df_to_xlsx(self) # write data to import tab
         
-        return t_returns
+        self.exportmap() # generates all needed maps as images in scratch folder
+        
+        if self.map_placement_csv:
+            # indicate which sheets and cells to insert maps in, based on config CSV and template XLSX (not output XLSX)
+            # add conditional or try/catch series to skip rows that are missing info (e.g. cell location, img file name, etc.)
+            bookname = os.path.basename(self.xl_template)
+            mapkey = pd.read_csv(self.map_placement_csv)
+            col_mapfile = 'MapImgFile'
+            col_rownum = 'RowNum'
+            col_colletter = 'ColNum'
+            col_sheet = 'Tab'
+            
+             # filter master table to only get tabs for workbook corresponding to specified project type
+            # and where there are non-null values 
+            mapkey_dict_list = mapkey.loc[(mapkey['Report'] == bookname) \
+                                          & (pd.notnull(mapkey[col_mapfile])) \
+                                        & (pd.notnull(mapkey[col_rownum])) \
+                                        & (pd.notnull(mapkey[col_colletter]))] \
+                .to_dict(orient='records')
+            
+            for i in mapkey_dict_list:
+                imgfile = i[col_mapfile]
+                sheet = i[col_sheet]
+                row = int(i[col_rownum]) #needs to be int value, not float, for openpyxl to use as cell reference
+                col = i[col_colletter]
+                        
+                # row is valid spec row only if it has all necessary image attributes (not null values)
+                valid_row = []
+                for i in [imgfile, sheet, row, col]:
+                    is_valid = isinstance(i, str) | (i != math.nan)
+                    valid_row.append(is_valid)
+                
+                if pd.Series(valid_row).product() == 1:
+                    imgfilepath = os.path.join(self.out_folder, imgfile)
+                    self.insert_image_xlsx(self.xl_template_workbook, sheet, row, col, imgfilepath)
+                else:
+                    continue # skip to next image if the row has no image specified (placeholder row only)
+        
+        self.xl_template_workbook.save(self.xl_out_path)
+        self.xl_template_workbook.close()
         
     def make_pdf(self):
         wb = None
@@ -445,12 +369,12 @@ class Publish(object):
                 
             pdf_final.saveAndClose()
             
-            t_returns = (params.msg_ok, self.xl_out_path, out_pdf_final) # if successful, return output excel and output PDF
+            t_returns = (params.msg_ok, out_pdf_final, self.xl_out_path) # if successful, return output excel and output PDF
         except:
             msg = "{}".format(trace())
             arcpy.AddMessage(msg)
             
-            t_returns = (params.msg_fail, msg, self.xl_out_path) # if fail, return error message that PDF didn't make it, but that Excel still made it
+            t_returns = (msg, self.xl_out_path) # if fail, return error message that PDF didn't make it, but that Excel still made it
         finally: # always runs, even if 'try' runs successfully.
             if wb != None:  # only closes wb object if it was instantiated.
                 wb.close()

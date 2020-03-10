@@ -81,10 +81,10 @@ def get_tmc_truck_data(fc_projline, str_project_type):
 '''
 if __name__ == '__main__':
 
-    workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    workspace = None
     arcpy.env.workspace = workspace
 
-    project_line = r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_causeway_fwy"  # arcpy.GetParameterAsText(0)
+    project_line = None
     proj_type = "Freeway"  # arcpy.GetParameterAsText(2) #"Freeway"
 
     # make feature layers of NPMRDS and project line

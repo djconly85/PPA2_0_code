@@ -152,7 +152,7 @@ if __name__ == '__main__':
     adt = 17000
     
     # CSV of aggregate values by community type and for whole region
-    xlsx_template = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica\TemplateTestSheet.xlsx"
+    xlsx_template = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\XLSX\Replica_Summary_Template.xlsx"
     
 
     # =======================BEGIN SCRIPT==============================================================

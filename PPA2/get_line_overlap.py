@@ -129,7 +129,7 @@ def get_line_overlap(fc_projline, fc_network_lines, links_desc):
 if __name__ == '__main__':
     start_time = time.time()
 
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
+    arcpy.env.workspace = None
 
     link_fc = 'BikeRte_C1_C2_C4_2017' #network of lines whose overlap with the project you want to get (e.g., truck routes, bike paths, etc.
     links_description = "BikeC1C2C4"

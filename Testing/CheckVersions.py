@@ -8,10 +8,13 @@ import os
 import sys
 import site
 import imp
+import getpass
 
 import arcpy
 
 version = sys.version
+ex = sys.executable
+user = getpass.getuser()
 
 module_to_find = 'xlwings'
 
@@ -29,9 +32,12 @@ except ImportError:
 
 def_dir = os.getcwd()
 
+paths = ["{} {}\n".format(i, path) for i, path in enumerate(sys.path)]
+
 pkg_dir = site.getsitepackages()[1]
 
 msg = "python version = {}\nConda Env = {}\nDefault dir = {}\nPackages dir = {}\nModule check result: {}" \
-      .format(version, conda_env, def_dir, pkg_dir, imp_msg)
+      "\nExecutable = {}\nPaths:\n{} \nUSER = {}".format(version, conda_env, def_dir, pkg_dir, imp_msg, ex, paths, user)
 
 arcpy.SetParameterAsText(0, msg)
+# print(msg)

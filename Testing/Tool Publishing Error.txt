@@ -1,0 +1,26 @@
+Steps to repeat error:
+-Run tool in ArcGIS Pro desktop
+-Publish tool to SACOG Portal
+-After significant time processing the upload, error content below appears:
+
+Error content:
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:17:51	Status: InProgress	StatusMessage: Successfully wrote sharing info file	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:17:51	Status: Pending	StatusMessage: Sharing process started	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:17:52	Status: InProgress	StatusMessage: Sharing process started	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:17:52	Status: InProgress	StatusMessage: Successfully obtained a license from the licensing portal	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:17:52	Status: InProgress	StatusMessage: Publishing process started	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:17:52	Status: InProgress	StatusMessage: Loading manifest	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:17:52	Status: InProgress	StatusMessage: Preparing data references and staging web tool	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:17:53	Status: InProgress	StatusMessage: Creating thumbnail from map	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:17:57	Status: InProgress	StatusMessage: Using ArcGIS Version 12.5 for staging (Source for version: GP Staging Parameters)	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:17:57	Status: InProgress	StatusMessage: Stage Tool initialized	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:17:57	Status: InProgress	StatusMessage: Consolidate data	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:17:57	Status: InProgress	StatusMessage: Staging GP service	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:20:54	Status: InProgress	StatusMessage: Compressing package into SD file	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:28:59	Status: InProgress	StatusMessage: Successfully staged service (Exiting GP Stage Tool)	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:28:59	Status: InProgress	StatusMessage: Uploading service definition	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:28:59	Status: InProgress	StatusMessage: Publishing tool initialized	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:28:59	Status: InProgress	StatusMessage: Publishing web layer (AGS)	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:30:05	Status: InProgress	StatusMessage: Upload failed	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:30:06	Status: InProgress	StatusMessage: Publishing tool execution failed	
+PPAMasterProjectOnline_wImg_2		154	WebTool	Portal for ArcGIS	https://services.sacog.org/hosting	DConly@NT-DOMAIN	2020-02-26 17:30:06	Status: Failed	StatusMessage: Failed to publish web tool	ErrorMessage: Failed to publish web tool	

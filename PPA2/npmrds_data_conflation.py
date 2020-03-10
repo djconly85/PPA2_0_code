@@ -215,7 +215,7 @@ def get_npmrds_data(fc_projline, str_project_type):
 if __name__ == '__main__':
     start_time = time.time()
     
-    workspace = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'
+    workspace = None
     arcpy.env.workspace = workspace
 
     project_line = "test_project_causeway_fwy" # arcpy.GetParameterAsText(0) #"NPMRDS_confl_testseg_seconn"

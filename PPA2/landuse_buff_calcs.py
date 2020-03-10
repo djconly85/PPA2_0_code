@@ -90,7 +90,7 @@ def point_sum_density(fc_pclpt, fc_project, project_type, val_fields, buffdist, 
 
 '''
 if __name__ == '__main__':
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    arcpy.env.workspace = None
 
     # input fc of parcel data--must be points!
     in_pcl_pt_fc = params.parcel_pt_fc_yr(2016)
@@ -98,7 +98,7 @@ if __name__ == '__main__':
                     'BIK_TOT_RES', 'WLK_TOT_RES']
 
     # input line project for basing spatial selection
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
+    project_fc = None
     ptype = params.ptype_arterial
 
     # point_sum(fc_pclpt, fc_project, project_type, val_fields, case_field=None, case_excs_list=[])

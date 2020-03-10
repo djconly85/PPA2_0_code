@@ -1,11 +1,32 @@
-# ========================================INPUT DATA LAYERS=====================================================
-fgdb = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb' #for now, is reference only. individual scripts explicitly indicate workspace and file locations
+"""
+Name: ppa_input_params.py
+Purpose: Stores all input parameter values for SACOG Project Performance Assessment Tool v2.0
+        
+          
+Author: Darren Conly
+Last Updated: 3/2020
+Updated by: <name>
+Copyright:   (c) SACOG
+Python Version: 3.x
+"""
+
+
+
+import os
+# ========================================INPUT DATA LAYERS===================================================== 
+server_folder = r'\\arcserver-svr\D\PPA_v2_SVR'
+
+#to trick publishing service to not mangle the file path to the working GDB
+gdb_name_disguise = 'PPA_V2xGDB'
+gdb_name = gdb_name_disguise.replace('x','.')
+
+fgdb = os.path.join(server_folder, gdb_name)
 
 # input feature classes
 region_fc = 'sacog_region'
-fc_speed_data = 'npmrds_metrics_v7'  # r"I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\npmrds_metrics_v6_wtruck" #npmrds speed data
-accdata_fc = 'Sugar_access_data_10072019_3backup' # sugar accessibility polygon data
-collisions_fc = 'Collisions2014to2018fwytag_1' # collision point data
+fc_speed_data = 'npmrds_metrics_v7' #npmrds speed data
+accdata_fc = 'Sugar_access_data_latest' # sugar accessibility polygon data
+collisions_fc = 'Collisions2014to2018fwytag' # collision point data
 trn_svc_fc = 'transit_stoplocn_w_eventcount_2016' # transit stop event data; point file
 freight_route_fc = 'STAATruckRoutes' # STAA truck route lines
 intersections_base_fc = 'intersections_2016'
@@ -14,6 +35,8 @@ comm_types_fc = 'comm_type_jurspec_dissolve'
 reg_centerline_fc = 'RegionalCenterline_2019'
 reg_bikeway_fc = 'BikeRte_C1_C2_C4_2017'
 
+proj_line_template_fc = 'Project_Line_Template' # has symbology that the project line will use.
+all_projects_fc = "All_PPA_Projects2020"
 
 # layers with multiple potential year values (e.g. base, various future years, etc)
 def parcel_pt_fc_yr(in_year=2016):
@@ -30,23 +53,25 @@ def model_links_fc(in_year=2016):
 
 # input CSV of community type and regional values for indicated metrics; used to compare how project scores compared to 
 # "typical" values for the region and for the community type in which the project lies.
-aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\CSV\Agg_ppa_vals02042020_0825.csv"
+aggvals_csv = os.path.join(server_folder, r"PPA2\Input_Template\CSV\Agg_ppa_vals02042020_0825.csv")
 
 # project type
 ptype_fwy = 'Freeway'
 ptype_arterial = 'Arterial or Transit Expansion'
 ptype_sgr = 'Complete Street or State of Good Repair'
-pytpe_commdesign = "Community Design"
+ptype_commdesign = "Community Design"
 ptype_area_agg = 'AreaAvg' # e.g., regional average, community type avg
 
 
 # ===================================OUTPUT TEMPLATE DATA=========================================================
 # template_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\ExcelTemplate\output_rows_template.csv"
 
-template_dir = r'Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\XLSX'
+include_pdf_output = False
+
+template_dir = os.path.join(server_folder, r'PPA2\Input_Template\XLSX')
 
 template_xlsx_arterial = "PPA_Template_ArterialExp.xlsx"
-template_xlsx_sgr = "PPA_Template_SGR_CS.xlsx"
+template_xlsx_sgr = "PPA_Template_SGR_CS.xlsx"  # "PPA_Template_SGR_CS_MACRO2.xlsm" # 
 template_xlsx_fwy = "PPA_Template_Freeway.xlsx"
 template_xlsx_commdesgn = "PPA_Template_CommDesign.xlsx" 
 
@@ -54,7 +79,7 @@ template_xlsx_commdesgn = "PPA_Template_CommDesign.xlsx"
 type_template_dict = {ptype_arterial: template_xlsx_arterial,
                       ptype_sgr: template_xlsx_sgr,
                       ptype_fwy: template_xlsx_fwy,
-                      pytpe_commdesign: template_xlsx_commdesgn}
+                      ptype_commdesign: template_xlsx_commdesgn}
 
 # dict to correspond user-friendly names of outcomes to each outcome's tab name
 # dict contains performance outcomes for all project types except community design,
@@ -69,21 +94,26 @@ perf_outcomes_dict = {'Reduce VMT': '1ReduceVMT',
                       }
 
 # sheet names for performance outcomes in community design project type
-perf_outcomes_commdesign = ['1TranspoChoice', '2CompactDev', '3MixedUseDev', '4HousingChoice', '5UseExistingAssets', '6NaturalRsrcePreservn']
+perf_outcomes_commdesign = ['1TranspoChoice', '2CompactDev', '3MixedUseDev', 
+                            '4HousingChoice', '5UseExistingAssets', '6NaturalRsrcePreservn']
 
 
 xlsx_import_sheet = 'import'
-sheets_all_reports = ['0_0TitlePg', '0_1UsingThisReport','8SocioEconEquity']
 
-map_list_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\CSV\map_report_key.csv"
+# regardless of which perf outcomes user selects, these tabs will be printed to
+# every PDF report for the selected project type.
+sheets_all_reports = {ptype_arterial: ['0ATitlePg', '0BUsingThisReport','8SocioEconEquity'],
+                      ptype_sgr: ['0ATitlePg', '0BUsingThisReport','8SocioEconEquity'],
+                      ptype_commdesign: ['0ATitlePg', '0BUsingThisReport'],
+                      ptype_fwy: ['0ATitlePg', '0BUsingThisReport']}
 
-# scratch_folder = arcpy.env.scratchFolder # scratch folder on WIN10-MODEL-2 desktop is 'C:\Users\dconly\AppData\Local\Temp\scratch'
+# params related to inserting maps into report
+aprx_path = os.path.join(server_folder, r"PPA2_GIS_SVR\PPA2_GIS_SVR.aprx")
+mapimg_configs_csv = os.path.join(server_folder, r"PPA2\Input_Template\CSV\map_img_config.csv") # configs for making maps imgs
+map_placement_csv = os.path.join(server_folder, r"PPA2\Input_Template\CSV\map_report_key.csv") # configs for inserting maps into Excel reports
 
-
-# # These folders will be created on the fly during each PPA tool run. They will then be deleted too.
-# dir_pdf_output = r'{}\Reports'.format(scratch_folder)  # r'C\TEMP_OUTPUT'
-# map_img_dir = r'{}\MapImg'.format(scratch_folder) # where map images are stored
-
+msg_ok = "C_OK" # message that returns if utils script executes correctly.
+msg_fail = "Run_Failed"
 
 # ===================================CONVERSION FACTORS=========================================================
 ft2acre = 43560 # convert square feet to acres

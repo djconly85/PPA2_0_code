@@ -80,9 +80,9 @@ def get_linkoccup_data(fc_project, project_type, fc_model_links):
 
 '''
 if __name__ == '__main__':
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    arcpy.env.workspace = None
 
-    proj_line_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_SEConnector'
+    proj_line_fc = None
     model_link_fc = 'model_links_2016'
     proj_type = params.ptype_arterial
 

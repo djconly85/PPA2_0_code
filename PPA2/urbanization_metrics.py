@@ -53,7 +53,7 @@ def nat_resources(fc_project, projtyp, fc_pcl_poly, year=2016):  # NOTE - this i
 
 '''
 if __name__ == '__main__':
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    arcpy.env.workspace = None
 
     # input fc of parcel data--must be polygons!
     in_pcl_base_fc = params.parcel_pt_fc_yr(in_year=2016)
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     # in_ctypes_fc =
 
     # input line project for basing spatial selection
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb\test_project_xmult_strt'
+    project_fc = None
 
     # infill_status_dict = projarea_infill_status(project_fc, params.comm_types_fc)
     # print(infill_status_dict)
