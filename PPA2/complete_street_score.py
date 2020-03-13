@@ -24,7 +24,7 @@ def complete_streets_idx(fc_pclpt, fc_project, project_type, posted_speedlim, tr
     if project_type == params.ptype_fwy or posted_speedlim <= 1: 
         csi = -1
     else:
-        arcpy.AddMessage("getting complete street score...")
+        arcpy.AddMessage("Calculating complete street score...")
     
         # get transit service density around project
         tran_stops_dict = ts.transit_svc_density(fc_project, transit_event_fc, project_type)
@@ -41,7 +41,7 @@ def complete_streets_idx(fc_pclpt, fc_project, project_type, posted_speedlim, tr
     
         csi = dens_score * (1 - (posted_speedlim - params.cs_threshold_speed) * params.cs_spd_pen_fac)
 
-    out_dict = {'complete_strt_idx': csi}
+    out_dict = {'complete_street_score': csi}
     
     return out_dict
 

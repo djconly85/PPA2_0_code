@@ -25,7 +25,7 @@ def get_poly_area(poly_fl):
 
 
 def intersection_density(fc_project, fc_intersxns, project_type):
-    arcpy.AddMessage("calculating intersection density...")
+    arcpy.AddMessage("Calculating intersection density...")
 
     fl_project = "fl_projline"
     fl_intersxns = "fl_trnstp"

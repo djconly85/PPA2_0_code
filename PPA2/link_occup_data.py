@@ -50,7 +50,7 @@ def get_wtdavg_vehvol(in_df, col_vehtype):
 
 
 def get_linkoccup_data(fc_project, project_type, fc_model_links):
-    arcpy.AddMessage("getting modeled vehicle occupancy data...")
+    arcpy.AddMessage("Getting modeled vehicle occupancy data...")
     fl_project = 'proj_fl'
     fl_model_links = 'modlink_fl'
 

@@ -81,7 +81,7 @@ def calc_mix_index(in_df, params_df, hh_col, lu_factor_cols, mix_idx_col):
 
 
 def get_mix_idx(fc_parcel, fc_project, project_type):
-    arcpy.AddMessage("calculating mix index...")
+    arcpy.AddMessage("Calculating mix index...")
 
     fl_parcel = "fl_parcel"
     fl_project = "fl_project"

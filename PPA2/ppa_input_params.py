@@ -111,6 +111,7 @@ sheets_all_reports = {ptype_arterial: ['0ATitlePg', '0BUsingThisReport','8SocioE
 aprx_path = os.path.join(server_folder, r"PPA2_GIS_SVR\PPA2_GIS_SVR.aprx")
 mapimg_configs_csv = os.path.join(server_folder, r"PPA2\Input_Template\CSV\map_img_config.csv") # configs for making maps imgs
 map_placement_csv = os.path.join(server_folder, r"PPA2\Input_Template\CSV\map_report_key.csv") # configs for inserting maps into Excel reports
+map_img_format = "png" #jpg, png, svg, etc.
 
 msg_ok = "C_OK" # message that returns if utils script executes correctly.
 msg_fail = "Run_Failed"

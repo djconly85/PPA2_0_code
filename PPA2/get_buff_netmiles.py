@@ -52,7 +52,7 @@ def netmiles_in_buffer(fc_project, fc_network, project_type):
 
 
 def get_bikeway_mileage_share(project_fc, proj_type):
-    arcpy.AddMessage("calculating share of centerline miles near project that are bikeways...")
+    arcpy.AddMessage("Calculating share of centerline miles near project that are bikeways...")
 
     centerline_miles = netmiles_in_buffer(project_fc, params.reg_centerline_fc, proj_type)
     bikeway_miles = netmiles_in_buffer(project_fc, params.reg_bikeway_fc, proj_type)

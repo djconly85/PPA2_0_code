@@ -13,7 +13,7 @@ import pandas as pd
 import ppa_input_params as params
 
 def point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field=None, case_excs_list=[]):
-    arcpy.AddMessage("aggregating land use data...")
+    arcpy.AddMessage("Aggregating land use data...")
     
     fl_parcel = "fl_parcel"
     fl_project = "fl_project"

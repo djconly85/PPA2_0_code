@@ -20,7 +20,7 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
     polygons that either intersect the project line or are within a community type polygon.
     Average accessibility is weighted by each polygon's population.'''
     
-    arcpy.AddMessage("calculating accessibility metrics...")
+    arcpy.AddMessage("Calculating accessibility metrics...")
 
     fl_accdata = "fl_accdata"
     fl_project = "fl_project"

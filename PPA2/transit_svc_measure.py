@@ -25,7 +25,7 @@ def get_poly_area(poly_fl):
 
 def transit_svc_density(fc_project, fc_trnstops, project_type):
 
-    arcpy.AddMessage("calculating transit service density...")
+    arcpy.AddMessage("Calculating transit service density...")
     fl_project = "fl_projline"
     fl_trnstops = "fl_trnstp"
 

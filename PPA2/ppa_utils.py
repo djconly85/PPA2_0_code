@@ -51,7 +51,7 @@ def remove_forbidden_chars(in_str):
     '''Replaces forbidden characters with acceptable characters'''
     repldict = {"&":'And','%':'pct','/':'-'}
     
-    for old, new in repldict:
+    for old, new in repldict.items():
         if old in in_str:
             out_str = in_str.replace(old, new)
         else:
@@ -81,7 +81,6 @@ def esri_object_to_df(in_esri_obj, esri_obj_fields, index_field=None):
 
 
 def return_perf_outcomes_options(project_type):
-    arcpy.AddMessage(project_type)
     xlsx = params.type_template_dict[project_type]
     xlsx_path = os.path.join(params.template_dir, xlsx)
     
@@ -140,7 +139,6 @@ def append_proj_to_master_fc(project_fc, proj_attributes_dict, master_fc):
         
         del inscur
         
-        msg = "Appended to {} successfully.".format(master_fc)
         return msg
     except:
         msg = trace()
@@ -166,6 +164,7 @@ class Publish(object):
         self.out_folder = arcpy.env.scratchFolder
         self.xl_out_path = os.path.join(self.out_folder, self.xl_out)
         self.mapimg_configs_csv = params.mapimg_configs_csv
+        self.img_format = params.map_img_format # jpg, png, etc.
         self.map_placement_csv = params.map_placement_csv
         self.aprx_path = params.aprx_path
         self.proj_line_template_fc = os.path.join(params.fgdb, params.proj_line_template_fc)
@@ -257,7 +256,6 @@ class Publish(object):
     # generates image files from maps
     def exportMap(self):
         arcpy.AddMessage('Generating maps for report...')
-        image_format = "jpg"
         arcpy.env.overwriteOutput = True
         try:
             aprx = arcpy.mp.ArcGISProject(self.aprx_path)
@@ -266,13 +264,13 @@ class Publish(object):
             o_print_configs = []
             
             for l_print_config in l_print_configs:
-                o_print_config = self.PrintConfig(l_print_config, image_format) #converts list vals into attributes of PrintConfig object ('o')
+                o_print_config = self.PrintConfig(l_print_config, self.img_format) #converts list vals into attributes of PrintConfig object ('o')
                 o_print_configs.append(o_print_config)
             
 
             #insert process to overwrite display layer and append to master. This will update in all layouts using the display layer
             arcpy.DeleteFeatures_management(self.proj_line_template_fc) # delete whatever features were in the display layer
-            arcpy.Append_management([self.project_fc], self.proj_line_template_fc) # then replace those features with those from user-drawn line
+            arcpy.Append_management([self.project_fc], self.proj_line_template_fc, "NO_TEST") # then replace those features with those from user-drawn line
 
             for print_config in o_print_configs:
                 #only thing needed for this loop is to activate each layout and pan to the desired extent and make image of it.
@@ -313,12 +311,18 @@ class Publish(object):
                                 
                         out_file = os.path.join(self.out_folder, print_config.OutputImageName)
                         
+                        
                         if(os.path.exists(out_file)):
                             try:
                                 os.remove(out_file)
                             except:
                                 pass 
-                        lyt.exportToJPEG(out_file) # after zooming in, export the layout to a JPG
+                        if self.img_format.lower() == 'png':
+                            lyt.exportToPNG(out_file)
+                        elif self.img_format.lower() == 'jpg':
+                            lyt.exportToJPEG(out_file) # after zooming in, export the layout to a JPG
+                        else:
+                            arcpy.AddWarning("Map image {} not created. Must be PNG or JPG.".format(out_file))
                     except:
                         msg = "{}, {}".format(arcpy.GetMessages(2), trace())
                         arcpy.AddMessage(msg)
@@ -368,7 +372,7 @@ class Publish(object):
                     .to_dict(orient='records')
                 
                 for i in mapkey_dict_list:
-                    imgfile = i[col_mapfile]
+                    imgfile = "{}.{}".format(i[col_mapfile], self.img_format)
                     sheet = i[col_sheet]
                     row = int(i[col_rownum]) # needs to be int value, not float, for openpyxl to use as cell reference
                     col = i[col_colletter]

@@ -132,8 +132,8 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
     avg_ann_collisions = total_collns / params.years_of_collndata
     avg_ann_fatalcolln = fatal_collns / params.years_of_collndata
 
-    colln_rate_per_vmt = avg_ann_collisions / ann_proj_vmt * 100000000 if ann_proj_vmt > 0 else 0
-    fatalcolln_per_vmt = avg_ann_fatalcolln / ann_proj_vmt * 100000000 if ann_proj_vmt > 0 else 0
+    colln_rate_per_vmt = avg_ann_collisions / ann_proj_vmt * 100000000 if ann_proj_vmt > 0 else -1
+    fatalcolln_per_vmt = avg_ann_fatalcolln / ann_proj_vmt * 100000000 if ann_proj_vmt > 0 else -1
     pct_fatal_collns = avg_ann_fatalcolln / avg_ann_collisions if avg_ann_collisions > 0 else 0
 
     out_dict = {"TOT_COLLISNS": total_collns, "TOT_COLLISNS_PER_100MVMT": colln_rate_per_vmt,

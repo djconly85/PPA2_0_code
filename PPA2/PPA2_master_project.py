@@ -56,6 +56,19 @@ def get_proj_ctype(in_project_fc, commtypes_fc):
     
     return proj_ctype
 
+
+def dissolve_multline_proj(in_project_fc):
+    # if project is multiple non-contiguous lines, combine them to be analyzed as one
+    proj_fcnt = int(arcpy.GetCount_management(in_project_fc)[0])
+    if proj_fcnt > 1:
+        proj_fc_out = os.path.join(arcpy.env.scratchGDB, "project_dissolved")
+        arcpy.Dissolve_management(in_project_fc, proj_fc_out)
+    else:
+        proj_fc_out = in_project_fc
+        
+    return proj_fc_out
+
+
 def get_proj_len(in_project_fc):
     tot_len = 0
     
@@ -180,7 +193,7 @@ if __name__ == '__main__':
     # =====================================USER/TOOLBOX INPUTS===============================================
     
     # project data
-    project_fc = arcpy.GetParameterAsText(0) # 
+    project_fc_param = arcpy.GetParameterAsText(0) # 
     proj_name = arcpy.GetParameterAsText(1)  # os.path.basename(project_fc) # os.path.basename(project_fc)
     proj_juris = arcpy.GetParameterAsText(2) # project jurisdiction
     project_type = arcpy.GetParameterAsText(3)  # params.ptype_commdesign  # params.ptype_fwy, params.ptype_arterial, or params.ptype_sgr
@@ -193,7 +206,6 @@ if __name__ == '__main__':
         arcpy.SetParameterAsText(6, 0) #posted speed limit
         arcpy.SetParameterAsText(7, 0)  # pavement condition index
         adt = project_speedlim = pci = 0 # set all of these equal to zero since they're not used.
-        performance_outcomes = 'All'
     else:
         performance_outcomes =  arcpy.GetParameterAsText(4) # ['Reduce VMT', 'Reduce Congestion', 'Encourage Non-SOV Travel']
         adt = int(arcpy.GetParameterAsText(5)) # avg daily traffic; user-entered value
@@ -215,7 +227,12 @@ if __name__ == '__main__':
     template_xl = os.path.join(params.template_dir, params.type_template_dict[project_type])
     
     ptyp_pfix = "CD" if project_type == params.ptype_commdesign else "PPA"
+    proj_name = utils.remove_forbidden_chars(proj_name) # make sure no problematic characters (%, &, etc.) are in the project name
+    
     output_xl = '{}_{}{}.xlsx'.format(ptyp_pfix, os.path.basename(proj_name), time_sufx)  # 'PPA_{}{}.xlsm'.format(os.path.basename(proj_name), time_sufx)  # 
+
+    
+    project_fc = dissolve_multline_proj(project_fc_param) #dissolve if project is multiple non-contiguous lines (like an intersection)
 
     proj_len_mi = get_proj_len(project_fc)
     
