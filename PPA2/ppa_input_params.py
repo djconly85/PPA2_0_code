@@ -108,7 +108,7 @@ sheets_all_reports = {ptype_arterial: ['0ATitlePg', '0BUsingThisReport','8SocioE
                       ptype_fwy: ['0ATitlePg', '0BUsingThisReport']}
 
 # params related to inserting maps into report
-aprx_path = os.path.join(server_folder, r"PPA2_GIS_SVR\PPA2_GIS_SVR.aprx")
+aprx_path = os.path.join(server_folder, r"PPA2_GIS_SVR\PPA2_GIS_SVR_v2.aprx")
 mapimg_configs_csv = os.path.join(server_folder, r"PPA2\Input_Template\CSV\map_img_config.csv") # configs for making maps imgs
 map_placement_csv = os.path.join(server_folder, r"PPA2\Input_Template\CSV\map_report_key.csv") # configs for inserting maps into Excel reports
 map_img_format = "png" #jpg, png, svg, etc.

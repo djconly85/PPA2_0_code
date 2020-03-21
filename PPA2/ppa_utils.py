@@ -139,7 +139,6 @@ def append_proj_to_master_fc(project_fc, proj_attributes_dict, master_fc):
         
         del inscur
         
-        return msg
     except:
         msg = trace()
         return msg
