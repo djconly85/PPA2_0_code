@@ -1,3 +1,12 @@
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = 'fl_parcel'
+g_ESRI_variable_2 = 'fl_project'
+# Esri end of added variables
+
 #land use buffer calcs
 
 """
@@ -7,6 +16,8 @@ Get following numbers within 0.5mi of project area:
     sum of trips (for each mode)
 
 """
+import time
+
 import arcpy
 import pandas as pd
 
@@ -15,8 +26,9 @@ import ppa_input_params as params
 def point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field=None, case_excs_list=[]):
     arcpy.AddMessage("Aggregating land use data...")
     
-    fl_parcel = "fl_parcel"
-    fl_project = "fl_project"
+    sufx = int(time.clock()) + 1
+    fl_parcel = os.path.join('memory','fl_parcel{}'.format(sufx))
+    fl_project = g_ESRI_variable_2
     
     if arcpy.Exists(fl_parcel): arcpy.Delete_management(fl_parcel)
     arcpy.MakeFeatureLayer_management(fc_pclpt, fl_parcel)

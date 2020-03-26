@@ -1,3 +1,12 @@
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = 'proj_fl'
+g_ESRI_variable_2 = 'modlink_fl'
+# Esri end of added variables
+
 # --------------------------------
 # Name:collisions.py
 # Purpose: calculate collision data for PPA tool.
@@ -51,8 +60,8 @@ def get_wtdavg_vehvol(in_df, col_vehtype):
 
 def get_linkoccup_data(fc_project, project_type, fc_model_links):
     arcpy.AddMessage("Getting modeled vehicle occupancy data...")
-    fl_project = 'proj_fl'
-    fl_model_links = 'modlink_fl'
+    fl_project = g_ESRI_variable_1
+    fl_model_links = g_ESRI_variable_2
 
     arcpy.MakeFeatureLayer_management(fc_project, fl_project)
     arcpy.MakeFeatureLayer_management(fc_model_links, fl_model_links)

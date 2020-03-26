@@ -1,3 +1,14 @@
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = 'fl_project'
+g_ESRI_variable_2 = 'fl_speed_data'
+g_ESRI_variable_3 = '{} IN {}'
+g_ESRI_variable_4 = 'fl_tmc_buff'
+# Esri end of added variables
+
 #--------------------------------
 # Name:get_truck_data_fwy.py
 # Purpose: Estimate share of traffic on freeways that is trucks; based on Caltrans truck counts.
@@ -42,17 +53,17 @@ def get_wtdavg_truckdata(in_df, col_name):
 def get_tmc_truck_data(fc_projline, str_project_type):
 
     arcpy.OverwriteOutput = True
-    fl_projline = "fl_project"
+    fl_projline = g_ESRI_variable_1
     arcpy.MakeFeatureLayer_management(fc_projline, fl_projline)
 
     # make feature layer from speed data feature class
-    fl_speed_data = "fl_speed_data"
+    fl_speed_data = g_ESRI_variable_2
     arcpy.MakeFeatureLayer_management(params.fc_speed_data, fl_speed_data)
 
     # make flat-ended buffers around TMCs that intersect project
     arcpy.SelectLayerByLocation_management(fl_speed_data, "WITHIN_A_DISTANCE", fl_projline, params.tmc_select_srchdist, "NEW_SELECTION")
     if str_project_type == 'Freeway':
-        sql = "{} IN {}".format(params.col_roadtype, params.roadtypes_fwy)
+        sql = g_ESRI_variable_3.format(params.col_roadtype, params.roadtypes_fwy)
         arcpy.SelectLayerByAttribute_management(fl_speed_data, "SUBSET_SELECTION", sql)
     else:
         sql = "{} NOT IN {}".format(params.col_roadtype, params.roadtypes_fwy)
@@ -62,7 +73,7 @@ def get_tmc_truck_data(fc_projline, str_project_type):
     scratch_gdb = arcpy.env.scratchGDB
         
     temp_tmcbuff = os.path.join(scratch_gdb, "TEMP_tmcbuff_4projsplit")
-    fl_tmc_buff = "fl_tmc_buff"
+    fl_tmc_buff = g_ESRI_variable_4
     arcpy.Buffer_analysis(fl_speed_data, temp_tmcbuff, params.tmc_buff_dist_ft, "FULL", "FLAT")
     arcpy.MakeFeatureLayer_management(temp_tmcbuff, fl_tmc_buff)
 

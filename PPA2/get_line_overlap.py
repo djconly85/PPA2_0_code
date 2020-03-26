@@ -1,3 +1,15 @@
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = 'fl_splitprojlines'
+g_ESRI_variable_2 = 'fl_splitproj_w_linkdata'
+g_ESRI_variable_3 = 'fl_project'
+g_ESRI_variable_4 = 'fl_network_lines'
+g_ESRI_variable_5 = 'fl_link_buff'
+# Esri end of added variables
+
 '''
 #--------------------------------
 # Name:get_line_overlap.py
@@ -46,8 +58,8 @@ def conflate_link2projline(fl_proj, fl_links_buffd, links_desc):
     temp_splitprojlines = os.path.join(scratch_gdb, "temp_splitprojlines") # fc of project line split up to match link buffer extents
     temp_splitproj_w_linkdata = os.path.join(scratch_gdb, "temp_splitproj_w_linkdata") # fc of split project lines with link data on them
 
-    fl_splitprojlines = "fl_splitprojlines"
-    fl_splitproj_w_linkdata = "fl_splitproj_w_linkdata"
+    fl_splitprojlines = g_ESRI_variable_1
+    fl_splitproj_w_linkdata = g_ESRI_variable_2
 
     # get links whose buffers intersect the project line
     arcpy.SelectLayerByLocation_management(fl_links_buffd, "INTERSECT", fl_proj)
@@ -101,10 +113,10 @@ def get_line_overlap(fc_projline, fc_network_lines, links_desc):
     LINKBUFF_DIST_FT = 90
 
     # make feature layers of NPMRDS and project line
-    fl_projline = "fl_project"
+    fl_projline = g_ESRI_variable_3
     arcpy.MakeFeatureLayer_management(fc_projline, fl_projline)
 
-    fl_network_lines = "fl_network_lines"
+    fl_network_lines = g_ESRI_variable_4
     arcpy.MakeFeatureLayer_management(fc_network_lines, fl_network_lines)
 
     # make flat-ended buffers around links that intersect project
@@ -112,7 +124,7 @@ def get_line_overlap(fc_projline, fc_network_lines, links_desc):
 
     # create temporar buffer layer, flat-tipped, around links; will be used to split project lines
     temp_linkbuff = os.path.join(arcpy.env.scratchGDB, "TEMP_linkbuff_4projsplit")
-    fl_link_buff = "fl_link_buff"
+    fl_link_buff = g_ESRI_variable_5
     arcpy.Buffer_analysis(fl_network_lines, temp_linkbuff, LINKBUFF_DIST_FT, "FULL", "FLAT")
     arcpy.MakeFeatureLayer_management(temp_linkbuff, fl_link_buff)
 
@@ -152,4 +164,5 @@ if __name__ == '__main__':
 '''
         
     
+
 

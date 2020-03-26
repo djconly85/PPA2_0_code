@@ -18,6 +18,7 @@ import time
 import gc
 import csv
 import math
+import shutil
 
 import openpyxl
 from openpyxl.drawing.image import Image
@@ -39,13 +40,6 @@ def trace():
     synerror = traceback.format_exc().splitlines()[-1]
     return line, filename, synerror
 
-
-def make_fl_conditional(fc, fl):
-    '''check if a feature layer name exists; if it does, delete feature layer and remake it.
-    purpose is to ensure the feature layer name corresponds to the correct feature class.'''
-    if arcpy.Exists(fl):
-        arcpy.Delete_management(fl)
-    arcpy.MakeFeatureLayer_management(fc, fl)
     
 def remove_forbidden_chars(in_str):
     '''Replaces forbidden characters with acceptable characters'''
@@ -139,9 +133,12 @@ def append_proj_to_master_fc(project_fc, proj_attributes_dict, master_fc):
         
         del inscur
         
+        t_returns = (params.msg_ok,)
     except:
         msg = trace()
-        return msg
+        t_returns = (msg,)
+    
+    return t_returns
 
 
 class Publish(object):
@@ -157,16 +154,19 @@ class Publish(object):
         self.project_fc = project_fc #remember, this is a feature set!
         
         # params that are derived or imported from ppa_input_params.py
-        self.xl_template_workbook = openpyxl.load_workbook(self.xl_template)
         self.time_sufx = str(dt.datetime.now().strftime('%m%d%Y%H%M'))
         self.sheets_all_rpts = params.sheets_all_reports[ptype]
         self.out_folder = arcpy.env.scratchFolder
-        self.xl_out_path = os.path.join(self.out_folder, self.xl_out)
         self.mapimg_configs_csv = params.mapimg_configs_csv
         self.img_format = params.map_img_format # jpg, png, etc.
         self.map_placement_csv = params.map_placement_csv
         self.aprx_path = params.aprx_path
         self.proj_line_template_fc = os.path.join(params.fgdb, params.proj_line_template_fc)
+        
+        #xlsx related params
+        self.xl_out_path = os.path.join(self.out_folder, self.xl_out)
+        shutil.copyfile(xl_template, self.xl_out_path)
+        self.xl_workbook = openpyxl.load_workbook(self.xl_template) #work off of a copy of the template, so template remains free. Important for multi-user reliability.
 
 
     def overwrite_df_to_xlsx(self, unused=0, start_row=0, start_col=0):  # why does there need to be an argument?
@@ -181,7 +181,7 @@ class Publish(object):
     
         comb_out_list = out_header_list + out_data_list
     
-        ws = self.xl_template_workbook[self.import_tab]
+        ws = self.xl_workbook[self.import_tab]
         for i, row in enumerate(comb_out_list):
             for j, val in enumerate(row):
                 cell = ws.cell(row=(start_row + (i + 1)), column=(start_col + (j + 1)))
@@ -257,7 +257,14 @@ class Publish(object):
         arcpy.AddMessage('Generating maps for report...')
         arcpy.env.overwriteOutput = True
         try:
-            aprx = arcpy.mp.ArcGISProject(self.aprx_path)
+            # create temporary copy of APRX to not have conflicts if 2+ runs done at same time.
+            aprx_temp_path = os.path.join(self.out_folder, "TEMP{}.aprx".format(int(time.clock()) + 1)) 
+            aprx_template_obj = arcpy.mp.ArcGISProject(self.aprx_path)
+            aprx_template_obj.saveACopy(aprx_temp_path)
+            
+            #then manipulate the temporary copy of the APRX
+            aprx = arcpy.mp.ArcGISProject(aprx_temp_path)
+            
             l_print_configs = self.build_configs() # each config list for each image is [map frame name, layout frame name, project line layer name, project feature where clause]
             
             o_print_configs = []
@@ -347,10 +354,7 @@ class Publish(object):
             '''takes excel template > writes new values to import/updates charts, then inserts indicated images at specified locations'''
             self.overwrite_df_to_xlsx(self) # write data to import tab
             
-            print("adding images to excel book...")
             self.exportMap() # generates all needed maps as images in scratch folder
-            
-            print("SUCCESS adding images to excel book...")
             
             if self.map_placement_csv:
                 # indicate which sheets and cells to insert maps in, based on config CSV and template XLSX (not output XLSX)
@@ -384,18 +388,22 @@ class Publish(object):
                     
                     if pd.Series(valid_row).product() == 1: # run the insert_image function only if valid config values are provided in CSV (i.e., they meet the is_valid condition above)
                         imgfilepath = os.path.join(self.out_folder, imgfile)
-                        self.insert_image_xlsx(self.xl_template_workbook, sheet, row, col, imgfilepath)
+                        self.insert_image_xlsx(self.xl_workbook, sheet, row, col, imgfilepath)
                     else:
                         continue # skip to next image if the row has no image specified (i.e., if it's a placeholder row only)
+
+            # write report generation time stamp to cell on title page
+            tstamp = dt.datetime.strftime(dt.datetime.now(),"%m-%d-%Y %H:%M")
+            self.xl_workbook[params.xlsx_titlepg_sheet][params.tstamp_cell] = tstamp
             
-            self.xl_template_workbook.save(self.xl_out_path)
+            self.xl_workbook.save(self.xl_out_path)
             t_returns = (params.msg_ok, self.xl_out_path)
         except:
             msg = "{}".format(trace())
             t_returns = (params.msg_fail, msg)   
         finally:
-            if self.xl_template_workbook.close() != None:
-                self.xl_template_workbook.close()
+            if self.xl_workbook.close() != None:
+                self.xl_workbook.close()
             gc.collect()
         
         return t_returns
@@ -460,6 +468,7 @@ class Publish(object):
             gc.collect()
             
         return t_returns
+
 
 
 

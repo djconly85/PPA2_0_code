@@ -1,3 +1,11 @@
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = 'memory/temp_intersect_fc'
+# Esri end of added variables
+
 # --------------------------------
 # Name:urbanization_metrics.py
 # Purpose: (1) categorize project as infill, greenfield, or spanning infill + greenfield areas
@@ -18,7 +26,7 @@ import ppa_input_params as params
 # get list of ctypes that a project passes through. "infill" if ctype = is established or corridor; greenfield if not
 def projarea_infill_status(fc_project, comm_types_fc):
     arcpy.AddMessage("Determining project greenfield/infill status...")
-    temp_intersect_fc = r"memory/temp_intersect_fc"
+    temp_intersect_fc = g_ESRI_variable_1
 
     arcpy.Intersect_analysis([fc_project, comm_types_fc], temp_intersect_fc)
 

@@ -1,3 +1,13 @@
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = 'memory\\temp_buff_qmi'
+g_ESRI_variable_2 = 'fl_buff'
+g_ESRI_variable_3 = 'memory\\temp_intersect_fc'
+# Esri end of added variables
+
 # --------------------------------
 # Name:get_buff_netmiles.py
 # Purpose: get total network and bikeway miles within specified buffer of project, get % of those that are bikeways
@@ -22,10 +32,10 @@ def netmiles_in_buffer(fc_project, fc_network, project_type):
     if project_type == params.ptype_area_agg:
         fc_poly_buff = fc_project
     else:
-        fc_poly_buff = r"memory\temp_buff_qmi"
+        fc_poly_buff = g_ESRI_variable_1
         arcpy.Buffer_analysis(fc_project, fc_poly_buff, params.bikeway_buff)
 
-    fl_poly = "fl_buff"
+    fl_poly = g_ESRI_variable_2
 
     if arcpy.Exists(fl_poly): arcpy.Delete_management(fl_poly)
     arcpy.MakeFeatureLayer_management(fc_poly_buff, fl_poly)    
@@ -33,7 +43,7 @@ def netmiles_in_buffer(fc_project, fc_network, project_type):
     # if not arcpy.Exists(fl_poly):
     #     utils.make_fl_conditional(fc_poly_buff, fl_poly)
 
-    temp_intersect_fc = r"memory\temp_intersect_fc"
+    temp_intersect_fc = g_ESRI_variable_3
 
     #run intersect of network lines against buffer
     arcpy.Intersect_analysis([fc_network, fc_poly_buff], temp_intersect_fc)

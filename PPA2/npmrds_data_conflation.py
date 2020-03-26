@@ -1,3 +1,19 @@
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = 'fl_splitprojlines'
+g_ESRI_variable_2 = 'fl_splitproj_w_tmcdata'
+g_ESRI_variable_3 = "{} = '{}'"
+g_ESRI_variable_4 = '{} IS NOT NULL'
+g_ESRI_variable_5 = os.path.join(arcpy.env.packageWorkspace,'index')
+g_ESRI_variable_6 = 'fl_project'
+g_ESRI_variable_7 = 'fl_speed_data'
+g_ESRI_variable_8 = '{} IN {}'
+g_ESRI_variable_9 = 'fl_tmc_buff'
+# Esri end of added variables
+
 '''
 #--------------------------------
 # Name:PPA_getNPMRDSdata.py
@@ -58,14 +74,14 @@ def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
         temp_splitprojlines = os.path.join(scratch_gdb, "temp_splitprojlines") # fc of project line split up to match TMC buffer extents
         temp_splitproj_w_tmcdata = os.path.join(scratch_gdb, "temp_splitproj_w_tmcdata") # fc of split project lines with TMC data on them
         
-        fl_splitprojlines = "fl_splitprojlines"
-        fl_splitproj_w_tmcdata = "fl_splitproj_w_tmcdata"
+        fl_splitprojlines = g_ESRI_variable_1
+        fl_splitproj_w_tmcdata = g_ESRI_variable_2
         
         # get TMCs whose buffers intersect the project line
         arcpy.SelectLayerByLocation_management(fl_tmcs_buffd, "INTERSECT", fl_proj)
         
         # select TMCs that intersect the project and are in indicated direction
-        sql_sel_tmcxdir = "{} = '{}'".format(tmc_dir_field, direcn)
+        sql_sel_tmcxdir = g_ESRI_variable_3.format(tmc_dir_field, direcn)
         arcpy.SelectLayerByAttribute_management(fl_tmcs_buffd, "SUBSET_SELECTION", sql_sel_tmcxdir)
         
         # split the project line at the boundaries of the TMC buffer, creating points where project line intersects TMC buffer boundaries
@@ -86,7 +102,7 @@ def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
         arcpy.MakeFeatureLayer_management(temp_splitproj_w_tmcdata, fl_splitproj_w_tmcdata)
         
         check_field = speed_data_fields[0]  # choose first speed value field for checking--if it's null, then don't include those rows in aggregation
-        sql_notnull = "{} IS NOT NULL".format(check_field)
+        sql_notnull = g_ESRI_variable_4.format(check_field)
         arcpy.SelectLayerByAttribute_management(fl_splitproj_w_tmcdata, "NEW_SELECTION", sql_notnull)
         
         # convert the selected records into a numpy array then a pandas dataframe
@@ -156,7 +172,7 @@ def make_df(in_dict):
     re_dirn = re.compile("(.*BOUND).*") # retrieve direction
     re_metric = re.compile(".*BOUND(.*)") # retrieve name of metric
     
-    df = pd.DataFrame.from_dict(in_dict, orient='index')
+    df = pd.DataFrame.from_dict(in_dict, orient=g_ESRI_variable_5)
     
     col_metric = 'metric'
     col_direction = 'direction'
@@ -173,17 +189,17 @@ def get_npmrds_data(fc_projline, str_project_type):
     arcpy.AddMessage("Calculating congestion and reliability metrics...")
     arcpy.OverwriteOutput = True
 
-    fl_projline = "fl_project"
+    fl_projline = g_ESRI_variable_6
     arcpy.MakeFeatureLayer_management(fc_projline, fl_projline)
 
     # make feature layer from speed data feature class
-    fl_speed_data = "fl_speed_data"
+    fl_speed_data = g_ESRI_variable_7
     arcpy.MakeFeatureLayer_management(params.fc_speed_data, fl_speed_data)
 
     # make flat-ended buffers around TMCs that intersect project
     arcpy.SelectLayerByLocation_management(fl_speed_data, "WITHIN_A_DISTANCE", fl_projline, params.tmc_select_srchdist, "NEW_SELECTION")
     if str_project_type == 'Freeway':
-        sql = "{} IN {}".format(params.col_roadtype, params.roadtypes_fwy)
+        sql = g_ESRI_variable_8.format(params.col_roadtype, params.roadtypes_fwy)
         arcpy.SelectLayerByAttribute_management(fl_speed_data, "SUBSET_SELECTION", sql)
     else:
         sql = "{} NOT IN {}".format(params.col_roadtype, params.roadtypes_fwy)
@@ -191,7 +207,7 @@ def get_npmrds_data(fc_projline, str_project_type):
 
     # create temporar buffer layer, flat-tipped, around TMCs; will be used to split project lines
     temp_tmcbuff = os.path.join(arcpy.env.scratchGDB, "TEMP_linkbuff_4projsplit")
-    fl_tmc_buff = "fl_tmc_buff"
+    fl_tmc_buff = g_ESRI_variable_9
     arcpy.Buffer_analysis(fl_speed_data, temp_tmcbuff, params.tmc_buff_dist_ft, "FULL", "FLAT")
     arcpy.MakeFeatureLayer_management(temp_tmcbuff, fl_tmc_buff)
 
@@ -230,4 +246,5 @@ if __name__ == '__main__':
 '''
 
     
+
 

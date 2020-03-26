@@ -1,3 +1,15 @@
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = 'fl_parcel'
+g_ESRI_variable_2 = 'fl_project'
+g_ESRI_variable_3 = 'fl_buff'
+g_ESRI_variable_4 = 'memory\\temp_intersect'
+g_ESRI_variable_5 = 'fl_intersect'
+# Esri end of added variables
+
 #--------------------------------
 # Name:get_lutype_acres.py
 # Purpose: Based on parcel polygon intersection with buffer around project segment, get % of acres near project that are of specific land use type
@@ -9,7 +21,7 @@
 # Copyright:   (c) SACOG
 # Python Version: 3.x
 #--------------------------------
-
+import time
 import arcpy
 
 import ppa_input_params as params
@@ -17,8 +29,9 @@ import ppa_input_params as params
 def get_lutype_acreage(fc_project, projtyp, fc_poly_parcels, lutype):
     arcpy.AddMessage("Estimating {} acres near project...".format(lutype))
 
-    fl_parcels = "fl_parcel"
-    fl_project = "fl_project"
+    sufx = int(time.clock()) + 1
+    fl_parcels = os.path.join('memory','fl_parcels{}'.format(sufx))
+    fl_project = g_ESRI_variable_2
 
     if arcpy.Exists(fl_parcels): arcpy.Delete_management(fl_parcels)
     arcpy.MakeFeatureLayer_management(fc_poly_parcels, fl_parcels)
@@ -34,7 +47,7 @@ def get_lutype_acreage(fc_project, projtyp, fc_poly_parcels, lutype):
         fc_buff = r"memory\temp_buff_qmi"
         arcpy.Buffer_analysis(fl_project, fc_buff, buff_dist)
 
-    fl_buff = "fl_buff"
+    fl_buff = g_ESRI_variable_3
     arcpy.MakeFeatureLayer_management(fc_buff, fl_buff)
 
     """
@@ -47,11 +60,11 @@ def get_lutype_acreage(fc_project, projtyp, fc_poly_parcels, lutype):
     """
 
     # create intersect layer of buffer with parcels of selected LUTYPE
-    fc_intersect = r"memory\temp_intersect"
+    fc_intersect = g_ESRI_variable_4
     arcpy.Intersect_analysis([fl_buff, fl_parcels], fc_intersect, "ALL", "", "INPUT")
 
     # calculate total area on parcels within buffer (excluding water and rights of way)
-    fl_intersect = "fl_intersect"
+    fl_intersect = g_ESRI_variable_5
     arcpy.MakeFeatureLayer_management(fc_intersect, fl_intersect)
 
     # get total acres within intersect polygons
@@ -70,7 +83,12 @@ def get_lutype_acreage(fc_project, projtyp, fc_poly_parcels, lutype):
     buff_acre = pclarea_inbuff_ft2 / params.ft2acre
     lutype_intersect_acres = lutype_intersect_ft2 / params.ft2acre
 
-    [arcpy.Delete_management(item) for item in [fl_parcels, fl_project, fl_buff, fc_intersect, fl_intersect]]
+    for item in [fl_parcels, fl_project, fl_buff, fc_intersect, fl_intersect]:
+        try:
+            arcpy.Delete_management(item)
+        except:
+            arcpy.AddWarning("Unable to delete feature layer {}".format(item))
+            continue
     
     # delete temp buffer feature class only if it's not the same as the project FC
     if fc_buff != fc_project:
@@ -94,3 +112,4 @@ if __name__ == '__main__':
 
     # NOT 11/22/2019 - THIS IS GETTING AS PCT OF BUFFER AREA, NOT DEVELOPABLE ON-PARCEL ACRES! SHOULD FIX
 '''
+

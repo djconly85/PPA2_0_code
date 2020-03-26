@@ -1,4 +1,15 @@
 # -*- coding: utf-8 -*-
+#
+
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = 'fl_parcel'
+g_ESRI_variable_2 = 'fl_project'
+# Esri end of added variables
+
 #--------------------------------
 # Name:calc_mix_index_sacog.py
 # Purpose: calculate the mix index for PPA, with emphasis on measuring how
@@ -12,7 +23,7 @@
 # Copyright:   (c) SACOG
 # Python Version: 3.x
 # --------------------------------
-
+import time
 import pandas as pd
 import arcpy
 
@@ -83,8 +94,9 @@ def calc_mix_index(in_df, params_df, hh_col, lu_factor_cols, mix_idx_col):
 def get_mix_idx(fc_parcel, fc_project, project_type):
     arcpy.AddMessage("Calculating mix index...")
 
-    fl_parcel = "fl_parcel"
-    fl_project = "fl_project"
+    sufx = int(time.clock()) + 1
+    fl_parcel = os.path.join('memory','fl_parcel{}'.format(sufx))
+    fl_project = g_ESRI_variable_2
 
     if arcpy.Exists(fl_parcel): arcpy.Delete_management(fl_parcel)
     arcpy.MakeFeatureLayer_management(fc_parcel, fl_parcel)
@@ -132,4 +144,5 @@ if __name__ == '__main__':
     print(out_dict)
     
  '''   
+
 

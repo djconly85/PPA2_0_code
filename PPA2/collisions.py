@@ -1,3 +1,16 @@
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = 'fl_polygon'
+g_ESRI_variable_2 = 'fl_model_links'
+g_ESRI_variable_3 = 'fl_selection_poly'
+g_ESRI_variable_4 = 'fl_centerline'
+g_ESRI_variable_5 = 'proj_fl'
+g_ESRI_variable_6 = 'collision_fl'
+# Esri end of added variables
+
 # --------------------------------
 # Name:collisions.py
 # Purpose: calculate collision data for PPA tool based on geocoded TIMS data (tims.berkeley.edu)
@@ -9,6 +22,7 @@
 # Copyright:   (c) SACOG
 # Python Version: 3.x
 # --------------------------------
+import time
 import arcpy
 
 import ppa_input_params as params
@@ -23,8 +37,9 @@ def get_model_link_sums(fc_polygon, fc_model_links):
     metrics. E.g. daily VMT for all selected intersectin model links, total lane miles on intersecting
     links, etc.'''
 
-    fl_polygon = "fl_polygon"
-    fl_model_links = "fl_model_links"
+    sufx = int(time.clock()) + 1
+    fl_polygon = os.path.join('memory','fl_polygon{}'.format(sufx))
+    fl_model_links = os.path.join('memory','fl_model_links{}'.format(sufx))
     
     if arcpy.Exists(fl_polygon): arcpy.Delete_management(fl_polygon)
     arcpy.MakeFeatureLayer_management(fc_polygon, fl_polygon)
@@ -49,9 +64,9 @@ def get_model_link_sums(fc_polygon, fc_model_links):
 def get_centerline_miles(selection_poly_fc, centerline_fc):
     '''Calculate centerline miles for all road links whose center is within a polygon,
     such as a buffer around a road segment, or community type, trip shed, etc.'''
-    
-    fl_selection_poly = "fl_selection_poly"
-    fl_centerline = "fl_centerline"
+    sufx = int(time.clock()) + 1
+    fl_selection_poly = os.path.join('memory','fl_selection_poly{}'.format(sufx))
+    fl_centerline = os.path.join('memory','fl_centerline{}'.format(sufx))
     
     if arcpy.Exists(fl_selection_poly): arcpy.Delete_management(fl_selection_poly)
     arcpy.MakeFeatureLayer_management(selection_poly_fc, fl_selection_poly)
@@ -79,10 +94,12 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
         several key safety metrics including total collisions, collisions/100M VMT, percent bike/ped collisions, etc.'''
         
     arcpy.AddMessage("Aggregating collision data...")
+
     fc_model_links = params.model_links_fc()
-    
-    fl_project = 'proj_fl'
-    fl_colln_pts = 'collision_fl'
+
+    sufx = int(time.clock()) + 1
+    fl_project = g_ESRI_variable_5
+    fl_colln_pts = os.path.join('memory','fl_colln_pts{}'.format(sufx))
     
     if arcpy.Exists(fl_project): arcpy.Delete_management(fl_project)
     arcpy.MakeFeatureLayer_management(fc_project, fl_project)
@@ -109,9 +126,9 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
     searchdist = 0 if project_type == params.ptype_area_agg else params.colln_searchdist
     arcpy.SelectLayerByLocation_management(fl_colln_pts, 'WITHIN_A_DISTANCE', fl_project, searchdist)
     colln_cols =[params.col_fwytag, params.col_nkilled, params.col_bike_ind, params.col_ped_ind]
-
+    
     df_collndata = utils.esri_object_to_df(fl_colln_pts, colln_cols)
-
+    
     # filter so that fwy collisions don't get tagged to non-freeway projects, and vice-versa
     if project_type == params.ptype_fwy:
         df_collndata = df_collndata.loc[df_collndata[params.col_fwytag] == 1]

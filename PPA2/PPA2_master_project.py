@@ -1,3 +1,11 @@
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = 'memory/temp_intersect_fc'
+# Esri end of added variables
+
 """
 Name: PPA2_master_project.py
 Purpose: Master project performance assessment (PPA) tool script for performing
@@ -43,18 +51,32 @@ df_orient_val = start_string.replace('999','').lower()
 
 def get_proj_ctype(in_project_fc, commtypes_fc):
     '''Get project community type, based on which community type has most spatial overlap with project'''
-    
-    temp_intersect_fc = r'memory/temp_intersect_fc'
+    temp_intersect_fc = os.path.join(arcpy.env.scratchGDB, 'temp_intersect_fc') # don't use "memory", use scratch GDB
     arcpy.Intersect_analysis([in_project_fc, commtypes_fc], temp_intersect_fc, "ALL", 
                              0, "LINE")
     
     len_field = 'SHAPE@LENGTH'
     fields = ['OBJECTID', len_field, params.col_ctype]
-    df_intersect = utils.esri_object_to_df(temp_intersect_fc, fields)
+    ctype_dist_dict = {}
     
-    proj_ctype = list(df_intersect[df_intersect[len_field] == max(df_intersect[len_field])][ params.col_ctype])[0]
+    with arcpy.da.SearchCursor(temp_intersect_fc, fields) as cur:
+        for row in cur:
+            ctype = row[fields.index(params.col_ctype)]
+            seg_len = row[fields.index(len_field)]
+            
+            if ctype_dist_dict.get(ctype) is None:
+                ctype_dist_dict[ctype] = seg_len
+            else:
+                ctype_dist_dict[ctype] += seg_len
+    try:
+        maxval = max([v for k, v in ctype_dist_dict.items()])
+        proj_ctype = [k for k, v in ctype_dist_dict.items() if v == maxval][0]
+
+        return proj_ctype
+    except:
+        raise ValueError("ERROR: No Community Type identified for project.")
+
     
-    return proj_ctype
 
 
 def dissolve_multline_proj(in_project_fc):
@@ -122,7 +144,8 @@ def get_singleyr_data(fc_project, projtyp, adt, posted_speedlim, out_dict={}):
     
     ej_flag_dict = {0: "Pop_NonEJArea", 1: "Pop_EJArea"}  # rename keys from 0/1 to more human-readable names
     ej_data = utils.rename_dict_keys(ej_data, ej_flag_dict)
-    ej_data["Pct_PopEJArea"] = ej_data["Pop_EJArea"] / sum(list(ej_data.values()))
+    total_pop = sum(list(ej_data.values()))
+    ej_data["Pct_PopEJArea"] = ej_data["Pop_EJArea"] / total_pop if total_pop > 0 else 0
     
     accdata_ej = acc.get_acc_data(fc_project, params.accdata_fc, projtyp, get_ej=True)  # EJ accessibility data
     ej_data.update(accdata_ej)
@@ -131,7 +154,11 @@ def get_singleyr_data(fc_project, projtyp, adt, posted_speedlim, out_dict={}):
     # for base dict, add items that only have a base year value (no future year values)
     for d in [accdata, collision_data, complete_street_score, truck_route_pct, pct_adt_truck, ag_acres, intersxn_data,
               npmrds_data, transit_data, bikeway_data, infill_status, job_du_dens, ej_data]:
-        out_dict_base.update(d)
+        if d is None:
+            continue
+        else:
+            out_dict_base.update(d)
+            
 
     outdf = pd.DataFrame.from_dict(out_dict_base, orient=df_orient_val)
     
@@ -152,8 +179,9 @@ def get_multiyear_data(project_fc, project_type, base_df, analysis_year):
     ilut_buff_vals = lu_pt_buff.point_sum(fc_pcl_pt, project_fc, project_type, ilut_val_fields,
                                           params.ilut_sum_buffdist, case_field=None, case_excs_list=[])
 
-    ilut_indjob_share = {"{}_jobshare".format( params.col_empind): ilut_buff_vals[ params.col_empind] / ilut_buff_vals[ params.col_emptot]}
-    ilut_buff_vals.update(ilut_indjob_share)
+    ilut_indjob_share = ilut_buff_vals[params.col_empind] / ilut_buff_vals[params.col_emptot] if ilut_buff_vals[params.col_emptot] > 0 else 0
+    ilut_indjob_dval = {"{}_jobshare".format( params.col_empind): ilut_buff_vals[params.col_empind] / ilut_buff_vals[params.col_emptot]}
+    ilut_buff_vals.update(ilut_indjob_dval)
 
     ilut_mode_split = {"{}_share".format(modetrp): ilut_buff_vals[modetrp] / ilut_buff_vals[ params.col_persntrip_res]
                        for modetrp in params.ilut_ptrip_mode_fields}
@@ -191,7 +219,7 @@ def get_multiyear_data(project_fc, project_type, base_df, analysis_year):
     
 if __name__ == '__main__':    
     # =====================================USER/TOOLBOX INPUTS===============================================
-    
+
     # project data
     project_fc_param = arcpy.GetParameterAsText(0) # 
     proj_name = arcpy.GetParameterAsText(1)  # os.path.basename(project_fc) # os.path.basename(project_fc)
@@ -340,14 +368,22 @@ if __name__ == '__main__':
         
     #--------------------------write to master line FC to save/archive project line------------------
 
-    str_perf_outcomes = ';'.join(performance_outcomes)
+    if include_pdf:
+        str_perf_outcomes = ';'.join(performance_outcomes)
+    else:
+        str_perf_outcomes = "Not applied"
     str_timestamp = str(start_time.strftime('%Y-%m-%d %H:%M:%S'))
     proj_field_attribs = {"ProjName": proj_name, "Sponsor": proj_juris, "ProjType": project_type, 
                           "PerfOutcomes": str_perf_outcomes, "ADT": adt, "SpeedLmt": project_speedlim, "PCI": pci, 
                           "TimeCreated": str_timestamp, "RunSuccess": out_status}
     
     append_result = utils.append_proj_to_master_fc(project_fc, proj_field_attribs, params.all_projects_fc)
-    arcpy.AddMessage(append_result)
-    
+
+    # show error if project line isn't archived correctly
+    if append_result[0] == params.msg_ok:
+        pass
+    else:
+        arcpy.AddMessage(append_result[0])
+
 
 

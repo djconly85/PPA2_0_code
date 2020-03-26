@@ -1,3 +1,11 @@
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = '\\\\arcserver-svr\\D\\PPA_v2_SVR'
+# Esri end of added variables
+
 """
 Name: ppa_input_params.py
 Purpose: Stores all input parameter values for SACOG Project Performance Assessment Tool v2.0
@@ -14,13 +22,13 @@ Python Version: 3.x
 
 import os
 # ========================================INPUT DATA LAYERS===================================================== 
-server_folder = r'\\arcserver-svr\D\PPA_v2_SVR'
+server_folder = g_ESRI_variable_1
 
 #to trick publishing service to not mangle the file path to the working GDB
 gdb_name_disguise = 'PPA_V2xGDB'
 gdb_name = gdb_name_disguise.replace('x','.')
 
-fgdb = os.path.join(server_folder, gdb_name)
+fgdb = os.path.join(server_folder, r"PPA2_GIS_SVR\owner_PPA.sde")  # os.path.join(server_folder, gdb_name)
 
 # input feature classes
 region_fc = 'sacog_region'
@@ -99,13 +107,15 @@ perf_outcomes_commdesign = ['1TranspoChoice', '2CompactDev', '3MixedUseDev',
 
 
 xlsx_import_sheet = 'import'
+xlsx_titlepg_sheet = '0ATitlePg'
+tstamp_cell = 'A44' # cell where report generation time stamp will be written
 
 # regardless of which perf outcomes user selects, these tabs will be printed to
 # every PDF report for the selected project type.
-sheets_all_reports = {ptype_arterial: ['0ATitlePg', '0BUsingThisReport','8SocioEconEquity'],
-                      ptype_sgr: ['0ATitlePg', '0BUsingThisReport','8SocioEconEquity'],
-                      ptype_commdesign: ['0ATitlePg', '0BUsingThisReport'],
-                      ptype_fwy: ['0ATitlePg', '0BUsingThisReport']}
+sheets_all_reports = {ptype_arterial: [xlsx_titlepg_sheet, '0BUsingThisReport','8SocioEconEquity'],
+                      ptype_sgr: [xlsx_titlepg_sheet, '0BUsingThisReport','8SocioEconEquity'],
+                      ptype_commdesign: [xlsx_titlepg_sheet, '0BUsingThisReport'],
+                      ptype_fwy: [xlsx_titlepg_sheet, '0BUsingThisReport']}
 
 # params related to inserting maps into report
 aprx_path = os.path.join(server_folder, r"PPA2_GIS_SVR\PPA2_GIS_SVR_v2.aprx")
@@ -314,4 +324,5 @@ threshold_val = 0.9  # if more than 90% of project length is in greenfield, then
 # for measuring loss in acres of natural resources within project area (nat resources = forest, parks, ag land)
 buff_nat_resources = 2640 #feet. Is area of consideration when measuring acres of natural resources lost within project area.
 lutypes_nat_resources = ['Forest', 'Agriculture', ]
+
 

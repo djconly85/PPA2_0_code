@@ -1,3 +1,12 @@
+# Esri start of added imports
+import sys, os, arcpy
+# Esri end of added imports
+
+# Esri start of added variables
+g_ESRI_variable_1 = 'fl_accdata'
+g_ESRI_variable_2 = 'fl_project'
+# Esri end of added variables
+
 # --------------------------------
 # Name: accessibility_calcs.py
 # Purpose: PPA accessibility metrics using Sugar-access polygons (default is census block groups)
@@ -9,6 +18,7 @@
 # Copyright:   (c) SACOG
 # Python Version: 3.x
 # --------------------------------
+import time
 import arcpy
 
 import ppa_input_params as params
@@ -21,9 +31,10 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
     Average accessibility is weighted by each polygon's population.'''
     
     arcpy.AddMessage("Calculating accessibility metrics...")
-
-    fl_accdata = "fl_accdata"
-    fl_project = "fl_project"
+    
+    sufx = int(time.clock()) + 1
+    fl_accdata = os.path.join('memory','fl_accdata{}'.format(sufx))
+    fl_project = g_ESRI_variable_2
 
     if arcpy.Exists(fl_project): arcpy.Delete_management(fl_project)
     arcpy.MakeFeatureLayer_management(fc_project, fl_project)
@@ -62,5 +73,6 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
             out_dict[col] = out_wtd_acc
 
     return out_dict
+
 
 
