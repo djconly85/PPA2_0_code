@@ -166,7 +166,7 @@ class Publish(object):
         #xlsx related params
         self.xl_out_path = os.path.join(self.out_folder, self.xl_out)
         shutil.copyfile(xl_template, self.xl_out_path)
-        self.xl_workbook = openpyxl.load_workbook(self.xl_template) #work off of a copy of the template, so template remains free. Important for multi-user reliability.
+        self.xl_workbook = openpyxl.load_workbook(self.xl_out_path) #work off of a copy of the template, so template remains free. Important for multi-user reliability.
 
 
     def overwrite_df_to_xlsx(self, unused=0, start_row=0, start_col=0):  # why does there need to be an argument?
@@ -349,6 +349,26 @@ class Publish(object):
         img_obj = Image(img_file)
         ws.add_image(img_obj, cell)
         
+    def move_sheets(self, sheets_to_move):
+    
+        sheet_objs = self.xl_workbook._sheets
+        # title_posn = wb.sheetnames.index(params.xlsx_titlepg_sheet)
+        disclaimer_posn = self.xl_workbook.sheetnames.index(params.xlsx_disclaimer_sheet)
+        
+        for i, sheet in enumerate(sheets_to_move):
+            start_pos = self.xl_workbook.sheetnames.index(sheet)
+            posns_to_move = i + 1
+            destination = disclaimer_posn + posns_to_move
+            
+            sheet_obj2move = sheet_objs.pop(start_pos) # cut sheet out of original position
+            sheet_objs.insert(destination, sheet_obj2move) # paste into desired position
+
+    def color_sheets(self, sheet_names):
+        for sheet_name in sheet_names:
+            sheet_posn = self.xl_workbook.sheetnames.index(sheet_name)
+            sheet_obj = self.xl_workbook._sheets[sheet_posn]
+            sheet_obj.sheet_properties.tabColor = "45b045" # RGB color code
+        
     def make_new_excel(self):
         try:
             '''takes excel template > writes new values to import/updates charts, then inserts indicated images at specified locations'''
@@ -396,7 +416,26 @@ class Publish(object):
             tstamp = dt.datetime.strftime(dt.datetime.now(),"%m-%d-%Y %H:%M")
             self.xl_workbook[params.xlsx_titlepg_sheet][params.tstamp_cell] = tstamp
             
+            # move sheets with user-selected perf outcomes to be at front Final order will be: title, disclaimer, <3 perf sheets>, soc equity outcome
+            selected_report_sheets = self.xlsheets_to_pdf + [params.xlsx_socequity_sheet]
+            self.move_sheets(selected_report_sheets)
+            
+            # then highlight all the tabs the user should print out (title, selected perf outcomes, etc)
+            # leader_sheets = [params.xlsx_titlepg_sheet, params.xlsx_disclaimer_sheet]
+            # sheets_to_color = leader_sheets + selected_report_sheets  # [title, disclaimer, <3 user-selected outcome reports>, social equity outcome report]
+
+            sheets_to_color = self.sheets_all_rpts  # [title, disclaimer, potentially soc equity sheet]
+
+            # insert user-selected perf outcome sheets to get [title, disclaimer, <3 perf outcomes>, potentially soc equity sheet]
+            for i, sheet in enumerate(self.xlsheets_to_pdf):
+                idxstart = sheets_to_color.index(params.xlsx_disclaimer_sheet)
+                ins_posn = idxstart + i + 1
+                sheets_to_color.insert(ins_posn, sheet)
+                
+            self.color_sheets(sheets_to_color)
+            
             self.xl_workbook.save(self.xl_out_path)
+            
             t_returns = (params.msg_ok, self.xl_out_path)
         except:
             msg = "{}".format(trace())

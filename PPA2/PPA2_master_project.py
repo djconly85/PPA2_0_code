@@ -3,7 +3,7 @@ import sys, os, arcpy
 # Esri end of added imports
 
 # Esri start of added variables
-g_ESRI_variable_1 = 'memory/temp_intersect_fc'
+# g_ESRI_variable_1 = 'memory/temp_intersect_fc'
 # Esri end of added variables
 
 """
@@ -55,6 +55,8 @@ def get_proj_ctype(in_project_fc, commtypes_fc):
     arcpy.Intersect_analysis([in_project_fc, commtypes_fc], temp_intersect_fc, "ALL", 
                              0, "LINE")
     
+    item_cnt = arcpy.GetCount_management(temp_intersect_fc)[0]
+    arcpy.AddMessage("Project segments after intersecting with comm types: {}".format(item_cnt))
     len_field = 'SHAPE@LENGTH'
     fields = ['OBJECTID', len_field, params.col_ctype]
     ctype_dist_dict = {}
@@ -180,7 +182,7 @@ def get_multiyear_data(project_fc, project_type, base_df, analysis_year):
                                           params.ilut_sum_buffdist, case_field=None, case_excs_list=[])
 
     ilut_indjob_share = ilut_buff_vals[params.col_empind] / ilut_buff_vals[params.col_emptot] if ilut_buff_vals[params.col_emptot] > 0 else 0
-    ilut_indjob_dval = {"{}_jobshare".format( params.col_empind): ilut_buff_vals[params.col_empind] / ilut_buff_vals[params.col_emptot]}
+    ilut_indjob_dval = {"{}_jobshare".format( params.col_empind): ilut_indjob_share}
     ilut_buff_vals.update(ilut_indjob_dval)
 
     ilut_mode_split = {"{}_share".format(modetrp): ilut_buff_vals[modetrp] / ilut_buff_vals[ params.col_persntrip_res]
@@ -368,11 +370,9 @@ if __name__ == '__main__':
         
     #--------------------------write to master line FC to save/archive project line------------------
 
-    if include_pdf:
-        str_perf_outcomes = ';'.join(performance_outcomes)
-    else:
-        str_perf_outcomes = "Not applied"
+    str_perf_outcomes = ';'.join(performance_outcomes)
     str_timestamp = str(start_time.strftime('%Y-%m-%d %H:%M:%S'))
+    
     proj_field_attribs = {"ProjName": proj_name, "Sponsor": proj_juris, "ProjType": project_type, 
                           "PerfOutcomes": str_perf_outcomes, "ADT": adt, "SpeedLmt": project_speedlim, "PCI": pci, 
                           "TimeCreated": str_timestamp, "RunSuccess": out_status}

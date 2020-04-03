@@ -107,15 +107,17 @@ perf_outcomes_commdesign = ['1TranspoChoice', '2CompactDev', '3MixedUseDev',
 
 
 xlsx_import_sheet = 'import'
+xlsx_disclaimer_sheet = '0BUsingThisReport'
 xlsx_titlepg_sheet = '0ATitlePg'
+xlsx_socequity_sheet = '8SocioEconEquity'
 tstamp_cell = 'A44' # cell where report generation time stamp will be written
 
 # regardless of which perf outcomes user selects, these tabs will be printed to
 # every PDF report for the selected project type.
-sheets_all_reports = {ptype_arterial: [xlsx_titlepg_sheet, '0BUsingThisReport','8SocioEconEquity'],
-                      ptype_sgr: [xlsx_titlepg_sheet, '0BUsingThisReport','8SocioEconEquity'],
-                      ptype_commdesign: [xlsx_titlepg_sheet, '0BUsingThisReport'],
-                      ptype_fwy: [xlsx_titlepg_sheet, '0BUsingThisReport']}
+sheets_all_reports = {ptype_arterial: [xlsx_titlepg_sheet, xlsx_disclaimer_sheet, xlsx_socequity_sheet],
+                      ptype_sgr: [xlsx_titlepg_sheet, xlsx_disclaimer_sheet, xlsx_socequity_sheet],
+                      ptype_commdesign: [xlsx_titlepg_sheet, xlsx_disclaimer_sheet],
+                      ptype_fwy: [xlsx_titlepg_sheet, xlsx_disclaimer_sheet]}
 
 # params related to inserting maps into report
 aprx_path = os.path.join(server_folder, r"PPA2_GIS_SVR\PPA2_GIS_SVR_v2.aprx")
