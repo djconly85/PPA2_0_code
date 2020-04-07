@@ -14,7 +14,7 @@ Python Version: 3.x
 """
 import os
 import datetime as dt
-import pdb
+# import pdb
 
 import pandas as pd
 import arcpy
@@ -31,8 +31,8 @@ import bigdata_tripshed as tripshed
 class TripShedAnalysis(object):
     
     def __init__(self, project_name, in_data_files, data_fields, tripdata_val_field, tripdata_agg_fxn, tripdata_groupby_field,
-                   in_poly_fc, out_poly_fc_raw, out_poly_fc_filled, poly_id_field, filler_poly_fc, analysis_years, 
-                   tripdata_case_fields, run_full_report=False, xlsx_template_path=None):
+                   in_poly_fc, poly_id_field, filler_poly_fc, tripdata_case_fields, out_tripshed_gdb,
+                   run_full_report=False, rpt_analysis_years=None, xlsx_template_path=None):
         '''
 
         Parameters
@@ -49,9 +49,6 @@ class TripShedAnalysis(object):
             DESCRIPTION. Group by this field to get the rows of the aggregated trip data (e.g. trips by block group ID, TAZ, etc.)
         in_poly_fc : TYPE = ESRI feature class
             DESCRIPTION. Polygons that you want to group trips into (e.g. TAZs, block group IDs, etc)
-        out_poly_fc_raw : TYPE = ESRI feature class
-            DESCRIPTION. trip shed polygon, raw with any holes if no trips originated in that area
-        out_poly_fc_filled = trip shed polygon with holes filled
         poly_id_field : TYPE = ESRI feature class
             DESCRIPTION. final trip shed polygon used as analysis area
         filler_poly_fc : TYPE = ESRI feature class
@@ -71,22 +68,22 @@ class TripShedAnalysis(object):
         
         # user-entered params
         self.project_name = project_name
-        self.in_data_files = in_data_files
+        self.in_data_files = [fpath.strip("'") for fpath in in_data_files.split(';')]
         self.data_fields = data_fields
         self.tripdata_val_field = tripdata_val_field
         self.tripdata_agg_fxn = tripdata_agg_fxn
         self.tripdata_groupby_field = tripdata_groupby_field
         self.in_poly_fc = in_poly_fc
-        self.out_poly_fc_raw = out_poly_fc_raw
-        self.out_poly_fc_filled = out_poly_fc_filled
         self.poly_id_field = poly_id_field
         self.filler_poly_fc = filler_poly_fc
-        self.analysis_years = analysis_years
+        self.analysis_years = rpt_analysis_years
         self.tripdata_case_fields = tripdata_case_fields
+        self.fc_tripshed_out_filled = os.path.join(out_tripshed_gdb, project_name)
         self.run_full_report = run_full_report
         self.xlsx_template = xlsx_template_path
         
         # hard-coded args
+        self.out_poly_fc_raw = os.path.join(arcpy.env.scratchGDB, "TripShedRaw_{}{}".format(proj_name, timesufx))
         self.df_col_trip_pct = 'pct_of_trips'
         self.col_tottrips = 'tot_trips'
         self.col_trippctlrank = 'trips_pctlrank'
@@ -95,9 +92,8 @@ class TripShedAnalysis(object):
         self.ws_tshed_data = 'df_tshed_data'
         self.ws_trip_modes = 'df_trip_modes'
         self.ws_trip_purposes = 'df_trip_purposes'
-        self.xlsx_out_dir = arcpy.env.scratchFolder
         xlsx_out = '{}_TripShedAnalysis_{}.xlsx'.format(proj_name, timesufx)
-        self.xlsx_out = os.path.join(self.xlsx_out_dir, xlsx_out)
+        self.xlsx_out = os.path.join(arcpy.env.scratchFolder, xlsx_out)
         
         
         # derived/calculated args
@@ -202,7 +198,7 @@ class TripShedAnalysis(object):
 
 
     def create_raw_tripshed_poly(self, in_df):
-        print("creating raw tripshed polygon...")
+        arcpy.AddMessage("creating raw tripshed polygon...")
         in_poly_fc = self.in_poly_fc
         out_poly_fc = self.out_poly_fc_raw
         poly_id_field = self.poly_id_field
@@ -216,7 +212,8 @@ class TripShedAnalysis(object):
         
         #make copy of base input poly fc that only has features whose IDs are in the dataframe
         fl_input_polys = 'fl_input_polys'
-        utils.make_fl_conditional(in_poly_fc, fl_input_polys)
+        if arcpy.Exists(fl_input_polys): arcpy.Delete_management(fl_input_polys)
+        arcpy.MakeFeatureLayer_management(in_poly_fc, fl_input_polys)
         
         df_ids = tuple(in_df[df_grouby_field])
         
@@ -232,7 +229,7 @@ class TripShedAnalysis(object):
         
         # populate those fields with the dataframe data
         for field in fields_dtype_dict.keys():
-            print("adding {} column and data...".format(field))
+            arcpy.AddMessage("adding {} column and data...".format(field))
             field_vals = list(in_df[field]) # get list of values for desired field
             fld_dict = dict(zip(df_ids, field_vals))
             
@@ -282,7 +279,6 @@ class TripShedAnalysis(object):
             '''
         
         
-        print("filling in gaps in trip shed polygon...")
         full_poly_fc = self.in_poly_fc
         raw_tripshed_fc = self.out_poly_fc_raw
         filler_fc = self.filler_poly_fc
@@ -295,8 +291,11 @@ class TripShedAnalysis(object):
         fl_full_poly = 'fl_full_poly'
         fl_tripshed = 'fl_tripshed'
         
-        utils.make_fl_conditional(full_poly_fc, fl_full_poly)
-        utils.make_fl_conditional(raw_tripshed_fc, fl_tripshed)
+        if arcpy.Exists(fl_full_poly): arcpy.Delete_management(fl_full_poly)
+        arcpy.MakeFeatureLayer_management(full_poly_fc, fl_full_poly)
+        
+        if arcpy.Exists(fl_tripshed): arcpy.Delete_management(fl_tripshed)
+        arcpy.MakeFeatureLayer_management(raw_tripshed_fc, fl_tripshed)
         
         # attribute join raw trip shed FC to full set of polygons FC
         arcpy.AddJoin_management(fl_full_poly, self.poly_id_field, fl_tripshed, self.poly_id_field)
@@ -310,7 +309,9 @@ class TripShedAnalysis(object):
         arcpy.FeatureClassToFeatureClass_conversion(fl_full_poly, scratch_gdb, temp_joined_fc)
         
         temp_joined_fl = 'temp_joined_fl'
-        utils.make_fl_conditional(temp_joined_fc_path, temp_joined_fl)
+        
+        if arcpy.Exists(temp_joined_fl): arcpy.Delete_management(temp_joined_fl)
+        arcpy.MakeFeatureLayer_management(temp_joined_fc_path, temp_joined_fl)
         
         # add field to joined FC indicating 1/0 if it's part of trip shed. default zero. 1 if there's a join match
         fld_tripshedind = "TripShed"
@@ -320,7 +321,10 @@ class TripShedAnalysis(object):
         
         # spatial select features that share a line with raw trip shed
         raw_tripshed_fl = 'raw_tripshed_fl'
-        utils.make_fl_conditional(raw_tripshed_fc, raw_tripshed_fl)
+        
+        arcpy.AddMessage("filling in gaps in trip shed polygon...")
+        if arcpy.Exists(raw_tripshed_fl): arcpy.Delete_management(raw_tripshed_fl)
+        arcpy.MakeFeatureLayer_management(raw_tripshed_fc, raw_tripshed_fl)
         
         arcpy.SelectLayerByLocation_management(temp_joined_fl, "SHARE_A_LINE_SEGMENT_WITH", raw_tripshed_fl)
         
@@ -354,7 +358,9 @@ class TripShedAnalysis(object):
         
         if arcpy.Exists(temp_union_fc_path): arcpy.Delete_management(temp_union_fc_path)
         arcpy.Union_analysis([temp_fc_step2_path, filler_fc], temp_union_fc_path)
-        utils.make_fl_conditional(temp_union_fc_path, temp_union_fl)
+        
+        if arcpy.Exists(temp_union_fl): arcpy.Delete_management(temp_union_fl)
+        arcpy.MakeFeatureLayer_management(temp_union_fc_path, temp_union_fl)
         
         # From union result, select where tripshed joined FID = -1 (parts of the region polygon that fall outside of the tripshed polygon)
         fld_fid = 'FID_{}'.format(temp_fc_step2)
@@ -369,7 +375,9 @@ class TripShedAnalysis(object):
         
         if arcpy.Exists(temp_singleprt_polys_fc_path): arcpy.Delete_management(temp_singleprt_polys_fc_path)
         arcpy.MultipartToSinglepart_management(temp_union_fl, temp_singleprt_polys_fc_path)
-        utils.make_fl_conditional(temp_singleprt_polys_fc_path, temp_singleprt_polys_fl)
+        
+        if arcpy.Exists(temp_singleprt_polys_fl): arcpy.Delete_management(temp_singleprt_polys_fl)
+        arcpy.MakeFeatureLayer_management(temp_singleprt_polys_fc_path, temp_singleprt_polys_fl)
         
         
         # From the multipart, select all but the geographically largest polygon and union to the block-group file
@@ -387,8 +395,8 @@ class TripShedAnalysis(object):
 
         # Merge the "hole fillers" with the expanded trip shed (i.e., raw trip shed + "share a line segment" polys added to it).
         # Result will be block group trip shed, with the holes filled in with non-block-group “hole filler” polygons       
-        if arcpy.Exists(self.out_poly_fc_filled): arcpy.Delete_management(self.out_poly_fc_filled)
-        arcpy.Merge_management([temp_fc_step2_path, temp_singleprt_polys_fl], self.out_poly_fc_filled)
+        if arcpy.Exists(self.fc_tripshed_out_filled): arcpy.Delete_management(self.fc_tripshed_out_filled)
+        arcpy.Merge_management([temp_fc_step2_path, temp_singleprt_polys_fl], self.fc_tripshed_out_filled)
         
         for fc in [temp_joined_fc_path, temp_fc_step2_path, temp_union_fc_path, temp_singleprt_polys_fc_path]:
             try:
@@ -448,8 +456,8 @@ class TripShedAnalysis(object):
         
         # get PPA buffer data for trip shed (including all ILUT data, etc.)
         if self.run_full_report and self.xlsx_template:
-            print("\nsummarizing PPA metrics for trip shed polygon...")
-            df_tsheddata = tripshed.get_tripshed_data(self.out_poly_fc_filled, params.ptype_area_agg, 
+            arcpy.AddMessage("\nsummarizing PPA metrics for trip shed polygon...")
+            df_tsheddata = tripshed.get_tripshed_data(self.fc_tripshed_out_filled, params.ptype_area_agg, 
                                                       self.analysis_years, params.aggvals_csv, base_dict={})
             df_tsheddata = df_tsheddata.reset_index()
             df_tshed_data_out = self.join2xl_import_template(self.xlsx_template, self.ws_tshed_data, df_tsheddata, df_tsheddata.columns[0])
@@ -474,28 +482,40 @@ class TripShedAnalysis(object):
             wb.save(self.xlsx_out)
             wb.close()
             
-            print("Success! output Excel Summary - {}".format(self.xlsx_out))
+            arcpy.AddMessage("Success! output Excel Summary - {}".format(self.xlsx_out))
+            
+            t_returns = ("Yes report", self.xlsx_out)
 
         else:
-            return 'trip shed report not run'
+            arcpy.AddMessage('trip shed report not run')
+            t_returns = ("No report",)
+            
+        return t_returns
 
 
 if __name__ == '__main__':
     
     # ------------------USER INPUTS----------------------------------------
     
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    tripdata_files = arcpy.GetParameterAsText(0)  # list of input CSVs from   # ['trips_listGrantLineNOJacksonThu.zip']  # os.listdir(r'C:\TEMP_OUTPUT\ReplicaDownloads\SR51_AmRiver')
+    tripshed_out_gdb = arcpy.GetParameterAsText(1) # specify where you want output feature class to go
+    proj_name = arcpy.GetParameterAsText(2)
+    run_full_shed_report = arcpy.GetParameterAsText(3) #boolean - if you want to have trip shed report made or just make trip shed poly FC
+    arcpy.AddMessage("make XLSX = {}".format(run_full_shed_report))
     
-    dir_tripdata = r'C:\TEMP_OUTPUT\ReplicaDownloads'
-    tripdata_files = ['trips_listGrantLineNOJacksonThu.zip']  # os.listdir(r'C:\TEMP_OUTPUT\ReplicaDownloads\SR51_AmRiver')
-    csvcol_bgid = 'origin_blockgroup_id'  # Replica/big data block group ID column
+    arcpy.env.workspace = params.fgdb #gdb with all input data layers if full report needed.
+    
+    # dir_tripdata = r'C:\TEMP_OUTPUT\ReplicaDownloads'
+    
+    csvcol_obgid = 'origin_blockgroup_id'  # Replica/big data block group ID column
+    csvcol_dbgid = 'destination_blockgroup_id'
     csvcol_mode = 'trip_primary_mode'  # Replica/big data trip mode column
     csvcol_purpose = 'travel_purpose'  # Replica/big data trip purpose column
     csvcol_valfield = 'trip_start_time' # field for which you want to aggregate values
     val_aggn_type = 'count'  # how you want to aggregate the values field (e.g. count of values, sum of values, avg, etc.)
     
     #community-type and region-level values for comparison to project-level values
-    aggvals_csv = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\PPA2\Input_Template\CSV\Agg_ppa_vals02042020_0825.csv"
+    aggvals_csv = params.aggvals_csv
     
     # feature class of polygons to which you'll join data to based on ID field
     fc_bg_in = "BlockGroups2010"
@@ -505,32 +525,32 @@ if __name__ == '__main__':
     
     years = [2016, 2040] # analysis years for ILUT data
     
-    xlsx_template = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\Replica\Replica_Summary_Template.xlsx"
-    xlsx_out_dir = r"C:\TEMP_OUTPUT\ReplicaTripShed"
+    xlsx_template = os.path.join(params.template_dir, "Replica_Summary_Template.xlsx")
     
-    
-    run_full_shed_report = True
+
 
     #------------RUN SCRIPT------------------------------------
-    proj_name = input('Enter project name (numbers, letters, and underscores only): ')
+    arcpy.env.overwriteOutput = True
+    # proj_name = input('Enter project name (numbers, letters, and underscores only): ')
     
     timesufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
-    os.chdir(dir_tripdata)
+    # os.chdir(dir_tripdata)
     
-
-    fc_tripshed_out_raw = "TripShedRaw_{}{}".format(proj_name, timesufx)
-    fc_tripshed_out_filled = "TripShedFilled_{}{}".format(proj_name, timesufx)
     
-    trip_data_fields = ['travel_purpose', 'origin_blockgroup_id', 'destination_blockgroup_id', 
-                        'trip_primary_mode', 'trip_start_time'] #fields to use from Replica trip data CSVs
+    trip_data_fields = [csvcol_purpose, csvcol_obgid, csvcol_dbgid, csvcol_mode, csvcol_valfield] #fields to use from Replica trip data CSVs
     
     tripdata_case_fields = [csvcol_mode, csvcol_purpose]
     
-    trip_shed = TripShedAnalysis(proj_name, tripdata_files, trip_data_fields, csvcol_valfield, val_aggn_type, csvcol_bgid,
-                   fc_bg_in, fc_tripshed_out_raw, fc_tripshed_out_filled, fc_poly_id_field, fc_filler, years, tripdata_case_fields, 
-                   run_full_shed_report, xlsx_template)
+    trip_shed = TripShedAnalysis(proj_name, tripdata_files, trip_data_fields, csvcol_valfield, val_aggn_type, csvcol_obgid,
+                   fc_bg_in, fc_poly_id_field, fc_filler, tripdata_case_fields, tripshed_out_gdb, 
+                   run_full_shed_report, years, xlsx_template)
     
     outputs = trip_shed.make_trip_shed_report()
+    
+    if outputs[0] == "Yes report":
+        arcpy.SetParameterAsText(4, outputs[1]) #return link to view XLSX trip shed report
+    else:
+        arcpy.SetParameterAsText(4, None)
     
     
         

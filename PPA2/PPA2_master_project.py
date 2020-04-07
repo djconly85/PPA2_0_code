@@ -20,9 +20,7 @@ Python Version: 3.x
 """
 
 import datetime as dt
-import os
 
-import arcpy
 import pandas as pd
 
 import ppa_input_params as params
@@ -55,8 +53,8 @@ def get_proj_ctype(in_project_fc, commtypes_fc):
     arcpy.Intersect_analysis([in_project_fc, commtypes_fc], temp_intersect_fc, "ALL", 
                              0, "LINE")
     
-    item_cnt = arcpy.GetCount_management(temp_intersect_fc)[0]
-    arcpy.AddMessage("Project segments after intersecting with comm types: {}".format(item_cnt))
+    intersect_cnt = arcpy.GetCount_management(temp_intersect_fc)[0]
+    arcpy.AddMessage("Project segments after intersecting with comm types: {}".format(intersect_cnt))
     len_field = 'SHAPE@LENGTH'
     fields = ['OBJECTID', len_field, params.col_ctype]
     ctype_dist_dict = {}

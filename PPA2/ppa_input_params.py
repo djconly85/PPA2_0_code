@@ -18,9 +18,6 @@ Copyright:   (c) SACOG
 Python Version: 3.x
 """
 
-
-
-import os
 # ========================================INPUT DATA LAYERS===================================================== 
 server_folder = g_ESRI_variable_1
 
