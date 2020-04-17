@@ -1,8 +1,13 @@
-# -*- coding: utf-8 -*-
 """
-Spyder Editor
-
-This is a temporary script file.
+Name: summarize_model_tranlink_vols.py
+Purpose: takes in DBF created from SACSIM model run and returns CSV of model A_B links with transit trip totals on each link.
+        
+          
+Author: Darren Conly
+Last Updated: 11/2019
+Updated by: <name>
+Copyright:   (c) SACOG
+Python Version: 3.x
 """
 
 from dbfread import DBF

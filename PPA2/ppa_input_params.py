@@ -21,15 +21,11 @@ Python Version: 3.x
 # ========================================INPUT DATA LAYERS===================================================== 
 server_folder = g_ESRI_variable_1
 
-#to trick publishing service to not mangle the file path to the working GDB
-gdb_name_disguise = 'PPA_V2xGDB'
-gdb_name = gdb_name_disguise.replace('x','.')
-
 fgdb = os.path.join(server_folder, r"PPA2_GIS_SVR\owner_PPA.sde")  # os.path.join(server_folder, gdb_name)
 
 # input feature classes
 region_fc = 'sacog_region'
-fc_speed_data = 'npmrds_metrics_v7' #npmrds speed data
+fc_speed_data = 'npmrds_metrics_v8' #npmrds speed data
 accdata_fc = 'Sugar_access_data_latest' # sugar accessibility polygon data
 collisions_fc = 'Collisions2014to2018fwytag' # collision point data
 trn_svc_fc = 'transit_stoplocn_w_eventcount_2016' # transit stop event data; point file

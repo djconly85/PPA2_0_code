@@ -61,13 +61,16 @@ def get_proj_ctype(in_project_fc, commtypes_fc):
     
     with arcpy.da.SearchCursor(temp_intersect_fc, fields) as cur:
         for row in cur:
-            ctype = row[fields.index(params.col_ctype)]
-            seg_len = row[fields.index(len_field)]
+            try:
+                ctype = row[fields.index(params.col_ctype)]
+                seg_len = row[fields.index(len_field)]
             
-            if ctype_dist_dict.get(ctype) is None:
-                ctype_dist_dict[ctype] = seg_len
-            else:
-                ctype_dist_dict[ctype] += seg_len
+                if ctype_dist_dict.get(ctype) is None:
+                    ctype_dist_dict[ctype] = seg_len
+                else:
+                    ctype_dist_dict[ctype] += seg_len
+            except:
+                arcpy.AddMessage(utils.trace())
     try:
         maxval = max([v for k, v in ctype_dist_dict.items()])
         proj_ctype = [k for k, v in ctype_dist_dict.items() if v == maxval][0]

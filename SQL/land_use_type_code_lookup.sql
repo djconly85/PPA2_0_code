@@ -1,3 +1,20 @@
+/*
+Name:land_use_type_code_lookup.sql
+Purpose: Gets "plain English" land use type code from Envision Tomorrow table
+	Output is used to help display the housing types in human-readable form for
+	Community Design report
+           
+Author: Darren Conly
+Last Updated: 11/2019
+Updated by: <name>
+Copyright:   (c) SACOG
+SQL Flavor: SQL Server
+*/
+
+USE MTP2020
+GO
+
+--Create simple lookup table corresponding land use type descriptions to type codes.
 SELECT DISTINCT
 	CONVERT(VARCHAR(MAX), LU_SCNYR) AS LU_SCNYR,
 	TYPE_CODE
@@ -18,7 +35,7 @@ ORDER BY TYPE_CODE
 --ORDER BY TYPE_CODE
 
 
---add type code to 2016 ilut
+--add type code number to 2016 ilut table
 SELECT
 	i.*,
 	e.TYPE_CODE
@@ -28,7 +45,7 @@ FROM mtpuser.ilut_combined2016_23 i
 		ON i.parcelid = e.parcelid
 
 
---add type code to 2040 ilut
+--add type code to 2040 ilut table
 --BEWARE THAT 2040 ENVISION TOMORROW DOES NOT INCLUDE ALL 836,636 PARCELS SO WHERE TYPE CODE IS NULL FOR 2040 THE 2016 TYPE CODE IS USED.
 SELECT
 	i.*,

@@ -5,7 +5,7 @@ Purpose: Get data for each TMC for PPA 2.0 calcs:
 	Road name,
 	Road number,
 	F_System,
-	off-peak free-flow speed (85th pctl for fwys; for arterials is 60th pctl to account for signal delay, 8pm-6am, all days),
+	off-peak free-flow (85th pctl for fwys; for arterials is 70th pctl to account for signal delay) speed (8pm-6am, all days),
 	80th percentile TT:
 		Weekdays 6am-10am
 		Weekdays 10am-4pm
@@ -200,8 +200,8 @@ SELECT
 	COUNT(*) AS epochs_night
 INTO #offpk_85th_epochs
 FROM npmrds_2018_alltmc_paxtruck_comb
-WHERE DATEPART(hh,measurement_tstamp) >= 20 --@FFprdStart
-		OR DATEPART(hh,measurement_tstamp) < 6 --@FFprdEnd
+WHERE DATEPART(hh,measurement_tstamp) >= 20--@FFprdStart
+		OR DATEPART(hh,measurement_tstamp) < 6--@FFprdEnd
 GROUP BY tmc_code
 
 
@@ -210,13 +210,13 @@ SELECT
 	tt.tmc_code,
 	DATEPART(hh,tt.measurement_tstamp) AS hour_of_day,
 	COUNT(*) AS total_epochs_hr,
-	ff.ff_speed_art60thp,
+	ff.ff_speed_art70thp,
 	COUNT(*) / SUM(1.0/tt.speed) AS havg_spd_weekdy,
 	AVG(tt.travel_time_seconds) AS avg_tt_sec_weekdy,
-	(COUNT(*) / SUM(1.0/tt.speed)) / ff.ff_speed_art60thp AS cong_ratio_hr_weekdy,
+	(COUNT(*) / SUM(1.0/tt.speed)) / ff.ff_speed_art70thp AS cong_ratio_hr_weekdy,
 	RANK() OVER (
 		PARTITION BY tt.tmc_code 
-		ORDER BY (COUNT(*) / SUM(1.0/tt.speed)) / ff.ff_speed_art60thp ASC
+		ORDER BY (COUNT(*) / SUM(1.0/tt.speed)) / ff.ff_speed_art70thp ASC
 		) AS hour_cong_rank
 INTO #avspd_x_tmc_hour
 FROM npmrds_2018_alltmc_paxtruck_comb tt
@@ -226,7 +226,7 @@ WHERE DATENAME(dw, measurement_tstamp) IN (SELECT day_name FROM @weekdays)
 GROUP BY 
 	tt.tmc_code,
 	DATEPART(hh,measurement_tstamp),
-	ff.ff_speed_art60thp
+	ff.ff_speed_art70thp
 HAVING COUNT(tt.measurement_tstamp) >= 100 --eliminate hours where there's little to no data
 
 
@@ -234,7 +234,7 @@ HAVING COUNT(tt.measurement_tstamp) >= 100 --eliminate hours where there's littl
 SELECT
 	tt.tmc_code,
 	COUNT(*) AS epochs_worst4hrs,
-	ff.ff_speed_art60thp,
+	ff.ff_speed_art70thp,
 	COUNT(*) / SUM(1.0/tt.speed) AS havg_spd_worst4hrs
 INTO #most_congd_hrs
 FROM npmrds_2018_alltmc_paxtruck_comb tt
@@ -248,7 +248,7 @@ WHERE DATENAME(dw, tt.measurement_tstamp) IN (SELECT day_name FROM @weekdays)
 	--AND tt.tmc_code = '105+04687'
 GROUP BY 
 	tt.tmc_code,
-	ff.ff_speed_art60thp
+	ff.ff_speed_art70thp
 
 
 --return most congested hour of the day
@@ -301,14 +301,14 @@ SELECT * FROM (
 		CASE WHEN ffs.ff_speed_art70thp IS NULL THEN -1.0 ELSE ffs.ff_speed_art70thp END AS ff_speed_art70thp,
 		CASE WHEN ffs.ff_speed_art60thp IS NULL THEN -1.0 ELSE ffs.ff_speed_art60thp END AS ff_speed_art60thp,
 		CASE WHEN cong4.havg_spd_worst4hrs IS NULL THEN -1.0 ELSE cong4.havg_spd_worst4hrs END AS havg_spd_worst4hrs,
-		CASE WHEN cong4.havg_spd_worst4hrs / ffs.ff_speed_art60thp IS NULL THEN -1.0 
-			WHEN cong4.havg_spd_worst4hrs / ffs.ff_speed_art60thp > 1 THEN 1.0 --sometimes the overnight speed won't be the fastest speed if there are insufficient data
-			ELSE cong4.havg_spd_worst4hrs / ffs.ff_speed_art60thp
+		CASE WHEN cong4.havg_spd_worst4hrs / ffs.ff_speed_art70thp IS NULL THEN -1.0 
+			WHEN cong4.havg_spd_worst4hrs / ffs.ff_speed_art70thp > 1 THEN 1.0 --sometimes the overnight speed won't be the fastest speed if there are insufficient data
+			ELSE cong4.havg_spd_worst4hrs / ffs.ff_speed_art70thp
 			END AS congratio_worst4hrs,
 		CASE WHEN slowest1.slowest_hr IS NULL THEN -1 ELSE slowest1.slowest_hr END AS slowest_hr,
 		CASE WHEN slowest1.slowest_hr_speed IS NULL THEN -1 ELSE slowest1.slowest_hr_speed END AS slowest_hr_speed,
-		CASE WHEN slowest1.slowest_hr_speed / ffs.ff_speed_art60thp IS NULL THEN -1.0 
-			ELSE slowest1.slowest_hr_speed / ffs.ff_speed_art60thp
+		CASE WHEN slowest1.slowest_hr_speed / ffs.ff_speed_art70thp IS NULL THEN -1.0 
+			ELSE slowest1.slowest_hr_speed / ffs.ff_speed_art70thp
 			END AS congratio_worsthr,
 		CASE WHEN epx.epochs_ampk IS NULL THEN -1 ELSE epx.epochs_ampk END AS epochs_ampk,
 		CASE WHEN epx.epochs_midday IS NULL THEN -1 ELSE epx.epochs_midday END AS epochs_midday,
