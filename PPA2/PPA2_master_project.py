@@ -53,31 +53,33 @@ def get_proj_ctype(in_project_fc, commtypes_fc):
     arcpy.Intersect_analysis([in_project_fc, commtypes_fc], temp_intersect_fc, "ALL", 
                              0, "LINE")
     
-    intersect_cnt = arcpy.GetCount_management(temp_intersect_fc)[0]
+    # debugging messages to find out why ctype tagging intermittently fails
+    intersect_cnt = int(arcpy.GetCount_management(temp_intersect_fc)[0])
+    in_project_cnt = int(arcpy.GetCount_management(in_project_fc)[0])
+    arcpy.AddMessage("project line feature count: {}".format(in_project_cnt))
     arcpy.AddMessage("Project segments after intersecting with comm types: {}".format(intersect_cnt))
+    
     len_field = 'SHAPE@LENGTH'
     fields = ['OBJECTID', len_field, params.col_ctype]
     ctype_dist_dict = {}
     
     with arcpy.da.SearchCursor(temp_intersect_fc, fields) as cur:
         for row in cur:
-            try:
-                ctype = row[fields.index(params.col_ctype)]
-                seg_len = row[fields.index(len_field)]
-            
-                if ctype_dist_dict.get(ctype) is None:
-                    ctype_dist_dict[ctype] = seg_len
-                else:
-                    ctype_dist_dict[ctype] += seg_len
-            except:
-                arcpy.AddMessage(utils.trace())
+            ctype = row[fields.index(params.col_ctype)]
+            seg_len = row[fields.index(len_field)]
+        
+            if ctype_dist_dict.get(ctype) is None:
+                ctype_dist_dict[ctype] = seg_len
+            else:
+                ctype_dist_dict[ctype] += seg_len
     try:
         maxval = max([v for k, v in ctype_dist_dict.items()])
         proj_ctype = [k for k, v in ctype_dist_dict.items() if v == maxval][0]
 
         return proj_ctype
     except:
-        raise ValueError("ERROR: No Community Type identified for project.")
+        raise ValueError("ERROR: No Community Type identified for project. \n{} project line features." \
+                         " {} features in intersect layer.".format(in_project_cnt, in_project_cnt))
 
     
 

@@ -75,4 +75,13 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
     return out_dict
 
 
-
+if __name__ == '__main__':
+    '''This process will be for Sugar post-processing. It may need to be in
+    a separate script, or the input accessibility FC will need to have the column names
+    changed to match those specified in the parameters file.'''
+    fc_project_line = arcpy.GetParameterAsText(0)
+    fc_accessibility_data = arcpy.GetParameterAsText(1)
+    str_project_type = arcpy.GetParameterAsText(2)
+    
+    dict_data = get_acc_data(fc_project_line, fc_accessibility_data, str_project_type)
+    

@@ -34,6 +34,8 @@ intersections_base_fc = 'intersections_2016'
 comm_types_fc = 'comm_type_jurspec_dissolve'
 
 reg_centerline_fc = 'RegionalCenterline_2019'
+reg_artcollcline_fc = 'ArterialCollector_2019' # road centerlines but for collectors and above (no local streets/alleys)
+
 reg_bikeway_fc = 'BikeRte_C1_C2_C4_2017'
 
 proj_line_template_fc = 'Project_Line_Template' # has symbology that the project line will use.
@@ -54,7 +56,7 @@ def model_links_fc(in_year=2016):
 
 # input CSV of community type and regional values for indicated metrics; used to compare how project scores compared to 
 # "typical" values for the region and for the community type in which the project lies.
-aggvals_csv = os.path.join(server_folder, r"PPA2\Input_Template\CSV\Agg_ppa_vals02042020_0825.csv")
+aggvals_csv = os.path.join(server_folder, r"PPA2\Input_Template\CSV\Agg_ppa_vals04222020_1017.csv")
 
 # project type
 ptype_fwy = 'Freeway'
@@ -318,6 +320,6 @@ threshold_val = 0.9  # if more than 90% of project length is in greenfield, then
 
 # for measuring loss in acres of natural resources within project area (nat resources = forest, parks, ag land)
 buff_nat_resources = 2640 #feet. Is area of consideration when measuring acres of natural resources lost within project area.
-lutypes_nat_resources = ['Forest', 'Agriculture', ]
+lutypes_nat_resources = ['Forest', 'Agriculture', lutype_parks]
 
 

@@ -118,7 +118,7 @@ def get_collision_data(fc_project, project_type, fc_colln_pts, project_adt):
         vmt_dict = get_model_link_sums(fc_project, fc_model_links)
         dayvmt = vmt_dict[params.col_dayvmt]
         ann_proj_vmt = dayvmt * 320
-        proj_len_mi = get_centerline_miles(fc_project, params.reg_centerline_fc)
+        proj_len_mi = get_centerline_miles(fc_project, params.reg_artcollcline_fc) # only gets for collector streets and above
     else:
         ann_proj_vmt = project_adt * proj_len_mi * 320
 
