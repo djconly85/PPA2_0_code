@@ -172,22 +172,12 @@ col_reliab_pmpk = "lottr_pmpk"
 col_reliab_wknd = "lottr_wknd"
 col_tmcdir = "direction_signd"
 col_roadtype = "f_system"  # indicates if road is freeway or not, so that data from freeways doesn't affect data on surface streets, and vice-versa
-
-
-
-calc_distwt_avg = "distance_weighted_avg"
-calc_inv_avg = "inv_avg_spd"
-
-# specify the type of calculation for each field in order to aggregate to project line
-spd_data_calc_dict = {col_ff_speed: calc_inv_avg,
-                      col_congest_speed: calc_inv_avg,
-                      col_reliab_ampk: calc_distwt_avg,
-                      col_reliab_md: calc_distwt_avg,
-                      col_reliab_pmpk: calc_distwt_avg,
-                      col_reliab_wknd: calc_distwt_avg}
-
 col_truckpct = "Trk_Veh_Pc"
-truck_data_calc_dict = {col_truckpct: calc_distwt_avg}
+
+flds_speed_data = [col_ff_speed, col_congest_speed, col_reliab_ampk, col_reliab_md, col_reliab_pmpk,
+                   col_reliab_wknd]
+
+flds_truck_data = [col_truckpct]
 
 roadtypes_fwy = (1, 2)  # road type values corresponding to freeways
 directions_tmc = ["NORTHBOUND", "SOUTHBOUND", "EASTBOUND", "WESTBOUND"]

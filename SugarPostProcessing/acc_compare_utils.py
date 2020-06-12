@@ -26,7 +26,7 @@ import xlwings as xw
 import pandas as pd
 import arcpy
 
-import ppa_input_params as params
+import sugarcomp_params as params
 
 
 def trace():
@@ -142,14 +142,14 @@ def append_proj_to_master_fc(project_fc, proj_attributes_dict, master_fc):
 
 
 class Publish(object):
-    def __init__(self, in_df, xl_template, import_tab, xl_out, project_fc, ptype, xlsheets_to_pdf=None, 
+    def __init__(self, in_df, xl_template, import_tab, xl_out, project_fc, ptype, selecd_po_sheets=None, 
                  proj_name='UnnamedProject'):
         # params from input arguments
         self.in_df = in_df
         self.xl_template = xl_template
         self.import_tab = import_tab
         self.xl_out = xl_out
-        self.xlsheets_to_pdf = xlsheets_to_pdf
+        self.selecd_po_sheets = selecd_po_sheets # 3 performance outcomes selected by user
         self.proj_name = proj_name
         self.project_fc = project_fc #remember, this is a feature set!
         
@@ -416,8 +416,14 @@ class Publish(object):
             tstamp = dt.datetime.strftime(dt.datetime.now(),"%m-%d-%Y %H:%M")
             self.xl_workbook[params.xlsx_titlepg_sheet][params.tstamp_cell] = tstamp
             
-            # move sheets with user-selected perf outcomes to be at front Final order will be: title, disclaimer, <3 perf sheets>, soc equity outcome
-            selected_report_sheets = self.xlsheets_to_pdf + [params.xlsx_socequity_sheet]
+            # move sheets with user-selected perf outcomes to be at front Final order will be: title, disclaimer, <3 perf sheets>, sometimes soc equity outcome
+            
+            selected_report_sheets = self.selecd_po_sheets
+            
+            # social equity sheet is not in all outputs. if it is, add it.
+            if params.xlsx_socequity_sheet in self.sheets_all_rpts:
+                selected_report_sheets.append(params.xlsx_socequity_sheet)
+                
             self.move_sheets(selected_report_sheets)
             
             # then highlight all the tabs the user should print out (title, selected perf outcomes, etc)
@@ -427,7 +433,7 @@ class Publish(object):
             sheets_to_color = self.sheets_all_rpts  # [title, disclaimer, potentially soc equity sheet]
 
             # insert user-selected perf outcome sheets to get [title, disclaimer, <3 perf outcomes>, potentially soc equity sheet]
-            for i, sheet in enumerate(self.xlsheets_to_pdf):
+            for i, sheet in enumerate(self.selecd_po_sheets):
                 idxstart = sheets_to_color.index(params.xlsx_disclaimer_sheet)
                 ins_posn = idxstart + i + 1
                 sheets_to_color.insert(ins_posn, sheet)
@@ -470,8 +476,8 @@ class Publish(object):
             xw.App.visible = True # must be set to True or else it won't work            
             wb = xw.Book(self.xl_out_path)
             
-            # make single list of pages that must be in all reports + pages that user selected (xlsheets_to_pdf)
-            out_sheets = self.sheets_all_rpts + self.xlsheets_to_pdf
+            # make single list of pages that must be in all reports + pages that user selected (selecd_po_sheets)
+            out_sheets = self.sheets_all_rpts + self.selecd_po_sheets
                 
             l_out_pdfs = [] # will be list of output PDF file names, PDFs in this list will be combined. Need list step for sorting by sheet name A-Z
             

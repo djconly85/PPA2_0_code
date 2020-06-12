@@ -78,12 +78,16 @@ def get_tmc_truck_data(fc_projline, str_project_type):
     arcpy.MakeFeatureLayer_management(temp_tmcbuff, fl_tmc_buff)
 
     # get "full" table with data for all directions
-    projdata_df = ndc.conflate_tmc2projline(fl_projline, params.directions_tmc, params.col_tmcdir, fl_tmc_buff, params.flds_truck_data)
+    projdata_df = ndc.conflate_tmc2projline(fl_projline, params.directions_tmc, params.col_tmcdir, 
+                                            fl_tmc_buff, params.truck_data_calc_dict)
 
     out_dict = {}
-    for col in params.flds_truck_data:
-        output_val = get_wtdavg_truckdata(projdata_df, col)
-        out_dict["{}_proj".format(col)] = output_val
+    for field, calcmthd in params.truck_data_calc_dict.items():
+        if calcmthd == params.calc_distwt_avg:
+            output_val = get_wtdavg_truckdata(projdata_df, field)
+            out_dict["{}_proj".format(field)] = output_val
+        else:
+            continue
         
     return out_dict
 

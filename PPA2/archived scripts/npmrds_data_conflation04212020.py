@@ -49,30 +49,10 @@ dateSuffix = str(dt.date.today().strftime('%m%d%Y'))
 
 # ====================FUNCTIONS==========================================
 
-def get_wtd_speed(in_df, in_field, direction, fld_pc_len_ft):
-    fielddir = "{}{}".format(direction, in_field)
-    
-    fld_invspd = "spdinv_hpm"
-    fld_pc_tt = "projpc_tt"
-    fld_len_mi = "pc_len_mi"
-    
-    in_df[fld_invspd] = 1/in_df[in_field]  # calculate each piece's "hours per mile", or inverted speed, as 1/speed
-        
-    # get each piece's travel time, in hours as inverted speed (hrs per mi) * piece distance (mi)
-    in_df[fld_len_mi] = in_df[fld_pc_len_ft]/params.ft2mile
-    in_df[fld_pc_tt] = in_df[fld_invspd] * in_df[fld_len_mi]
-        
-    # get total travel time, in hours, for all pieces, then divide total distance, in miles, for all pieces by the total tt
-    # to get average MPH for the project
-    proj_mph = in_df[fld_len_mi].sum() / in_df[fld_pc_tt].sum()
-    
-    return {fielddir: proj_mph}
-
 
 def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
-                          fl_tmcs_buffd, fields_calc_dict):
+                          fl_tmcs_buffd, speed_data_fields):
 
-    speed_data_fields = [k for k, v in fields_calc_dict.items()]
     out_row_dict = {}
     
     # get length of project
@@ -126,37 +106,29 @@ def conflate_tmc2projline(fl_proj, dirxn_list, tmc_dir_field,
         arcpy.SelectLayerByAttribute_management(fl_splitproj_w_tmcdata, "NEW_SELECTION", sql_notnull)
         
         # convert the selected records into a numpy array then a pandas dataframe
-        flds_df = [fld_shp_len] + speed_data_fields 
+        flds_df = [fld_shp_len] + speed_data_fields
         df_spddata = utils.esri_object_to_df(fl_splitproj_w_tmcdata, flds_df)
 
         # remove project pieces with no speed data so their distance isn't included in weighting
         df_spddata = df_spddata.loc[pd.notnull(df_spddata[speed_data_fields[0]])].astype(float)
         
-        # remove rows where there wasn't enough NPMRDS data to get a valid speed or reliability reading
-        df_spddata = df_spddata.loc[df_spddata[flds_df].min(axis=1) > 0]
-        
         dir_len = df_spddata[fld_shp_len].sum() #sum of lengths of project segments that intersect TMCs in the specified direction
         out_row_dict["{}_calc_len".format(direcn)] = dir_len #"calc" length because it may not be same as project length
         
-        
-        # go through and do conflation calculation for each TMC-based data field based on correct method of aggregation
-        for field, calcmthd in fields_calc_dict.items():
-            if calcmthd == params.calc_inv_avg: # See PPA documentation on how to calculated "inverted speed average" method
-                sd_dict = get_wtd_speed(df_spddata, field, direcn, fld_shp_len)
-                out_row_dict.update(sd_dict)
-            elif calcmthd == params.calc_distwt_avg:
-                fielddir = "{}{}".format(direcn, field)  # add direction tag to field names
-                # if there's speed data, get weighted average value.
-                linklen_w_speed_data = df_spddata[fld_shp_len].sum()
-                if linklen_w_speed_data > 0: #wgtd avg = sum(piece's data * piece's len)/(sum of all piece lengths)
-                    avg_data_val = (df_spddata[field]*df_spddata[fld_shp_len]).sum() \
-                                    / df_spddata[fld_shp_len].sum()
-    
-                    out_row_dict[fielddir] = avg_data_val
-                else:
-                    out_row_dict[fielddir] = df_spddata[field].mean() #if no length, just return mean speed? Maybe instead just return 'no data avaialble'? Or -1 to keep as int?
-                    continue
+        #get distance-weighted average value for each speed/congestion field
+        #for PHED or hours of delay, will want to get dist-weighted SUM; for speed/reliability, want dist-weighted AVG
+        #ideally this would be a dict of {<field>:<aggregation method>}
+        for field in speed_data_fields:
+            fielddir = "{}{}".format(direcn, field)  # add direction tag to field names
+            # if there's speed data, get weighted average value.
+            linklen_w_speed_data = df_spddata[fld_shp_len].sum()
+            if linklen_w_speed_data > 0: #wgtd avg = sum(piece's data * piece's len)/(sum of all piece lengths)
+                avg_data_val = (df_spddata[field]*df_spddata[fld_shp_len]).sum() \
+                                / df_spddata[fld_shp_len].sum()
+
+                out_row_dict[fielddir] = avg_data_val
             else:
+                out_row_dict[fielddir] = df_spddata[field].mean() #if no length, just return mean speed? Maybe instead just return 'no data avaialble'? Or -1 to keep as int?
                 continue
 
     #cleanup
@@ -241,7 +213,7 @@ def get_npmrds_data(fc_projline, str_project_type):
 
     # get "full" table with data for all directions
     projdata_df = conflate_tmc2projline(fl_projline, params.directions_tmc, params.col_tmcdir,
-                                        fl_tmc_buff, params.spd_data_calc_dict)
+                                        fl_tmc_buff, params.flds_speed_data)
 
     # trim down table to only include outputs for directions that are "on the segment",
     # i.e., that have most overlap with segment
