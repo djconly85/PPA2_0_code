@@ -1,5 +1,8 @@
 """
 Name: ReplicaDataSummary_latest.py
+UPDATE 6/19/2020 - Replica should have county-level origin data for external trips,
+    so script should be updated so that trip shed includes applicable external counties.
+
 Purpose: 
     1 - create GIS polygon representing the "trip shed" for a given project, based on Replica trip data table
     2 - run PPA ILUT and land use analyses on trip shed polygon, using parcel-level ILUT data
