@@ -6,7 +6,7 @@ import sys, os, arcpy
 g_ESRI_variable_1 = 'fl_parcel'
 g_ESRI_variable_2 = 'fl_project'
 g_ESRI_variable_3 = 'fl_buff'
-g_ESRI_variable_4 = os.path.join(arcpy.env.scratchGDB, 'temp_intersect')
+g_ESRI_variable_4 = 'memory\\temp_intersect'
 g_ESRI_variable_5 = 'fl_intersect'
 # Esri end of added variables
 
@@ -22,37 +22,33 @@ g_ESRI_variable_5 = 'fl_intersect'
 # Python Version: 3.x
 #--------------------------------
 import time
+import arcpy
 
 import ppa_input_params as params
 
 def get_lutype_acreage(fc_project, projtyp, fc_poly_parcels, lutype):
-    # arcpy.AddMessage("script updated {}".format(int(time.clock()))) # when troubleshooting
     arcpy.AddMessage("Estimating {} acres near project...".format(lutype))
 
     sufx = int(time.clock()) + 1
-    fl_parcels = os.path.join(arcpy.env.scratchGDB, 'fl_parcels{}'.format(sufx))
+    fl_parcels = os.path.join('memory','fl_parcels{}'.format(sufx))
     fl_project = g_ESRI_variable_2
 
     if arcpy.Exists(fl_parcels): arcpy.Delete_management(fl_parcels)
-    
     arcpy.MakeFeatureLayer_management(fc_poly_parcels, fl_parcels)
     
     if arcpy.Exists(fl_project): arcpy.Delete_management(fl_project)
-    arcpy.MakeFeatureLayer_management(fc_project, fl_project)  
+    arcpy.MakeFeatureLayer_management(fc_project, fl_project)
 
-    # create temporary buffer IF the input project fc is a line. 
-    # If it's a polygon, then don't make separate buffer
+    # create temporary buffer IF the input project fc is a line. If it's a polygon, then don't make separate buffer
     if projtyp == params.ptype_area_agg:
         fc_buff = fc_project
     else:
         buff_dist = params.ilut_sum_buffdist  # distance in feet
-        fc_buff = os.path.join(arcpy.env.scratchGDB, "temp_buff_hmi")  # r"memory\temp_buff_hmi"
-        if arcpy.Exists(fc_buff): arcpy.Delete_management(fc_buff)
+        fc_buff = r"memory\temp_buff_qmi"
         arcpy.Buffer_analysis(fl_project, fc_buff, buff_dist)
 
     fl_buff = g_ESRI_variable_3
     arcpy.MakeFeatureLayer_management(fc_buff, fl_buff)
-    
 
     """
     # calculate buffer area, inclusive of water bodies and rights of way
@@ -65,8 +61,6 @@ def get_lutype_acreage(fc_project, projtyp, fc_poly_parcels, lutype):
 
     # create intersect layer of buffer with parcels of selected LUTYPE
     fc_intersect = g_ESRI_variable_4
-    
-    if arcpy.Exists(fc_intersect): arcpy.Delete_management(fc_intersect)
     arcpy.Intersect_analysis([fl_buff, fl_parcels], fc_intersect, "ALL", "", "INPUT")
 
     # calculate total area on parcels within buffer (excluding water and rights of way)

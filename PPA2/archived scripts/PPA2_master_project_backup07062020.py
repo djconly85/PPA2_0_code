@@ -263,9 +263,10 @@ if __name__ == '__main__':
     proj_name = utils.remove_forbidden_chars(proj_name) # make sure no problematic characters (%, &, etc.) are in the project name
     
     output_xl = '{}_{}{}.xlsx'.format(ptyp_pfix, os.path.basename(proj_name), time_sufx)  # 'PPA_{}{}.xlsm'.format(os.path.basename(proj_name), time_sufx)  # 
+
     
     project_fc = dissolve_multline_proj(project_fc_param) #dissolve if project is multiple non-contiguous lines (like an intersection)
-    
+
     proj_len_mi = get_proj_len(project_fc)
     
     project_ctype = get_proj_ctype(project_fc, params.comm_types_fc)

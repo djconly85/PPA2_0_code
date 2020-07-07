@@ -55,8 +55,6 @@ def transit_svc_density(fc_project, fc_trnstops, project_type):
     fl_project = g_ESRI_variable_1
     fl_trnstops = os.path.join('memory','trnstp{}'.format(sufx))
 
-    arcpy.AddMessage("trnstops fl exists? {}".format(arcpy.Exists(fl_trnstops)))
-
     try:
         if arcpy.Exists(fl_project): arcpy.Delete_management(fl_project)
         arcpy.MakeFeatureLayer_management(fc_project, fl_project)

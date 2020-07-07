@@ -22,6 +22,7 @@ Python Version: 3.x
 server_folder = g_ESRI_variable_1
 
 fgdb = os.path.join(server_folder, r"PPA2_GIS_SVR\owner_PPA.sde")  # os.path.join(server_folder, gdb_name)
+projexn_wkid_sacog = 2226 # NAD 1983 StatePlane California II FIPS 0402 (US Feet)
 
 # input feature classes
 region_fc = 'sacog_region'
