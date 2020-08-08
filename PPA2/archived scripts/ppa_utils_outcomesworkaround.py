@@ -20,9 +20,9 @@ import csv
 import math
 import shutil
 
-# import xlwings as xw
 import openpyxl
 from openpyxl.drawing.image import Image
+import xlwings as xw
 import pandas as pd
 import arcpy
 
@@ -152,16 +152,49 @@ class Publish(object):
         self.selecd_po_sheets = selecd_po_sheets # 3 performance outcomes selected by user
         self.proj_name = proj_name
         self.project_fc = project_fc #remember, this is a feature set!
+
+        #=====WORKAROUND - these are normally supposed to be imported from params.py file======
+        '''Root issue replication:
+        1 - run the tool, selecting any number of outcomes
+        2 - re-run the tool, but with different outcomes selected.
+        Expected result = otuput Excel file has the tabs colored and moved for the outcomes selected for each run
+        Actual result = output Excel for second run has tabs colored for the outcomes selected for
+            both runs, e.g., tabs selected for run two have outcome tabs colored for outcomes selected in
+            run 1 as well.'''
+        ptype_fwy = 'Freeway'
+        ptype_arterial = 'Arterial or Transit Expansion'
+        ptype_sgr = 'Complete Street or State of Good Repair'
+        ptype_commdesign = "Community Design"
+        
+        xlsx_disclaimer_sheet = '0BUsingThisReport'
+        xlsx_titlepg_sheet = '0ATitlePg'
+        xlsx_socequity_sheet = '8SocioEconEquity'
+
+        # regardless of which perf outcomes user selects, these tabs will be printed to
+        # every PDF report for the selected project type.
+        sheets_all_reports_workarnd = {ptype_arterial: [xlsx_titlepg_sheet, xlsx_disclaimer_sheet, xlsx_socequity_sheet],
+                              ptype_sgr: [xlsx_titlepg_sheet, xlsx_disclaimer_sheet, xlsx_socequity_sheet],
+                              ptype_commdesign: [xlsx_titlepg_sheet, xlsx_disclaimer_sheet],
+                              ptype_fwy: [xlsx_titlepg_sheet, xlsx_disclaimer_sheet]}
+        #===============END WORKAROUND PORTION================
         
         # params that are derived or imported from ppa_input_params.py
-        self.time_sufx = str(dt.datetime.now().strftime('%m%d%Y%H%M'))
-        self.sheets_all_rpts = params.sheets_all_reports[ptype]
-        self.out_folder = arcpy.env.scratchFolder
+        self.sheets_all_rpts = sheets_all_reports_workarnd[ptype]  # params.sheets_all_reports[ptype]
+        arcpy.AddMessage("This is a {} project".format(ptype))
+        arcpy.AddMessage("Sheets that always go in report for this proj type: {}" \
+                         .format(self.sheets_all_rpts))
+        arcpy.AddMessage("Dict of sheets in all reports of this proj type, from params py file: {}" \
+                         .format(params.sheets_all_reports[ptype]))
+        
         self.mapimg_configs_csv = params.mapimg_configs_csv
         self.img_format = params.map_img_format # jpg, png, etc.
         self.map_placement_csv = params.map_placement_csv
         self.aprx_path = params.aprx_path
         self.proj_line_template_fc = os.path.join(params.fgdb, params.proj_line_template_fc)
+
+        # other pre-defined class vars to use
+        self.time_sufx = str(dt.datetime.now().strftime('%m%d%Y%H%M'))
+        self.out_folder = arcpy.env.scratchFolder
         
         #xlsx related params
         self.xl_out_path = os.path.join(self.out_folder, self.xl_out)
@@ -449,12 +482,12 @@ class Publish(object):
         finally:
             if self.xl_workbook.close() != None:
                 self.xl_workbook.close()
+
+            del self.sheets_all_rpts 
             gc.collect()
         
         return t_returns
         
-    
-"""
     def make_pdf(self):
         wb = None
         out_pdf_final_name = "Rpt_{}{}.pdf".format(self.proj_name, self.time_sufx)
@@ -515,7 +548,6 @@ class Publish(object):
             gc.collect()
             
         return t_returns
-"""
 
 
 

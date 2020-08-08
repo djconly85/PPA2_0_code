@@ -19,9 +19,8 @@ g_ESRI_variable_1 = 'memory/temp_intersect_fc'
 # --------------------------------
 
 import arcpy
-import pdb
 
-from get_lutype_acres import GetLandUseArea
+import get_lutype_acres as luta
 import ppa_input_params as params
 
 # get list of ctypes that a project passes through. "infill" if ctype = is established or corridor; greenfield if not
@@ -54,31 +53,28 @@ def projarea_infill_status(fc_project, comm_types_fc):
 
 def nat_resources(fc_project, projtyp, fc_pcl_poly, year=2016):  # NOTE - this is year dependent!
     nat_resource_ac = 0
-    
-    # pdb.set_trace()
-    pcl_buff_intersect = GetLandUseArea(fc_project, projtyp, fc_pcl_poly)
-    
     for lutype in params.lutypes_nat_resources:
-        lutype_ac_dict = pcl_buff_intersect.get_lu_acres(lutype)
+        lutype_ac_dict = luta.get_lutype_acreage(fc_project, projtyp, fc_pcl_poly, lutype)
         lutype_acres = lutype_ac_dict['net_{}_acres'.format(lutype)]
         nat_resource_ac += lutype_acres
 
     return {"nat_resource_acres": nat_resource_ac}
 
-
+'''
 if __name__ == '__main__':
-    arcpy.env.workspace = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb'
+    arcpy.env.workspace = None
 
     # input fc of parcel data--must be polygons!
-    in_pcl_base_fc = params.parcel_poly_fc_yr(in_year=2016)
+    in_pcl_base_fc = params.parcel_pt_fc_yr(in_year=2016)
     # in_pcl_future_tbl =
     # in_ctypes_fc =
 
     # input line project for basing spatial selection
-    project_fc = r'I:\Projects\Darren\PPA_V2_GIS\PPA_V2.gdb\Polylines_1'
+    project_fc = None
 
     # infill_status_dict = projarea_infill_status(project_fc, params.comm_types_fc)
     # print(infill_status_dict)
 
     nat_resources_dict = nat_resources(project_fc, params.ptype_arterial, in_pcl_base_fc)
     print(nat_resources_dict)
+    '''

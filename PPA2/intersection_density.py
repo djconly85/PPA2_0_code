@@ -56,8 +56,6 @@ def intersection_density(fc_project, fc_intersxns, project_type):
     fl_project = g_ESRI_variable_1
     fl_intersxns = os.path.join('memory',g_ESRI_variable_2)
 
-    extest = arcpy.Exists(fl_intersxns)
-    arcpy.AddMessage("Does intersection fl exist? {}".format(extest))
 
     try:
         if arcpy.Exists(fl_project): arcpy.Delete_management(fl_project)
@@ -106,7 +104,6 @@ def intersection_density(fc_project, fc_intersxns, project_type):
         if arcpy.Exists(fl_intersxns): 
             try:
                 arcpy.Delete_management(fl_intersxns)
-                arcpy.AddMessage("Successfully post-cleaned intersection density processes...")
             except:
                 msg = "trying arcpy.Delete_management: {}, {}".format(arcpy.GetMessages(2), trace())
                 arcpy.AddWarning(msg)

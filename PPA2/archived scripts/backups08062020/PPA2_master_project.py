@@ -29,10 +29,10 @@ import collisions as coll
 import complete_street_score as cs
 import get_buff_netmiles as bnmi
 import get_line_overlap as linex
-from get_lutype_acres import GetLandUseArea
+import get_lutype_acres as luac
 import get_truck_data_fwy as truck_fwy
 import intersection_density as intsxn
-from landuse_buff_calcs import LandUseBuffCalcs
+import landuse_buff_calcs as lu_pt_buff
 import link_occup_data as link_occ
 import mix_index_for_project as mixidx
 import npmrds_data_conflation as npmrds
@@ -122,7 +122,7 @@ def get_singleyr_data(fc_project, projtyp, adt, posted_speedlim, out_dict={}):
     truck_route_pct = {'pct_proj_STAATruckRoutes': 1} if projtyp == params.ptype_fwy else \
         linex.get_line_overlap(fc_project, params.freight_route_fc, params.freight_route_fc) # all freeways are STAA truck routes
         
-    ag_acres = GetLandUseArea(fc_project, projtyp, pcl_poly_fc).get_lu_acres(params.lutype_ag)
+    ag_acres = luac.get_lutype_acreage(fc_project, projtyp, pcl_poly_fc, params.lutype_ag)
     
     pct_adt_truck = {"pct_truck_aadt": -1} if projtyp != params.ptype_fwy else truck_fwy.get_tmc_truck_data(fc_project, projtyp)
     
@@ -138,14 +138,14 @@ def get_singleyr_data(fc_project, projtyp, adt, posted_speedlim, out_dict={}):
     
     
     # total job + du density (base year only, for state-of-good-repair proj eval only)
-    job_du_dens = LandUseBuffCalcs(pcl_pt_fc, fc_project, projtyp, [params.col_emptot, params.col_du], 
-                                   params.ilut_sum_buffdist).point_sum_density()
+    job_du_dens = lu_pt_buff.point_sum_density(pcl_pt_fc, fc_project, projtyp, 
+                                               [ params.col_emptot, params.col_du], params.ilut_sum_buffdist)
     comb_du_dens = sum(list(job_du_dens.values()))
     job_du_dens['job_du_perNetAcre'] = comb_du_dens
 
     # get EJ data
-    ej_data = LandUseBuffCalcs(pcl_pt_fc, fc_project, projtyp, [ params.col_pop_ilut], params.ilut_sum_buffdist, 
-                               params.col_ej_ind, case_excs_list=[]).point_sum()
+    ej_data = lu_pt_buff.point_sum(pcl_pt_fc, fc_project, projtyp, [ params.col_pop_ilut],
+                                            params.ilut_sum_buffdist, params.col_ej_ind, case_excs_list=[])
     
     ej_flag_dict = {0: "Pop_NonEJArea", 1: "Pop_EJArea"}  # rename keys from 0/1 to more human-readable names
     ej_data = utils.rename_dict_keys(ej_data, ej_flag_dict)
@@ -181,8 +181,8 @@ def get_multiyear_data(project_fc, project_type, base_df, analysis_year):
     year_dict = {}
     # get data on pop, job, k12 totals
     # point_sum(fc_pclpt, fc_project, project_type, val_fields, buffdist, case_field=None, case_excs_list=[])
-    ilut_buff_vals = LandUseBuffCalcs(fc_pcl_pt, project_fc, project_type, ilut_val_fields,
-                                          params.ilut_sum_buffdist, case_field=None, case_excs_list=[]).point_sum()
+    ilut_buff_vals = lu_pt_buff.point_sum(fc_pcl_pt, project_fc, project_type, ilut_val_fields,
+                                          params.ilut_sum_buffdist, case_field=None, case_excs_list=[])
 
     ilut_indjob_share = ilut_buff_vals[params.col_empind] / ilut_buff_vals[params.col_emptot] if ilut_buff_vals[params.col_emptot] > 0 else 0
     ilut_indjob_dval = {"{}_jobshare".format( params.col_empind): ilut_indjob_share}
@@ -205,8 +205,8 @@ def get_multiyear_data(project_fc, project_type, base_df, analysis_year):
     mix_index_data = mixidx.get_mix_idx(fc_pcl_pt, project_fc, project_type)
 
     # housing type mix
-    housing_mix_data = LandUseBuffCalcs(fc_pcl_pt, project_fc, project_type, [params.col_du], params.du_mix_buffdist,
-                                            params.col_housing_type, case_excs_list=['Other']).point_sum()
+    housing_mix_data = lu_pt_buff.point_sum(fc_pcl_pt, project_fc, project_type, [params.col_du], params.du_mix_buffdist,
+                                            params.col_housing_type, case_excs_list=['Other'])
 
     # acres of "natural resources" (land use type = forest or agriculture)
     nat_resources_data = urbn.nat_resources(project_fc, project_type, fc_pcl_poly, year)

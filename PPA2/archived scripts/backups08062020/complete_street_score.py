@@ -12,7 +12,7 @@
 import arcpy
 
 import ppa_input_params as params
-from landuse_buff_calcs import LandUseBuffCalcs
+import landuse_buff_calcs as lubuff
 import transit_svc_measure as ts
 
 
@@ -34,7 +34,7 @@ def complete_streets_idx(fc_pclpt, fc_project, project_type, posted_speedlim, tr
         lu_vals_cols = [params.col_k12_enr, params.col_emptot, params.col_du]
     
         # get sums of the lu_fac_cols within project buffer area
-        lu_vals_dict = LandUseBuffCalcs(fc_pclpt, fc_project, project_type, lu_fac_cols, params.cs_buffdist).point_sum()
+        lu_vals_dict = lubuff.point_sum(fc_pclpt, fc_project, project_type, lu_fac_cols, params.cs_buffdist)
     
         #dens_score = (student_dens + trn_svc_dens + job_dens + du_dens)
         dens_score = sum([lu_vals_dict[i] / lu_vals_dict[params.col_area_ac] for i in lu_vals_cols]) + transit_svc_density

@@ -10,8 +10,8 @@ Created on Wed Feb 19 08:20:40 2020
 import arcpy
 import openpyxl
 
-img_file = r"C:\Users\dconly\Desktop\testimg.JPG"
-xlsx = r"C:\Users\dconly\Desktop\TestWorkbook.xlsx"
+img_file = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\Testing\Capture.JPG"
+xlsx = r"Q:\ProjectLevelPerformanceAssessment\PPAv2\PPA2_0_code\Testing\TestWorkbook.xlsx"
 sheet = "Sheet1"
 row = 1
 col = "A"

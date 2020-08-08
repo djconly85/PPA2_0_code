@@ -17,8 +17,8 @@ import pandas as pd
 
 import ppa_input_params as params
 import accessibility_calcs as acc
-from get_lutype_acres import GetLandUseArea
-from landuse_buff_calcs import LandUseBuffCalcs
+import get_lutype_acres as luac
+import landuse_buff_calcs as lu_pt_buff
 import mix_index_for_project as mixidx
 import urbanization_metrics as urbn
 import ppa_utils as utils
@@ -32,19 +32,19 @@ def get_singleyr_data(fc_tripshedpoly, projtyp, analysis_year, out_dict_base={})
     accdata = acc.get_acc_data(fc_tripshedpoly, params.accdata_fc, projtyp, get_ej=False)
         
     print("getting ag acreage data for base...")
-    ag_acres = GetLandUseArea(fc_tripshedpoly, projtyp, fc_pcl_poly).get_lu_acres(params.lutype_ag)
+    ag_acres = luac.get_lutype_acreage(fc_tripshedpoly, projtyp, fc_pcl_poly, params.lutype_ag)
     
     # total job + du density (base year only, for state-of-good-repair proj eval only)
     print("getting ILUT data for base...")
-    job_du_dens = LandUseBuffCalcs(fc_pcl_pt, fc_tripshedpoly, projtyp, [params.col_emptot, params.col_du],
-                                   params.ilut_sum_buffdist).point_sum_density()
+    job_du_dens = lu_pt_buff.point_sum_density(fc_pcl_pt, fc_tripshedpoly, projtyp, 
+                                               [params.col_emptot, params.col_du], params.ilut_sum_buffdist)
     comb_du_dens = sum(list(job_du_dens.values()))
     job_du_dens['job_du_perNetAcre'] = comb_du_dens
 
     # get EJ data
     print("getting EJ data for base...")
-    ej_data = LandUseBuffCalcs(fc_pcl_pt, fc_tripshedpoly, projtyp, [params.col_pop_ilut], params.ilut_sum_buffdist, 
-                               params.col_ej_ind, case_excs_list=[]).point_sum()
+    ej_data = lu_pt_buff.point_sum(fc_pcl_pt, fc_tripshedpoly, projtyp, [params.col_pop_ilut],
+                                            params.ilut_sum_buffdist, params.col_ej_ind, case_excs_list=[])
     
     ej_flag_dict = {0: "Pop_NonEJArea", 1: "Pop_EJArea"}  # rename keys from 0/1 to more human-readable names
     ej_data = utils.rename_dict_keys(ej_data, ej_flag_dict)
@@ -72,8 +72,8 @@ def get_multiyear_data(fc_tripshedpoly, projtyp, base_df, analysis_year):
     year_dict = {}
     # get data on pop, job, k12 totals
     # point_sum(fc_pclpt, fc_tripshedpoly, projtyp, val_fields, buffdist, case_field=None, case_excs_list=[])
-    ilut_buff_vals = LandUseBuffCalcs(fc_pcl_pt, fc_tripshedpoly, projtyp, ilut_val_fields,
-                                          params.ilut_sum_buffdist, case_field=None, case_excs_list=[]).point_sum()
+    ilut_buff_vals = lu_pt_buff.point_sum(fc_pcl_pt, fc_tripshedpoly, projtyp, ilut_val_fields,
+                                          params.ilut_sum_buffdist, case_field=None, case_excs_list=[])
 
     ilut_indjob_share = {"{}_jobshare".format(params.col_empind): ilut_buff_vals[params.col_empind] / ilut_buff_vals[params.col_emptot]}
     ilut_buff_vals.update(ilut_indjob_share)
@@ -93,8 +93,8 @@ def get_multiyear_data(fc_tripshedpoly, projtyp, base_df, analysis_year):
     mix_index_data = mixidx.get_mix_idx(fc_pcl_pt, fc_tripshedpoly, projtyp)
 
     # housing type mix
-    housing_mix_data = LandUseBuffCalcs(fc_pcl_pt, fc_tripshedpoly, projtyp, [params.col_du], params.du_mix_buffdist,
-                                            params.col_housing_type, case_excs_list=['Other']).point_sum()
+    housing_mix_data = lu_pt_buff.point_sum(fc_pcl_pt, fc_tripshedpoly, projtyp, [params.col_du], params.du_mix_buffdist,
+                                            params.col_housing_type, case_excs_list=['Other'])
 
     # acres of "natural resources" (land use type = forest or agriculture)
     nat_resources_data = urbn.nat_resources(fc_tripshedpoly, projtyp, fc_pcl_poly, analysis_year)

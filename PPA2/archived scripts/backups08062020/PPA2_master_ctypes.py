@@ -19,7 +19,7 @@ import accessibility_calcs as acc
 import collisions as coll
 import get_buff_netmiles as bufnet
 import intersection_density as intsxn
-from landuse_buff_calcs import LandUseBuffCalcs
+import landuse_buff_calcs as lubuff
 import mix_index_for_project as mixidx
 
 import transit_svc_measure as trn_svc
@@ -36,19 +36,17 @@ def get_poly_avg(input_poly_fc):
     bikeway_covg = bufnet.get_bikeway_mileage_share(input_poly_fc, params.ptype_area_agg)
     tran_stop_density = trn_svc.transit_svc_density(input_poly_fc, params.trn_svc_fc, params.ptype_area_agg)
 
-    emp_ind_wtot = LandUseBuffCalcs(pcl_pt_data, input_poly_fc, params.ptype_area_agg,
-                                    [params.col_empind, params.col_emptot], 0).point_sum()
+    emp_ind_wtot = lubuff.point_sum(pcl_pt_data, input_poly_fc, params.ptype_area_agg, [params.col_empind, params.col_emptot], 0)
     emp_ind_pct = {'EMPIND_jobshare': emp_ind_wtot[params.col_empind] / emp_ind_wtot[params.col_emptot] \
                    if emp_ind_wtot[params.col_emptot] > 0 else 0}
 
-    pop_x_ej = LandUseBuffCalcs(pcl_pt_data, input_poly_fc, params.ptype_area_agg, [params.col_pop_ilut],
-                                0, params.col_ej_ind).point_sum()
+    pop_x_ej = lubuff.point_sum(pcl_pt_data, input_poly_fc, params.ptype_area_agg, [params.col_pop_ilut], 0, params.col_ej_ind)
     pop_tot = sum(pop_x_ej.values())
     key_yes_ej = max(list(pop_x_ej.keys()))
     pct_pop_ej = {'Pct_PopEJArea': pop_x_ej[key_yes_ej] / pop_tot if pop_tot > 0 else 0}
 
-    job_pop_dens = LandUseBuffCalcs(pcl_pt_data, input_poly_fc, params.ptype_area_agg, \
-                                            [params.col_du, params.col_emptot], 0).point_sum_density()
+    job_pop_dens = lubuff.point_sum_density(pcl_pt_data, input_poly_fc, params.ptype_area_agg, \
+                                            [params.col_du, params.col_emptot], 0)
         
     # total_dens = {"job_du_perNetAcre": sum(job_pop_dens.values())}
 

@@ -20,9 +20,9 @@ import csv
 import math
 import shutil
 
-# import xlwings as xw
 import openpyxl
 from openpyxl.drawing.image import Image
+import xlwings as xw
 import pandas as pd
 import arcpy
 
@@ -453,8 +453,6 @@ class Publish(object):
         
         return t_returns
         
-    
-"""
     def make_pdf(self):
         wb = None
         out_pdf_final_name = "Rpt_{}{}.pdf".format(self.proj_name, self.time_sufx)
@@ -515,7 +513,6 @@ class Publish(object):
             gc.collect()
             
         return t_returns
-"""
 
 
 
