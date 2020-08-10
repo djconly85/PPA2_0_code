@@ -1,10 +1,13 @@
 # --------------------------------
 # Name: utils.py
 # Purpose: Provides general PPA functions that are used throughout various PPA scripts and are not specific to any one PPA script
-#
-# #
+# NOTE:
+#    This version, in the __init__ method of the Publish class, hard-codes in variables
+#   that normally come from the params parameter script. This is because, for some reason
+# # when pulled from the params file, the values "stuck" between runs and the wrong output tabs
+#   in the output Excel spreadsheet would be colored.
 # Author: Darren Conly
-# Last Updated: <date>
+# Last Updated: 8/6/2020
 # Updated by: <name>
 # Copyright:   (c) SACOG
 # Python Version: 3.x
