@@ -188,7 +188,9 @@ def get_multiyear_data(project_fc, project_type, base_df, analysis_year):
     ilut_indjob_dval = {"{}_jobshare".format( params.col_empind): ilut_indjob_share}
     ilut_buff_vals.update(ilut_indjob_dval)
 
-    ilut_mode_split = {"{}_share".format(modetrp): ilut_buff_vals[modetrp] / ilut_buff_vals[ params.col_persntrip_res]
+    # get mode share if total person trips > 0 else return -1 as "no data" value
+    ilut_mode_split = {"{}_share".format(modetrp): ilut_buff_vals[modetrp] / ilut_buff_vals[params.col_persntrip_res]
+                       if ilut_buff_vals[params.col_persntrip_res] != 0 else -1
                        for modetrp in params.ilut_ptrip_mode_fields}
     ilut_buff_vals.update(ilut_mode_split)
 
