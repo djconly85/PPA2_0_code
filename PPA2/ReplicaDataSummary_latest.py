@@ -510,11 +510,11 @@ if __name__ == '__main__':
     
     # dir_tripdata = r'C:\TEMP_OUTPUT\ReplicaDownloads'
     
-    csvcol_obgid = 'origin_blockgroup_id'  # Replica/big data block group ID column
-    csvcol_dbgid = 'destination_blockgroup_id'
-    csvcol_mode = 'trip_primary_mode'  # Replica/big data trip mode column
+    csvcol_obgid = 'origin_bgrp'  # Replica/big data block group ID column
+    csvcol_dbgid = 'destination_bgrp'
+    csvcol_mode = 'mode'  # Replica/big data trip mode column
     csvcol_purpose = 'travel_purpose'  # Replica/big data trip purpose column
-    csvcol_valfield = 'trip_start_time' # field for which you want to aggregate values
+    csvcol_valfield = 'start_time' # field for which you want to aggregate values
     val_aggn_type = 'count'  # how you want to aggregate the values field (e.g. count of values, sum of values, avg, etc.)
     
     #community-type and region-level values for comparison to project-level values
