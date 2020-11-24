@@ -66,15 +66,10 @@ def get_acc_data(fc_project, fc_accdata, project_type, get_ej=False):
             col_out_ej = "{}_EJ".format(col)
             out_dict[col_out_ej] = out_wtd_acc
     else:
-        total_pop = accdata_df[params.col_pop].sum()
         for col in params.acc_cols:
-            if total_pop <= 0: # if no one lives near project, get unweighted avg accessibility of block groups near project
-                out_wtd_acc = accdata_df[col].mean()
-            else:
-                col_wtd = "{}_wtd".format(col)
-                accdata_df[col_wtd] = accdata_df[col] * accdata_df[params.col_pop]
-                out_wtd_acc = accdata_df[col_wtd].sum() / total_pop
-                
+            col_wtd = "{}_wtd".format(col)
+            accdata_df[col_wtd] = accdata_df[col] * accdata_df[params.col_pop]
+            out_wtd_acc = accdata_df[col_wtd].sum() / accdata_df[params.col_pop].sum()
             out_dict[col] = out_wtd_acc
 
     return out_dict

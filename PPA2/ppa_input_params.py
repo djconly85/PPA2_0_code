@@ -37,7 +37,7 @@ comm_types_fc = 'comm_type_jurspec_dissolve'
 reg_centerline_fc = 'RegionalCenterline_2019'
 reg_artcollcline_fc = 'ArterialCollector_2019' # road centerlines but for collectors and above (no local streets/alleys)
 
-reg_bikeway_fc = 'BikeRte_C1_C2_C4_2017'
+reg_bikeway_fc = 'BikeRte_C1_C2_C4_2019' # 'BikeRte_C1_C2_C4_2017'
 
 proj_line_template_fc = 'Project_Line_Template' # has symbology that the project line will use.
 all_projects_fc = "All_PPA_Projects2020"

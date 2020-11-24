@@ -1,5 +1,13 @@
 """
-Name: ReplicaDataSummary_latest.py
+Name: ReplicaDataSummary_latestODComb.py
+
+REQUEST 11/10/2020:
+    - be able to choose if you want output trip shed based on # of trip origins,
+    # of trip destinations, or combined origins + destinations
+
+UPDATE 11/9/2020 - "ODComb" version created to have trip shed reflect both origin and destination
+polygons, with idea that it would give more complete shed shape instead of just using origins.
+
 UPDATE 6/19/2020 - Replica should have county-level origin data for external trips,
     so script should be updated so that trip shed includes applicable external counties.
 
@@ -7,10 +15,18 @@ Purpose:
     1 - create GIS polygon representing the "trip shed" for a given project, based on Replica trip data table
     2 - run PPA ILUT and land use analyses on trip shed polygon, using parcel-level ILUT data
     3 - Generate summary table of mode split and trip purpose split for trips using the project segment
+    
+    
+USER NOTES
+    -Trip shed polygons only use the top N % of trips, ie. it only includes the
+    geometries (e.g. block groups) that had the most trips, in ascending order,
+    until the resulting trip shed captured N% of trips. This prevents the trip
+    shed from being too big and capturing/including geometries/areas where only a handful
+    of trips came from.
         
           
 Author: Darren Conly
-Last Updated: 3/1/2020
+Last Updated: 11/9/2020
 Updated by: <name>
 Copyright:   (c) SACOG
 Python Version: 3.x
@@ -33,8 +49,8 @@ import bigdata_tripshed as tripshed
 # get PPA buffer data for trip shed
 class TripShedAnalysis(object):
     
-    def __init__(self, project_name, in_data_files, data_fields, tripdata_val_field, tripdata_agg_fxn, tripdata_groupby_field,
-                   in_poly_fc, poly_id_field, filler_poly_fc, tripdata_case_fields, out_tripshed_gdb,
+    def __init__(self, project_name, in_data_files, data_fields, tripdata_val_field, tripdata_agg_fxn, geom_id_field_orig,
+                   geom_id_field_dest, in_poly_fc, poly_id_field, filler_poly_fc, tripdata_case_fields, out_tripshed_gdb,
                    run_full_report=False, rpt_analysis_years=None, xlsx_template_path=None):
         '''
 
@@ -69,33 +85,38 @@ class TripShedAnalysis(object):
 
         '''
         
-        timesufx = str(dt.datetime.now().strftime('%m%d%Y_%H%M'))
+        list_delim = ';' # delimiting character for ESRI input with multiple items (e.g. list of input layers)
+        timesufx = str(dt.datetime.now().strftime('%Y%m%d_%H%M'))
         
         # user-entered params
         self.project_name = project_name
-        self.in_data_files = [fpath.strip("'") for fpath in in_data_files.split(';')]
+        self.in_data_files = [fpath.strip("'") for fpath in in_data_files.split(list_delim)] # in_data_files
         self.data_fields = data_fields
         self.tripdata_val_field = tripdata_val_field
         self.tripdata_agg_fxn = tripdata_agg_fxn
-        self.tripdata_groupby_field = tripdata_groupby_field
+        self.geom_id_field_orig = geom_id_field_orig
+        self.geom_id_field_dest = geom_id_field_dest
         self.in_poly_fc = in_poly_fc
         self.poly_id_field = poly_id_field
         self.filler_poly_fc = filler_poly_fc
         self.analysis_years = rpt_analysis_years
         self.tripdata_case_fields = tripdata_case_fields
         
+        # output options and params
         tripshed_filled_out_name = f"TripShed_{project_name}_{timesufx}"
         self.fc_tripshed_out_filled = os.path.join(out_tripshed_gdb, tripshed_filled_out_name)
-        
         self.run_full_report = run_full_report
         self.xlsx_template = xlsx_template_path
         
         # hard-coded args
         self.out_poly_fc_raw = os.path.join(arcpy.env.scratchGDB, "TripShedRaw_{}{}".format(proj_name, timesufx))
-        self.df_col_trip_pct = 'pct_of_trips'
+        self.col_master_geom_id = 'master_geom_id'
         self.col_tottrips = 'tot_trips'
-        self.col_trippctlrank = 'trips_pctlrank'
+        self.col_total_tripends = 'tot_trip_endpts' # total combined origin + destination pointes; 1 trip has 2 end points
+        self.df_col_endpt_pct = 'pct_of_endpts' # pct of total combined origin + destination pointes
+        self.col_endptpctlrank = 'endpts_pctlrank' # how the area/geometry ranks among all others in terms of how many trips start or end in it.
         self.pct_cutoff = 0.8 # sort by descending percent of trips, then sum until this percent of total trips is added.
+        
         #excel workbook tabs that have output fields you want to preserve. You'll left join these to output data dfs
         self.ws_tshed_data = 'df_tshed_data'
         self.ws_trip_modes = 'df_trip_modes'
@@ -105,7 +126,7 @@ class TripShedAnalysis(object):
         
         
         # derived/calculated args
-        self.df_data = self.make_tripdata_df()
+        # self.df_data = self.make_tripdata_df()
         # self.df_grouped_data = self.summarize_tripdf(self.tripdata_groupby_field, self.tripdata_val_field, self.tripdata_agg_fxn)
         
         
@@ -129,10 +150,10 @@ class TripShedAnalysis(object):
         in_df = self.make_tripdata_df()
         
         df_gb = in_df.groupby(groupby_field)[val_field].agg(agg_fxn)
-        df_gb = pd.DataFrame(df_gb).rename(columns={'{}'.format(val_field): '{}'.format(self.col_tottrips)})
+        df_gb = pd.DataFrame(df_gb).rename(columns={'{}'.format(val_field): '{}'.format(self.col_total_tripends)})
         df_gb['category'] = groupby_field
         
-        df_gb['pct'] = df_gb[self.col_tottrips] / df_gb[self.col_tottrips].sum()
+        df_gb['pct'] = df_gb[self.col_total_tripends] / df_gb[self.col_total_tripends].sum()
         
         df_gb = df_gb.reset_index()
         
@@ -145,44 +166,77 @@ class TripShedAnalysis(object):
         '''
         
         val_field = self.tripdata_val_field
-        groupby_field = self.tripdata_groupby_field
+        # groupby_field = self.tripdata_groupby_field
         agg_fxn = self.tripdata_agg_fxn
         
         in_df = self.make_tripdata_df()
         
-        # totals, not cased by anything
-        piv_tot = in_df.pivot_table(values=val_field, index=groupby_field, aggfunc=agg_fxn).reset_index()
-        piv_tot = piv_tot.rename(columns={val_field: self.col_tottrips})
         
-        #return table grouped by poly id with columns for each category (e.g. modes, trip purposes)
-        if len(self.tripdata_case_fields) > 0:
-            for f in enumerate(self.tripdata_case_fields):
-                case_type = f[1]
-                idx = f[0]
-                if idx == 0:
-                    piv_out = in_df.pivot_table(values=val_field, index=groupby_field, 
-                                            columns=[case_type], aggfunc=agg_fxn).reset_index()
-                else:
-                    piv2 = in_df.pivot_table(values=val_field, index=groupby_field, 
-                                            columns=[case_type], aggfunc=agg_fxn).reset_index()
-                    
-                    # if a column exists in two different case types (e.g. "commercial" is both a veh mode and trip purpose)
-                    # then add a tag to differentiate it
-                    for col in piv2.columns:
-                        if col in piv_out.columns and col != groupby_field:
-                            piv2 = piv2.rename(columns={col:'{}_{}'.format(col, idx)})
-                    
-                    piv_out = piv_out.merge(piv2, on=groupby_field)
+        #make a master df to merge to based on shared id
+        endpt_dict = {'orig':self.geom_id_field_orig, 'dest':self.geom_id_field_dest}
+        
+        try:
+            df_masterid = pd.DataFrame(in_df[self.geom_id_field_orig].append(in_df[self.geom_id_field_orig]).unique()) \
+                .rename(columns={0:self.col_master_geom_id})
             
-            piv_final = piv_out.merge(piv_tot, on=groupby_field)
-
+            # for each trip end, make a table of block groups with data. E.g.
+                # table 1 = total trips, mode split, purpose split, etc. for all trips starting in block group
+                # table 2 = total trips, etc. for all trips ending in block group.
+            for i, endpt_name in enumerate(endpt_dict.keys()):
+                if i == 0:
+                    piv_final = df_masterid
+                # totals, not cased by anything
+                col_endpt_id = endpt_dict[endpt_name]
+                piv_tot = in_df.pivot_table(values=val_field, index=col_endpt_id, aggfunc=agg_fxn).reset_index()
+                piv_tot = piv_tot.rename(columns={val_field: self.col_tottrips})
+                
+                #return table grouped by poly id with columns for each category (e.g. modes, trip purposes)
+                if len(self.tripdata_case_fields) > 0:
+                    for f in enumerate(self.tripdata_case_fields):
+                        case_type = f[1] # field name
+                        idx = f[0] #enumeration index value
+                        if idx == 0:
+                            piv_out = in_df.pivot_table(values=val_field, index=col_endpt_id, 
+                                                    columns=[case_type], aggfunc=agg_fxn).reset_index()
+                        else:
+                            piv2 = in_df.pivot_table(values=val_field, index=col_endpt_id, 
+                                                    columns=[case_type], aggfunc=agg_fxn).reset_index()
+                            
+                            # if a column exists in two different case types (e.g. "commercial" is both a veh mode and trip purpose)
+                            # then add a tag to differentiate it
+                            for col in piv2.columns:
+                                if col in piv_out.columns and col != col_endpt_id:
+                                    piv2 = piv2.rename(columns={col:'{}_{}'.format(col, idx)})
+                            
+                            piv_out = piv_out.merge(piv2, on=col_endpt_id)
+                    
+                    # merge together each end point version (e.g. merge table with "total trip origins per geom" with 
+                    # "total trip destinations per geom")
+                    piv_i_final = piv_out.merge(piv_tot, on=col_endpt_id)
+                    col_renaming = {f"{col}":f"{col}_{endpt_name}" for col in piv_i_final.columns \
+                                    if col != col_endpt_id}
+                    piv_i_final = piv_i_final.rename(columns=col_renaming)
+                    
+                    piv_final = piv_final.merge(piv_i_final, left_on=self.col_master_geom_id, 
+                                                right_on=col_endpt_id, how='left')
+        except:
+            import pdb;pdb.set_trace()
+            
+        # add col giving total number of trip end points (either origin or destination) in each geometry
+        endpt_keys = [i for i in endpt_dict.keys()]
+        col_startpts_cnt = f"{self.col_tottrips}_{endpt_keys[0]}"
+        col_endpts_cnt = f"{self.col_tottrips}_{endpt_keys[1]}"
+        piv_final[self.col_total_tripends] = piv_final[col_startpts_cnt] + piv_final[col_endpts_cnt]
+        
         # add col showing percent of total trips starting in each poly        
-        piv_final[self.df_col_trip_pct] = piv_final[self.col_tottrips] / piv_final[self.col_tottrips].sum()  # pct of total trips from each poly
+        piv_final[self.df_col_endpt_pct] = piv_final[self.col_total_tripends] / piv_final[self.col_total_tripends].sum()  # pct of total trips from each poly
         
         # percentile rank of each poly in terms of how many trips it produces
         # e.g., 100th percentile means the poly makes more trips than any of the other polys
-        piv_final[self.col_trippctlrank] = piv_final[self.col_tottrips].rank(method='min', pct=True)
-        
+        piv_final[self.col_endptpctlrank] = piv_final[self.col_total_tripends].rank(method='min', pct=True)
+
+        # fill null vals with zero (e.g. if no trips)        
+        piv_final = piv_final.fillna(0)
     
         return piv_final
     
@@ -192,10 +246,10 @@ class TripShedAnalysis(object):
         but selected in descending order of how many trips were created.'''
         in_df = self.get_poly_data()
         
-        df_sorted = in_df.sort_values(self.df_col_trip_pct, ascending=False)
+        df_sorted = in_df.sort_values(self.df_col_endpt_pct, ascending=False)
         
         col_cumsumpct = 'cumul_sum'
-        df_sorted[col_cumsumpct] = df_sorted[self.df_col_trip_pct].cumsum()
+        df_sorted[col_cumsumpct] = df_sorted[self.df_col_endpt_pct].cumsum()
         
         df_out = df_sorted[df_sorted[col_cumsumpct] <= self.pct_cutoff]
         
@@ -210,8 +264,10 @@ class TripShedAnalysis(object):
         in_poly_fc = self.in_poly_fc
         out_poly_fc = self.out_poly_fc_raw
         poly_id_field = self.poly_id_field
-        # in_df = self.summarize_tripdf()
-        df_grouby_field = self.tripdata_groupby_field
+        
+        # import pdb; pdb.set_trace()
+        df_groupby_field = self.col_master_geom_id
+        
         
         # convert numpy (pandas) datatypes to ESRI data types {numpy type: ESRI type}
         dtype_conv_dict = {'float64': 'FLOAT', 'object': 'TEXT', 'int64': 'LONG', 
@@ -223,7 +279,7 @@ class TripShedAnalysis(object):
         if arcpy.Exists(fl_input_polys): arcpy.Delete_management(fl_input_polys)
         arcpy.MakeFeatureLayer_management(in_poly_fc, fl_input_polys)
         
-        df_ids = tuple(in_df[df_grouby_field])
+        df_ids = tuple(in_df[df_groupby_field])
         
         sql = "{} IN {}".format(poly_id_field, df_ids)
         arcpy.SelectLayerByAttribute_management(fl_input_polys, "NEW_SELECTION", sql)
@@ -325,7 +381,7 @@ class TripShedAnalysis(object):
         fld_tripshedind = "TripShed"
         arcpy.AddField_management(temp_joined_fl, fld_tripshedind, "SHORT")
         
-        self.tag_if_joined_cursor(temp_joined_fl, [self.col_tottrips, fld_tripshedind])
+        self.tag_if_joined_cursor(temp_joined_fl, [self.col_total_tripends, fld_tripshedind])
         
         # spatial select features that share a line with raw trip shed
         raw_tripshed_fl = 'raw_tripshed_fl'
@@ -340,7 +396,6 @@ class TripShedAnalysis(object):
         area_threshold_ft2 = 15000000
         fld_shape_area = "Shape_Area"
         sql1 = "{} <= {} AND {} = 0".format(fld_shape_area, area_threshold_ft2, fld_tripshedind)
-        # pdb.set_trace()
         arcpy.SelectLayerByAttribute_management(temp_joined_fl, "SUBSET_SELECTION", sql1)
             
         # then update the 1/0 field indicating if it's part of trip shed
@@ -373,7 +428,6 @@ class TripShedAnalysis(object):
         # From union result, select where tripshed joined FID = -1 (parts of the region polygon that fall outside of the tripshed polygon)
         fld_fid = 'FID_{}'.format(temp_fc_step2)
         sql3 = "{} = -1".format(fld_fid)
-        # pdb.set_trace()
         arcpy.SelectLayerByAttribute_management(temp_union_fl, "NEW_SELECTION", sql3)
         
         # Run singlepart-to-multipart, which makes as separate polygons
@@ -505,21 +559,19 @@ if __name__ == '__main__':
     
     # ------------------USER INPUTS----------------------------------------
     
-    tripdata_files = arcpy.GetParameterAsText(0)  # list of input CSVs from   # ['trips_listGrantLineNOJacksonThu.zip']  # os.listdir(r'C:\TEMP_OUTPUT\ReplicaDownloads\SR51_AmRiver')
-    tripshed_out_gdb = arcpy.GetParameterAsText(1) # specify where you want output feature class to go
-    proj_name = arcpy.GetParameterAsText(2)
+    tripdata_files = arcpy.GetParameterAsText(0)  # [r"C:\Users\dconly\Desktop\Temporary\Replica Select Link Data\Business80_AmRiver\Trips\trips_thursday_dec2018-feb2019_sacramento_2filters_created11-04-2020\trips_thursday_dec2018-feb2019_sacramento_2filters_created11-04-2020.csv"]  # list of input CSVs from   # arcpy.GetParameterAsText(0)  # 
+    tripshed_out_gdb = arcpy.GetParameterAsText(1)  # r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'  # arcpy.GetParameterAsText(1) # specify where you want output feature class to go
+    proj_name = arcpy.GetParameterAsText(2)  # 'test_proj11092020'
     run_full_shed_report = arcpy.GetParameterAsText(3) #boolean - if you want to have trip shed report made or just make trip shed poly FC
     arcpy.AddMessage("make XLSX = {}".format(run_full_shed_report))
     
-    arcpy.env.workspace = params.fgdb #gdb with all input data layers if full report needed.
-    
-    # dir_tripdata = r'C:\TEMP_OUTPUT\ReplicaDownloads'
+    arcpy.env.workspace = params.fgdb # gdb with all input data layers if full report needed.
     
     csvcol_obgid = 'origin_bgrp'  # Replica/big data block group ID column
     csvcol_dbgid = 'destination_bgrp'
     csvcol_mode = 'mode'  # Replica/big data trip mode column
     csvcol_purpose = 'travel_purpose'  # Replica/big data trip purpose column
-    csvcol_valfield = 'start_time' # field for which you want to aggregate values
+    csvcol_valfield= 'start_time' # field for which you want to aggregate values based on trip origins
     val_aggn_type = 'count'  # how you want to aggregate the values field (e.g. count of values, sum of values, avg, etc.)
     
     #community-type and region-level values for comparison to project-level values
@@ -539,8 +591,6 @@ if __name__ == '__main__':
 
     #------------RUN SCRIPT------------------------------------
     arcpy.env.overwriteOutput = True
-    # proj_name = input('Enter project name (numbers, letters, and underscores only): ')
-    # os.chdir(dir_tripdata)
     
     
     trip_data_fields = [csvcol_purpose, csvcol_obgid, csvcol_dbgid, csvcol_mode, csvcol_valfield] #fields to use from Replica trip data CSVs
@@ -548,10 +598,11 @@ if __name__ == '__main__':
     tripdata_case_fields = [csvcol_mode, csvcol_purpose]
     
     trip_shed = TripShedAnalysis(proj_name, tripdata_files, trip_data_fields, csvcol_valfield, val_aggn_type, csvcol_obgid,
-                   fc_bg_in, fc_poly_id_field, fc_filler, tripdata_case_fields, tripshed_out_gdb, 
+                   csvcol_dbgid, fc_bg_in, fc_poly_id_field, fc_filler, tripdata_case_fields, tripshed_out_gdb, 
                    run_full_shed_report, years, xlsx_template)
     
     outputs = trip_shed.make_trip_shed_report()
+    trip_shed.get_poly_data(categ_cols=[tripdata_case_fields])
     
     if outputs[0] == "Yes report":
         arcpy.SetParameterAsText(4, outputs[1]) #return link to view XLSX trip shed report
