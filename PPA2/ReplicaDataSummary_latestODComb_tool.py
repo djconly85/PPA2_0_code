@@ -270,7 +270,7 @@ class TripShedAnalysis(object):
         
         
         # convert numpy (pandas) datatypes to ESRI data types {numpy type: ESRI type}
-        dtype_conv_dict = {'float64': 'FLOAT', 'object': 'TEXT', 'int64': 'LONG', 
+        dtype_conv_dict = {'float64': 'FLOAT', 'object': 'TEXT', 'int64': 'DOUBLE', # need to convert int64 to double because it can overflow esri LONG dtype 
                            'String': 'TEXT', 'OID': 'LONG', 'Single': 'DOUBLE', 
                            'Integer': 'LONG'}
         
@@ -282,6 +282,7 @@ class TripShedAnalysis(object):
         df_ids = tuple(in_df[df_groupby_field])
         
         sql = "{} IN {}".format(poly_id_field, df_ids)
+        arcpy.AddMessage(sql)
         arcpy.SelectLayerByAttribute_management(fl_input_polys, "NEW_SELECTION", sql)
         
         arcpy.CopyFeatures_management(fl_input_polys, out_poly_fc)
@@ -559,10 +560,10 @@ if __name__ == '__main__':
     
     # ------------------USER INPUTS----------------------------------------
     
-    tripdata_files = arcpy.GetParameterAsText(0)  # [r"C:\Users\dconly\Desktop\Temporary\Replica Select Link Data\Business80_AmRiver\Trips\trips_thursday_dec2018-feb2019_sacramento_2filters_created11-04-2020\trips_thursday_dec2018-feb2019_sacramento_2filters_created11-04-2020.csv"]  # list of input CSVs from   # arcpy.GetParameterAsText(0)  # 
-    tripshed_out_gdb = arcpy.GetParameterAsText(1)  # r'I:\Projects\Darren\PPA_V2_GIS\scratch.gdb'  # arcpy.GetParameterAsText(1) # specify where you want output feature class to go
-    proj_name = arcpy.GetParameterAsText(2)  # 'test_proj11092020'
-    run_full_shed_report = arcpy.GetParameterAsText(3) #boolean - if you want to have trip shed report made or just make trip shed poly FC
+    tripdata_files = arcpy.GetParameterAsText(0) # list of input CSVs from   # arcpy.GetParameterAsText(0)  # 
+    tripshed_out_gdb = arcpy.GetParameterAsText(1)# arcpy.GetParameterAsText(1) # specify where you want output feature class to go
+    proj_name = arcpy.GetParameterAsText(2) # arcpy.GetParameterAsText(2)
+    run_full_shed_report = arcpy.GetParameterAsText(3) # boolean - if you want to have trip shed report made or just make trip shed poly FC
     arcpy.AddMessage("make XLSX = {}".format(run_full_shed_report))
     
     arcpy.env.workspace = params.fgdb # gdb with all input data layers if full report needed.
